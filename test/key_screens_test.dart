@@ -30,6 +30,7 @@ import 'package:liusheng/features/radio/station_catalog_setup_screen.dart';
 import 'package:liusheng/features/settings/about_screen.dart';
 import 'package:liusheng/features/settings/appearance_screen.dart';
 import 'package:liusheng/features/settings/data_management_screen.dart';
+import 'package:liusheng/features/settings/settings_screen.dart';
 import 'package:liusheng/features/settings/unreachable_stations_screen.dart';
 import 'package:liusheng/shared/widgets/empty_state.dart';
 import 'package:liusheng/shared/widgets/station_probe_status.dart';
@@ -380,6 +381,15 @@ void main() {
     final tile = find.widgetWithText(SwitchListTile, '紧凑列表');
     expect(tile, findsOneWidget);
     expect(tester.widget<SwitchListTile>(tile).value, isFalse);
+  });
+
+  testWidgets('settings appearance entry no longer advertises retired skins',
+      (tester) async {
+    await tester.pumpWidget(_app(const Scaffold(body: SettingsScreen())));
+    await tester.pumpAndSettle();
+
+    expect(find.textContaining('配色'), findsOneWidget);
+    expect(find.textContaining('氛围'), findsNothing);
   });
 
   testWidgets('radio screen empty filter shows 显示全部', (tester) async {

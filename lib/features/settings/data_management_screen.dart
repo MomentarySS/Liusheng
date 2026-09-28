@@ -49,7 +49,7 @@ class _DataManagementScreenState extends ConsumerState<DataManagementScreen> {
           context: context,
           builder: (context) => AlertDialog(
             title: const Text('清除封面缓存'),
-            content: const Text('将删除已缓存的电台台标图片，不会影响收藏和播放记录。'),
+            content: const Text('将删除已缓存的电台台标和播客封面图片，不会影响收藏和播放记录。'),
             actions: [
               TextButton(
                 onPressed: () => Navigator.pop(context, false),

@@ -17,7 +17,7 @@ import 'podcast_skip_sheet.dart';
 /// - 下载：全部下载 / 自动下载最新一集 / 最近几集
 /// - 播放：跳过片头/尾（按节目的持久设置，不是播放动作，所以不在播放器里）
 ///
-/// **不含「仅WiFi下载」** —— 那是全局开关，归属 `设置 → 播放与收听`。
+/// **不含「仅 WiFi 下载」** —— 那是全局开关，归属 `设置 → 播放与收听`。
 Future<void> showPodcastSettingsSheet(
   BuildContext context, {
   required PodcastFeed feed,
@@ -81,13 +81,22 @@ class _DownloadAllSwitch extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final enabled = ref.watch(podcastDownloadAllFeedsProvider).value?.contains(feed.id) ?? false;
+    final enabled =
+        ref.watch(podcastDownloadAllFeedsProvider).value?.contains(feed.id) ??
+            false;
     final downloads = ref.watch(podcastDownloadsProvider);
     final ready = episodes
-        .where((item) => downloads.statusFor(item.guid) == EpisodeDownloadStatus.ready)
+        .where(
+          (item) =>
+              downloads.statusFor(item.guid) == EpisodeDownloadStatus.ready,
+        )
         .length;
     final downloading = episodes
-        .where((item) => downloads.statusFor(item.guid) == EpisodeDownloadStatus.downloading)
+        .where(
+          (item) =>
+              downloads.statusFor(item.guid) ==
+              EpisodeDownloadStatus.downloading,
+        )
         .length;
     int feedBytes = 0;
     for (final episode in episodes) {
@@ -112,9 +121,13 @@ class _DownloadAllSwitch extends ConsumerWidget {
       value: enabled,
       onChanged: (value) async {
         if (value && !await ensureCanDownload(context, ref)) return;
-        await ref.read(podcastDownloadAllFeedsProvider.notifier).setEnabled(feed.id, value);
+        await ref
+            .read(podcastDownloadAllFeedsProvider.notifier)
+            .setEnabled(feed.id, value);
         if (value) {
-          await ref.read(podcastDownloadsProvider.notifier).downloadAll(feed, episodes);
+          await ref
+              .read(podcastDownloadsProvider.notifier)
+              .downloadAll(feed, episodes);
         } else {
           await ref.read(podcastDownloadsProvider.notifier).cancelForGuids(
                 episodes.map((item) => item.guid),
@@ -133,8 +146,11 @@ class _DownloadLatestSwitch extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final enabled =
-        ref.watch(podcastDownloadLatestFeedsProvider).value?.contains(feed.id) ?? false;
+    final enabled = ref
+            .watch(podcastDownloadLatestFeedsProvider)
+            .value
+            ?.contains(feed.id) ??
+        false;
     final downloads = ref.watch(podcastDownloadsProvider);
     final latestFlags = PodcastDownloadLogic.latestDownloadFlags(
       episodes: episodes,
@@ -154,9 +170,13 @@ class _DownloadLatestSwitch extends ConsumerWidget {
       value: enabled,
       onChanged: (value) async {
         if (value && !await ensureCanDownload(context, ref)) return;
-        await ref.read(podcastDownloadLatestFeedsProvider.notifier).setEnabled(feed.id, value);
+        await ref
+            .read(podcastDownloadLatestFeedsProvider.notifier)
+            .setEnabled(feed.id, value);
         if (value) {
-          await ref.read(podcastDownloadsProvider.notifier).downloadLatestIfEnabled(feed, episodes);
+          await ref
+              .read(podcastDownloadsProvider.notifier)
+              .downloadLatestIfEnabled(feed, episodes);
         }
       },
     );
@@ -202,14 +222,18 @@ class _DownloadRecentTile extends ConsumerWidget {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(content: Text('开始下载最近 ${pending.length} 集')),
           );
-          unawaited(ref.read(podcastDownloadsProvider.notifier).downloadEpisodes(feed, pending));
+          unawaited(
+            ref
+                .read(podcastDownloadsProvider.notifier)
+                .downloadEpisodes(feed, pending),
+          );
         },
       ),
     );
   }
 }
 
-/// 仅WiFi下载的**只读**状态行。
+/// 仅 WiFi 下载的**只读**状态行。
 ///
 /// 它是全局开关（管所有节目 + 自动下载 + 后台下载），所以改它的地方在
 /// `设置 → 播放与收听`，不在这个按节目的面板里。但状态必须在这儿**看得见** ——
@@ -226,7 +250,7 @@ class _WifiOnlyStatusTile extends ConsumerWidget {
     final on = wifiOnly.value == true;
     return ListTile(
       leading: const Icon(Icons.wifi_outlined),
-      title: const Text('仅WiFi下载'),
+      title: const Text('仅 WiFi 下载'),
       subtitle: const Text('在 设置 → 播放与收听 里修改'),
       trailing: Text(
         // 没加载完时不能显示「关」—— 那正是之前把 AsyncLoading 误判成

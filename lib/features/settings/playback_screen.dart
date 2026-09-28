@@ -39,13 +39,18 @@ class PlaybackSettingsScreen extends ConsumerWidget {
                   title: const Text('记住上次收听'),
                   subtitle: const Text('冷启动显示迷你条，点播放才出声'),
                   value: enabled,
-                  onChanged: (value) =>
-                      ref.read(rememberLastListeningProvider.notifier).setEnabled(value),
+                  onChanged: (value) => ref
+                      .read(rememberLastListeningProvider.notifier)
+                      .setEnabled(value),
                 ),
                 loading: () => const ListTile(
                   leading: Icon(Icons.history_toggle_off_outlined),
                   title: Text('记住上次收听'),
-                  trailing: SizedBox(width: 24, height: 24, child: CircularProgressIndicator(strokeWidth: 2)),
+                  trailing: SizedBox(
+                    width: 24,
+                    height: 24,
+                    child: CircularProgressIndicator(strokeWidth: 2),
+                  ),
                 ),
                 error: (error, _) => ListTile(
                   leading: const Icon(Icons.history_toggle_off_outlined),
@@ -67,7 +72,11 @@ class PlaybackSettingsScreen extends ConsumerWidget {
                   loading: () => const ListTile(
                     leading: Icon(Icons.desktop_windows_outlined),
                     title: Text('桌面窗口形态'),
-                    trailing: SizedBox(width: 24, height: 24, child: CircularProgressIndicator(strokeWidth: 2)),
+                    trailing: SizedBox(
+                      width: 24,
+                      height: 24,
+                      child: CircularProgressIndicator(strokeWidth: 2),
+                    ),
                   ),
                   error: (error, _) => ListTile(
                     leading: const Icon(Icons.desktop_windows_outlined),
@@ -82,13 +91,18 @@ class PlaybackSettingsScreen extends ConsumerWidget {
                     title: const Text('启动即迷你窗'),
                     subtitle: Text(DeskLaunchLogic.launchCompactSubtitle()),
                     value: enabled,
-                    onChanged: (value) =>
-                        ref.read(deskLaunchCompactProvider.notifier).setEnabled(value),
+                    onChanged: (value) => ref
+                        .read(deskLaunchCompactProvider.notifier)
+                        .setEnabled(value),
                   ),
                   loading: () => const ListTile(
                     leading: Icon(Icons.launch_outlined),
                     title: Text('启动即迷你窗'),
-                    trailing: SizedBox(width: 24, height: 24, child: CircularProgressIndicator(strokeWidth: 2)),
+                    trailing: SizedBox(
+                      width: 24,
+                      height: 24,
+                      child: CircularProgressIndicator(strokeWidth: 2),
+                    ),
                   ),
                   error: (error, _) => ListTile(
                     leading: const Icon(Icons.launch_outlined),
@@ -103,13 +117,18 @@ class PlaybackSettingsScreen extends ConsumerWidget {
                     title: const Text('开机启动'),
                     subtitle: Text(DeskLaunchLogic.startupSubtitle()),
                     value: enabled,
-                    onChanged: (value) =>
-                        ref.read(deskLaunchAtStartupProvider.notifier).setEnabled(value),
+                    onChanged: (value) => ref
+                        .read(deskLaunchAtStartupProvider.notifier)
+                        .setEnabled(value),
                   ),
                   loading: () => const ListTile(
                     leading: Icon(Icons.power_settings_new_outlined),
                     title: Text('开机启动'),
-                    trailing: SizedBox(width: 24, height: 24, child: CircularProgressIndicator(strokeWidth: 2)),
+                    trailing: SizedBox(
+                      width: 24,
+                      height: 24,
+                      child: CircularProgressIndicator(strokeWidth: 2),
+                    ),
                   ),
                   error: (error, _) => ListTile(
                     leading: const Icon(Icons.power_settings_new_outlined),
@@ -138,13 +157,18 @@ class PlaybackSettingsScreen extends ConsumerWidget {
                     title: const Text('摇一摇延长睡眠'),
                     subtitle: const Text('睡眠定时开启时，摇一下手机再加 5 分钟'),
                     value: enabled,
-                    onChanged: (value) =>
-                        ref.read(shakeExtendSleepProvider.notifier).setEnabled(value),
+                    onChanged: (value) => ref
+                        .read(shakeExtendSleepProvider.notifier)
+                        .setEnabled(value),
                   ),
                   loading: () => const ListTile(
                     leading: Icon(Icons.vibration),
                     title: Text('摇一摇延长睡眠'),
-                    trailing: SizedBox(width: 24, height: 24, child: CircularProgressIndicator(strokeWidth: 2)),
+                    trailing: SizedBox(
+                      width: 24,
+                      height: 24,
+                      child: CircularProgressIndicator(strokeWidth: 2),
+                    ),
                   ),
                   error: (error, _) => ListTile(
                     leading: const Icon(Icons.vibration),
@@ -159,13 +183,18 @@ class PlaybackSettingsScreen extends ConsumerWidget {
                     title: const Text('蓝牙连回续播'),
                     subtitle: Text(BluetoothResumeLogic.subtitle()),
                     value: enabled,
-                    onChanged: (value) =>
-                        ref.read(bluetoothResumeProvider.notifier).setEnabled(value),
+                    onChanged: (value) => ref
+                        .read(bluetoothResumeProvider.notifier)
+                        .setEnabled(value),
                   ),
                   loading: () => const ListTile(
                     leading: Icon(Icons.bluetooth_audio_outlined),
                     title: Text('蓝牙连回续播'),
-                    trailing: SizedBox(width: 24, height: 24, child: CircularProgressIndicator(strokeWidth: 2)),
+                    trailing: SizedBox(
+                      width: 24,
+                      height: 24,
+                      child: CircularProgressIndicator(strokeWidth: 2),
+                    ),
                   ),
                   error: (error, _) => ListTile(
                     leading: const Icon(Icons.bluetooth_audio_outlined),
@@ -179,19 +208,24 @@ class PlaybackSettingsScreen extends ConsumerWidget {
           ref.watch(downloadWifiOnlyProvider).when(
                 data: (enabled) => SwitchListTile(
                   secondary: const Icon(Icons.wifi_outlined),
-                  title: const Text('仅WiFi下载'),
+                  title: const Text('仅 WiFi 下载'),
                   subtitle: const Text('蜂窝网络下不自动开始下载'),
                   value: enabled,
-                  onChanged: (value) => ref.read(downloadWifiOnlyProvider.notifier).set(value),
+                  onChanged: (value) =>
+                      ref.read(downloadWifiOnlyProvider.notifier).set(value),
                 ),
                 loading: () => const ListTile(
                   leading: Icon(Icons.wifi_outlined),
-                  title: Text('仅WiFi下载'),
-                  trailing: SizedBox(width: 24, height: 24, child: CircularProgressIndicator(strokeWidth: 2)),
+                  title: Text('仅 WiFi 下载'),
+                  trailing: SizedBox(
+                    width: 24,
+                    height: 24,
+                    child: CircularProgressIndicator(strokeWidth: 2),
+                  ),
                 ),
                 error: (error, _) => ListTile(
                   leading: const Icon(Icons.wifi_outlined),
-                  title: const Text('仅WiFi下载'),
+                  title: const Text('仅 WiFi 下载'),
                   subtitle: Text('加载失败: $error'),
                 ),
               ),
@@ -203,7 +237,9 @@ class PlaybackSettingsScreen extends ConsumerWidget {
               value: ref.watch(podcastSkipStepProvider),
               onChanged: (value) {
                 if (value == null) return;
-                unawaited(ref.read(podcastSkipStepProvider.notifier).setSeconds(value));
+                unawaited(
+                  ref.read(podcastSkipStepProvider.notifier).setSeconds(value),
+                );
               },
               items: [
                 for (final seconds in PodcastPlaybackLogic.skipStepOptions)
@@ -221,18 +257,28 @@ class PlaybackSettingsScreen extends ConsumerWidget {
                   subtitle: const Text('默认关。打开后最少隔 6 小时查一次订阅，首次只记进度不提醒'),
                   value: enabled,
                   onChanged: (value) async {
-                    await ref.read(newEpisodeNotificationsProvider.notifier).setEnabled(value);
-                    await ref.read(newEpisodeCheckerProvider).syncBackgroundSchedule(enabled: value);
+                    await ref
+                        .read(newEpisodeNotificationsProvider.notifier)
+                        .setEnabled(value);
+                    await ref
+                        .read(newEpisodeCheckerProvider)
+                        .syncBackgroundSchedule(enabled: value);
                     if (!value) return;
                     await requestPlaybackNotificationPermission();
-                    await ref.read(newEpisodeCheckerProvider).checkIfDue(force: true);
+                    await ref
+                        .read(newEpisodeCheckerProvider)
+                        .checkIfDue(force: true);
                     await ref.read(feedCacheProvider.notifier).reload();
                   },
                 ),
                 loading: () => const ListTile(
                   leading: Icon(Icons.notifications_active_outlined),
                   title: Text('新一集通知'),
-                  trailing: SizedBox(width: 24, height: 24, child: CircularProgressIndicator(strokeWidth: 2)),
+                  trailing: SizedBox(
+                    width: 24,
+                    height: 24,
+                    child: CircularProgressIndicator(strokeWidth: 2),
+                  ),
                 ),
                 error: (error, _) => ListTile(
                   leading: const Icon(Icons.notifications_active_outlined),
@@ -246,13 +292,18 @@ class PlaybackSettingsScreen extends ConsumerWidget {
                   title: const Text('自动清理下载'),
                   subtitle: const Text('已听完的下载单集过一段时间自动删除，节省空间'),
                   value: enabled,
-                  onChanged: (value) =>
-                      ref.read(autoCleanupDownloadsProvider.notifier).setEnabled(value),
+                  onChanged: (value) => ref
+                      .read(autoCleanupDownloadsProvider.notifier)
+                      .setEnabled(value),
                 ),
                 loading: () => const ListTile(
                   leading: Icon(Icons.auto_delete_outlined),
                   title: Text('自动清理下载'),
-                  trailing: SizedBox(width: 24, height: 24, child: CircularProgressIndicator(strokeWidth: 2)),
+                  trailing: SizedBox(
+                    width: 24,
+                    height: 24,
+                    child: CircularProgressIndicator(strokeWidth: 2),
+                  ),
                 ),
                 error: (error, _) => ListTile(
                   leading: const Icon(Icons.auto_delete_outlined),
@@ -271,14 +322,18 @@ class PlaybackSettingsScreen extends ConsumerWidget {
                       IconButton(
                         icon: const Icon(Icons.remove),
                         onPressed: days > 1
-                            ? () => ref.read(autoCleanupDaysProvider.notifier).setDays(days - 1)
+                            ? () => ref
+                                .read(autoCleanupDaysProvider.notifier)
+                                .setDays(days - 1)
                             : null,
                       ),
                       Text('$days'),
                       IconButton(
                         icon: const Icon(Icons.add),
                         onPressed: days < 365
-                            ? () => ref.read(autoCleanupDaysProvider.notifier).setDays(days + 1)
+                            ? () => ref
+                                .read(autoCleanupDaysProvider.notifier)
+                                .setDays(days + 1)
                             : null,
                       ),
                     ],

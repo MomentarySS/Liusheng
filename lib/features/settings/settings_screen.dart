@@ -26,7 +26,9 @@ class SettingsScreen extends ConsumerWidget {
           title: '播客管理',
           subtitle: '管理订阅、导入和导出 OPML',
           onTap: () => Navigator.of(context).push(
-            MaterialPageRoute<void>(builder: (_) => const PodcastManagementScreen()),
+            MaterialPageRoute<void>(
+              builder: (_) => const PodcastManagementScreen(),
+            ),
           ),
         ),
         _Entry(
@@ -34,7 +36,9 @@ class SettingsScreen extends ConsumerWidget {
           title: '电台管理',
           subtitle: '收听范围、源检测和手动添加',
           onTap: () => Navigator.of(context).push(
-            MaterialPageRoute<void>(builder: (_) => const SourceSettingsScreen()),
+            MaterialPageRoute<void>(
+              builder: (_) => const SourceSettingsScreen(),
+            ),
           ),
         ),
         _Entry(
@@ -51,13 +55,15 @@ class SettingsScreen extends ConsumerWidget {
           title: '播放与收听',
           subtitle: '播放偏好、设备选项与通知',
           onTap: () => Navigator.of(context).push(
-            MaterialPageRoute<void>(builder: (_) => const PlaybackSettingsScreen()),
+            MaterialPageRoute<void>(
+              builder: (_) => const PlaybackSettingsScreen(),
+            ),
           ),
         ),
         _Entry(
           icon: Icons.contrast,
           title: '外观',
-          subtitle: CastSessionLogic.offered ? '氛围、主题、配色和投屏' : '氛围、主题和配色',
+          subtitle: CastSessionLogic.offered ? '主题、配色和投屏' : '主题和配色',
           onTap: () => Navigator.of(context).push(
             MaterialPageRoute<void>(builder: (_) => const AppearanceScreen()),
           ),
@@ -68,7 +74,9 @@ class SettingsScreen extends ConsumerWidget {
           title: '数据管理',
           subtitle: '封面缓存、播客下载、本机备份',
           onTap: () => Navigator.of(context).push(
-            MaterialPageRoute<void>(builder: (_) => const DataManagementScreen()),
+            MaterialPageRoute<void>(
+              builder: (_) => const DataManagementScreen(),
+            ),
           ),
         ),
         _Entry(

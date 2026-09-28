@@ -27,14 +27,16 @@ import '../../core/providers/app_providers.dart';
 import '../../core/providers/podcast_history_provider.dart';
 import '../../core/storage/app_storage.dart';
 
-final podcastServiceProvider = Provider<PodcastService>((ref) => PodcastService());
+final podcastServiceProvider =
+    Provider<PodcastService>((ref) => PodcastService());
 
-final subscribedFeedsProvider =
-    StateNotifierProvider<SubscribedFeedsNotifier, AsyncValue<List<PodcastFeed>>>((ref) {
+final subscribedFeedsProvider = StateNotifierProvider<SubscribedFeedsNotifier,
+    AsyncValue<List<PodcastFeed>>>((ref) {
   return SubscribedFeedsNotifier(ref);
 });
 
-class SubscribedFeedsNotifier extends StateNotifier<AsyncValue<List<PodcastFeed>>> {
+class SubscribedFeedsNotifier
+    extends StateNotifier<AsyncValue<List<PodcastFeed>>> {
   SubscribedFeedsNotifier(this._ref) : super(const AsyncLoading()) {
     _load();
   }
@@ -48,7 +50,10 @@ class SubscribedFeedsNotifier extends StateNotifier<AsyncValue<List<PodcastFeed>
     final removedIds = <String>[];
     for (final item in saved) {
       final feed = PodcastFeed.fromJson(item);
-      if (PodcastDownloadLogic.isBundledDefaultFeed(id: feed.id, feedUrl: feed.feedUrl)) {
+      if (PodcastDownloadLogic.isBundledDefaultFeed(
+        id: feed.id,
+        feedUrl: feed.feedUrl,
+      )) {
         removedIds.add(feed.id);
         continue;
       }
@@ -81,7 +86,8 @@ class SubscribedFeedsNotifier extends StateNotifier<AsyncValue<List<PodcastFeed>
     String? homepage,
     String? imageUrl,
   }) async {
-    final existing = (state.value ?? const []).where((item) => item.feedUrl == feedUrl);
+    final existing =
+        (state.value ?? const []).where((item) => item.feedUrl == feedUrl);
     if (existing.isNotEmpty) return existing.first;
 
     final draft = PodcastFeed(
@@ -126,7 +132,8 @@ class SubscribedFeedsNotifier extends StateNotifier<AsyncValue<List<PodcastFeed>
         final detail = await _ref
             .read(podcastServiceProvider)
             .fetchFeed(feed, forNewSubscription: true);
-        final keepTitle = feed.title.trim().isNotEmpty && feed.title != feed.feedUrl;
+        final keepTitle =
+            feed.title.trim().isNotEmpty && feed.title != feed.feedUrl;
         await updateFeedMeta(
           PodcastFeed(
             id: feed.id,
@@ -149,8 +156,12 @@ class SubscribedFeedsNotifier extends StateNotifier<AsyncValue<List<PodcastFeed>
     final current = List<PodcastFeed>.from(state.value ?? []);
     current.removeWhere((item) => item.id == id);
     await _persist(current);
-    await _ref.read(podcastDownloadAllFeedsProvider.notifier).setEnabled(id, false);
-    await _ref.read(podcastDownloadLatestFeedsProvider.notifier).setEnabled(id, false);
+    await _ref
+        .read(podcastDownloadAllFeedsProvider.notifier)
+        .setEnabled(id, false);
+    await _ref
+        .read(podcastDownloadLatestFeedsProvider.notifier)
+        .setEnabled(id, false);
     await _ref.read(podcastDownloadsProvider.notifier).deleteForFeed(id);
     await _ref.read(feedCacheProvider.notifier).remove(id);
     await _ref.read(podcastBookmarksProvider.notifier).pruneFeed(id);
@@ -211,7 +222,8 @@ class PodcastIndexSettings {
   final String apiSecret;
   final bool hideExplicit;
 
-  bool get hasCredentials => PodcastIndexLogic.hasCredentials(apiKey, apiSecret);
+  bool get hasCredentials =>
+      PodcastIndexLogic.hasCredentials(apiKey, apiSecret);
 
   PodcastIndexSettings copyWith({
     String? apiKey,
@@ -226,12 +238,13 @@ class PodcastIndexSettings {
   }
 }
 
-final podcastIndexSettingsProvider =
-    StateNotifierProvider<PodcastIndexSettingsNotifier, AsyncValue<PodcastIndexSettings>>((ref) {
+final podcastIndexSettingsProvider = StateNotifierProvider<
+    PodcastIndexSettingsNotifier, AsyncValue<PodcastIndexSettings>>((ref) {
   return PodcastIndexSettingsNotifier(ref);
 });
 
-class PodcastIndexSettingsNotifier extends StateNotifier<AsyncValue<PodcastIndexSettings>> {
+class PodcastIndexSettingsNotifier
+    extends StateNotifier<AsyncValue<PodcastIndexSettings>> {
   PodcastIndexSettingsNotifier(this._ref) : super(const AsyncLoading()) {
     _load();
   }
@@ -249,9 +262,13 @@ class PodcastIndexSettingsNotifier extends StateNotifier<AsyncValue<PodcastIndex
     );
   }
 
-  Future<void> saveCredentials({required String apiKey, required String apiSecret}) async {
+  Future<void> saveCredentials({
+    required String apiKey,
+    required String apiSecret,
+  }) async {
     final current = state.value ?? const PodcastIndexSettings();
-    final next = current.copyWith(apiKey: apiKey.trim(), apiSecret: apiSecret.trim());
+    final next =
+        current.copyWith(apiKey: apiKey.trim(), apiSecret: apiSecret.trim());
     state = AsyncData(next);
     final storage = await _ref.read(appStorageProvider.future);
     await storage.setPodcastIndexApiKey(next.apiKey);
@@ -266,9 +283,11 @@ class PodcastIndexSettingsNotifier extends StateNotifier<AsyncValue<PodcastIndex
   }
 }
 
-final podcastIndexClientProvider = Provider<PodcastIndexClient>((ref) => PodcastIndexClient());
+final podcastIndexClientProvider =
+    Provider<PodcastIndexClient>((ref) => PodcastIndexClient());
 
-final itunesPodcastClientProvider = Provider<ItunesPodcastClient>((ref) => ItunesPodcastClient());
+final itunesPodcastClientProvider =
+    Provider<ItunesPodcastClient>((ref) => ItunesPodcastClient());
 
 final podcastCatalogClientProvider =
     Provider<PodcastCatalogClient>((ref) => PodcastCatalogClient());
@@ -278,10 +297,12 @@ final podcastCatalogClientProvider =
 ///
 /// 语料来自两处：GetPodcast 的两百多精选 + xyzrank 榜单前 1000（按热度）。后者是
 /// 覆盖面的主要来源；两处任一失败都不影响另一处。
-final podcastCatalogProvider = FutureProvider<List<PodcastCatalogEntry>>((ref) async {
+final podcastCatalogProvider =
+    FutureProvider<List<PodcastCatalogEntry>>((ref) async {
   final storage = await ref.watch(appStorageProvider.future);
   final cached = PodcastCatalogLogic.decode(storage.getPodcastCatalogRaw());
-  if (cached != null && !PodcastCatalogLogic.isStale(cached.fetchedAt, DateTime.now())) {
+  if (cached != null &&
+      !PodcastCatalogLogic.isStale(cached.fetchedAt, DateTime.now())) {
     return cached.entries;
   }
   final client = ref.watch(podcastCatalogClientProvider);
@@ -291,7 +312,9 @@ final podcastCatalogProvider = FutureProvider<List<PodcastCatalogEntry>>((ref) a
   ]);
   final entries = PodcastCatalogLogic.merge(results);
   if (entries.isEmpty) return cached?.entries ?? const [];
-  await storage.setPodcastCatalogRaw(PodcastCatalogLogic.encode(entries, DateTime.now()));
+  await storage.setPodcastCatalogRaw(
+    PodcastCatalogLogic.encode(entries, DateTime.now()),
+  );
   return entries;
 });
 
@@ -327,12 +350,13 @@ final podcastCatalogPrewarmProvider = Provider<void>((ref) {
 final xyzrankCatalogClientProvider =
     Provider<XyzrankCatalogClient>((ref) => XyzrankCatalogClient());
 
-final podcastEpisodeSortProvider =
-    StateNotifierProvider<PodcastEpisodeSortNotifier, AsyncValue<PodcastEpisodeSort>>((ref) {
+final podcastEpisodeSortProvider = StateNotifierProvider<
+    PodcastEpisodeSortNotifier, AsyncValue<PodcastEpisodeSort>>((ref) {
   return PodcastEpisodeSortNotifier(ref);
 });
 
-class PodcastEpisodeSortNotifier extends StateNotifier<AsyncValue<PodcastEpisodeSort>> {
+class PodcastEpisodeSortNotifier
+    extends StateNotifier<AsyncValue<PodcastEpisodeSort>> {
   PodcastEpisodeSortNotifier(this._ref) : super(const AsyncLoading()) {
     _load();
   }
@@ -351,12 +375,13 @@ class PodcastEpisodeSortNotifier extends StateNotifier<AsyncValue<PodcastEpisode
   }
 }
 
-final podcastDownloadAllFeedsProvider =
-    StateNotifierProvider<PodcastDownloadAllFeedsNotifier, AsyncValue<Set<String>>>((ref) {
+final podcastDownloadAllFeedsProvider = StateNotifierProvider<
+    PodcastDownloadAllFeedsNotifier, AsyncValue<Set<String>>>((ref) {
   return PodcastDownloadAllFeedsNotifier(ref);
 });
 
-class PodcastDownloadAllFeedsNotifier extends StateNotifier<AsyncValue<Set<String>>> {
+class PodcastDownloadAllFeedsNotifier
+    extends StateNotifier<AsyncValue<Set<String>>> {
   PodcastDownloadAllFeedsNotifier(this._ref) : super(const AsyncLoading()) {
     _load();
   }
@@ -383,12 +408,13 @@ class PodcastDownloadAllFeedsNotifier extends StateNotifier<AsyncValue<Set<Strin
   }
 }
 
-final podcastDownloadLatestFeedsProvider =
-    StateNotifierProvider<PodcastDownloadLatestFeedsNotifier, AsyncValue<Set<String>>>((ref) {
+final podcastDownloadLatestFeedsProvider = StateNotifierProvider<
+    PodcastDownloadLatestFeedsNotifier, AsyncValue<Set<String>>>((ref) {
   return PodcastDownloadLatestFeedsNotifier(ref);
 });
 
-class PodcastDownloadLatestFeedsNotifier extends StateNotifier<AsyncValue<Set<String>>> {
+class PodcastDownloadLatestFeedsNotifier
+    extends StateNotifier<AsyncValue<Set<String>>> {
   PodcastDownloadLatestFeedsNotifier(this._ref) : super(const AsyncLoading()) {
     _load();
   }
@@ -419,7 +445,9 @@ final podcastDetailProvider =
     FutureProvider.family<PodcastDetail, PodcastFeed>((ref, feed) async {
   try {
     final detail = await ref.watch(podcastServiceProvider).fetchFeed(feed);
-    await ref.read(subscribedFeedsProvider.notifier).updateFeedMeta(detail.feed);
+    await ref
+        .read(subscribedFeedsProvider.notifier)
+        .updateFeedMeta(detail.feed);
     await ref.read(feedCacheProvider.notifier).put(detail);
     ref.read(detailFromCacheProvider(feed.id).notifier).state = false;
     return detail;
@@ -444,10 +472,12 @@ final podcastDetailProvider =
 ///
 /// 由 [podcastDetailProvider] 在回落后写入；页面据此显示一条提示 —— 否则用户会
 /// 以为看到的是刚拉下来的列表。
-final detailFromCacheProvider = StateProvider.family<bool, String>((ref, feedId) => false);
+final detailFromCacheProvider =
+    StateProvider.family<bool, String>((ref, feedId) => false);
 
 /// 当前播客单集章节：有 JSON 地址时才现拉，失败则用 Feed 里的 Podlove 章节。
-final playingEpisodeChaptersProvider = FutureProvider<List<PodcastChapter>>((ref) async {
+final playingEpisodeChaptersProvider =
+    FutureProvider<List<PodcastChapter>>((ref) async {
   final current = ref.watch(currentPlaybackProvider);
   if (current == null || current.kind != PlaybackKind.podcast) return const [];
   final guid = current.episodeGuid;
@@ -460,7 +490,8 @@ final playingEpisodeChaptersProvider = FutureProvider<List<PodcastChapter>>((ref
   if (feed == null) return const [];
   try {
     final detail = await ref.watch(podcastDetailProvider(feed).future);
-    final episode = detail.episodes.where((item) => item.guid == guid).firstOrNull;
+    final episode =
+        detail.episodes.where((item) => item.guid == guid).firstOrNull;
     if (episode == null) return const [];
     return ref.watch(podcastServiceProvider).resolveChapters(episode);
   } catch (_) {
@@ -478,7 +509,8 @@ final podcastProgressProvider =
 });
 
 /// 继续收听：最近播放且未听完的单集。
-final resumeListeningProvider = FutureProvider<PodcastHistoryEntry?>((ref) async {
+final resumeListeningProvider =
+    FutureProvider<PodcastHistoryEntry?>((ref) async {
   final historyAsync = ref.watch(podcastHistoryProvider);
   final history = historyAsync.value ?? <PodcastHistoryEntry>[];
   final storage = await ref.watch(appStorageProvider.future);
@@ -500,7 +532,8 @@ final resumeListeningProvider = FutureProvider<PodcastHistoryEntry?>((ref) async
 });
 
 final podcastDownloadsProvider =
-    StateNotifierProvider<PodcastDownloadsNotifier, PodcastDownloadState>((ref) {
+    StateNotifierProvider<PodcastDownloadsNotifier, PodcastDownloadState>(
+        (ref) {
   final notifier = PodcastDownloadsNotifier(ref);
   ref.listen<int>(downloadCleanupEpochProvider, (previous, next) {
     if (previous != next) unawaited(notifier.reload());
@@ -532,13 +565,13 @@ class DownloadWifiOnlyNotifier extends StateNotifier<AsyncValue<bool>> {
   }
 }
 
-/// 仅WiFi下载开关的**权威**取值。
+/// 仅 WiFi 下载开关的**权威**取值。
 ///
 /// `downloadWifiOnlyProvider` 是 `AsyncValue<bool>`，而且**第一次读它才会现场
 /// 创建**：那一刻状态是 `AsyncLoading`、`.value == null`。把这个 null 当成
 /// 「没开」就会在蜂窝网下放行下载。
 ///
-/// 详情页原先有个常驻的「仅WiFi下载」开关在 `watch` 它，顺手把 provider 预热了；
+/// 详情页原先有个常驻的「仅 WiFi 下载」开关在 `watch` 它，顺手把 provider 预热了；
 /// v2.2 把那个开关搬去设置之后（D3）没人预热，「全部下载」在移动网络下就会照下
 /// 不误。所以**没加载完时直接问存储** —— 存储本来就是它的数据源。
 Future<bool> resolveDownloadWifiOnly(
@@ -555,7 +588,8 @@ Future<bool> resolveDownloadWifiOnly(
 /// 通知，所以写入方（下载设置面板）在编辑 sheet 关闭后要 `invalidate` 一次，
 /// 否则详情页入口行的摘要不会刷新。
 final podcastSkipSettingsProvider =
-    FutureProvider.family<({int intro, int outro}), String>((ref, feedId) async {
+    FutureProvider.family<({int intro, int outro}), String>(
+        (ref, feedId) async {
   final storage = await ref.watch(appStorageProvider.future);
   return (
     intro: storage.getPodcastSkipIntro(feedId),
@@ -590,10 +624,12 @@ class PodcastDownloadsNotifier extends StateNotifier<PodcastDownloadState> {
       storage: _ref.read(appStorageProvider.future),
     );
     if (wifiOnly) {
-      final allowed = await _ref.read(networkMonitorProvider).allowsWifiOnlyDownload;
+      final allowed =
+          await _ref.read(networkMonitorProvider).allowsWifiOnlyDownload;
       if (!allowed) return;
     }
-    final progress = Map<String, double>.from(state.progress)..[episode.guid] = 0;
+    final progress = Map<String, double>.from(state.progress)
+      ..[episode.guid] = 0;
     final failed = Set<String>.from(state.failed)..remove(episode.guid);
     _inflightFeedByGuid[episode.guid] = feed.id;
     state = state.copyWith(progress: progress, failed: failed);
@@ -617,17 +653,20 @@ class PodcastDownloadsNotifier extends StateNotifier<PodcastDownloadState> {
           }
           lastNotified = value;
           lastNotifiedAt = now;
-          final next = Map<String, double>.from(state.progress)..[episode.guid] = value;
+          final next = Map<String, double>.from(state.progress)
+            ..[episode.guid] = value;
           state = state.copyWith(progress: next);
         },
       );
       final records = Map<String, PodcastDownloadRecord>.from(state.records)
         ..[record.guid] = record;
-      final remaining = Map<String, double>.from(state.progress)..remove(episode.guid);
+      final remaining = Map<String, double>.from(state.progress)
+        ..remove(episode.guid);
       state = state.copyWith(records: records, progress: remaining);
     } on DioException catch (error) {
       if (CancelToken.isCancel(error)) {
-        final remaining = Map<String, double>.from(state.progress)..remove(episode.guid);
+        final remaining = Map<String, double>.from(state.progress)
+          ..remove(episode.guid);
         state = state.copyWith(progress: remaining);
         return;
       }
@@ -663,19 +702,30 @@ class PodcastDownloadsNotifier extends StateNotifier<PodcastDownloadState> {
     await Future.wait([for (var i = 0; i < workers; i++) worker()]);
   }
 
-  Future<void> downloadAll(PodcastFeed feed, List<PodcastEpisode> episodes) async {
+  Future<void> downloadAll(
+    PodcastFeed feed,
+    List<PodcastEpisode> episodes,
+  ) async {
     _downloadAllRequested.add(feed.id);
     if (!_downloadAllRunning.add(feed.id)) return;
     try {
       while (_downloadAllRequested.remove(feed.id)) {
-        if (!(_ref.read(podcastDownloadAllFeedsProvider).value?.contains(feed.id) ?? false)) {
+        if (!(_ref
+                .read(podcastDownloadAllFeedsProvider)
+                .value
+                ?.contains(feed.id) ??
+            false)) {
           return;
         }
         await _downloadMany(
           feed,
           episodes,
           shouldContinue: () =>
-              _ref.read(podcastDownloadAllFeedsProvider).value?.contains(feed.id) ?? false,
+              _ref
+                  .read(podcastDownloadAllFeedsProvider)
+                  .value
+                  ?.contains(feed.id) ??
+              false,
         );
       }
     } finally {
@@ -683,12 +733,19 @@ class PodcastDownloadsNotifier extends StateNotifier<PodcastDownloadState> {
     }
   }
 
-  Future<void> downloadEpisodes(PodcastFeed feed, List<PodcastEpisode> episodes) async {
+  Future<void> downloadEpisodes(
+    PodcastFeed feed,
+    List<PodcastEpisode> episodes,
+  ) async {
     await _downloadMany(feed, episodes);
   }
 
   /// 按最新在前下载未保存的前 [count] 集，不依赖「全部下载」开关。
-  Future<void> downloadRecent(PodcastFeed feed, List<PodcastEpisode> episodes, int count) async {
+  Future<void> downloadRecent(
+    PodcastFeed feed,
+    List<PodcastEpisode> episodes,
+    int count,
+  ) async {
     final pending = PodcastDownloadLogic.recentPendingForDownload(
       episodes: episodes,
       statusFor: state.statusFor,
@@ -697,9 +754,16 @@ class PodcastDownloadsNotifier extends StateNotifier<PodcastDownloadState> {
     await downloadEpisodes(feed, pending);
   }
 
-  Future<void> downloadLatestIfEnabled(PodcastFeed feed, List<PodcastEpisode> episodes) async {
+  Future<void> downloadLatestIfEnabled(
+    PodcastFeed feed,
+    List<PodcastEpisode> episodes,
+  ) async {
     final pending = PodcastDownloadLogic.pendingLatestForAutoDownload(
-      enabled: _ref.read(podcastDownloadLatestFeedsProvider).value?.contains(feed.id) ?? false,
+      enabled: _ref
+              .read(podcastDownloadLatestFeedsProvider)
+              .value
+              ?.contains(feed.id) ??
+          false,
       episodes: episodes,
       statusFor: state.statusFor,
     );
@@ -723,10 +787,12 @@ class PodcastDownloadsNotifier extends StateNotifier<PodcastDownloadState> {
   Future<void> delete(String guid) async {
     final store = await _ref.read(podcastDownloadStoreProvider.future);
     await store.delete(guid);
-    final records = Map<String, PodcastDownloadRecord>.from(state.records)..remove(guid);
+    final records = Map<String, PodcastDownloadRecord>.from(state.records)
+      ..remove(guid);
     final progress = Map<String, double>.from(state.progress)..remove(guid);
     final failed = Set<String>.from(state.failed)..remove(guid);
-    state = state.copyWith(records: records, progress: progress, failed: failed);
+    state =
+        state.copyWith(records: records, progress: progress, failed: failed);
   }
 
   Future<void> deleteForFeed(String feedId) async {
@@ -810,10 +876,11 @@ class PodcastQueueController {
       final detail = await _ref.read(podcastServiceProvider).fetchFeed(feed);
       // 网络请求期间用户可能已手动切到别的单集，此时放弃自动推进，避免覆盖用户选择。
       if (_ref.read(currentPlaybackProvider)?.episodeGuid != guid) return;
-      final sort =
-          _ref.read(podcastEpisodeSortProvider).value ?? PodcastEpisodeSort.newestFirst;
+      final sort = _ref.read(podcastEpisodeSortProvider).value ??
+          PodcastEpisodeSort.newestFirst;
       final next = PodcastQueueLogic.nextAfter(
-        sortedEpisodes: PodcastPlaybackLogic.sortedEpisodes(detail.episodes, sort),
+        sortedEpisodes:
+            PodcastPlaybackLogic.sortedEpisodes(detail.episodes, sort),
         currentGuid: guid,
         listened: _ref.read(listenedEpisodeGuidsSetProvider),
       );
@@ -848,7 +915,9 @@ final podcastQueueSyncProvider = Provider<void>((ref) {
       final item = handler.currentItem;
       if (item?.episodeGuid != null && item!.episodeGuid!.isNotEmpty) {
         unawaited(
-          ref.read(listenedEpisodeGuidsProvider.notifier).markAsPlayed(item.episodeGuid!),
+          ref
+              .read(listenedEpisodeGuidsProvider.notifier)
+              .markAsPlayed(item.episodeGuid!),
         );
       }
       final sleep = ref.read(sleepTimerProvider);
@@ -856,7 +925,8 @@ final podcastQueueSyncProvider = Provider<void>((ref) {
         await ref.read(playerControllerProvider).stop();
         return;
       }
-      final remaining = SleepTimerLogic.afterEpisodeCompleted(sleep.remainingEpisodes);
+      final remaining =
+          SleepTimerLogic.afterEpisodeCompleted(sleep.remainingEpisodes);
       if (sleep.remainingEpisodes != null) {
         if (remaining == null || remaining <= 0) {
           await ref.read(sleepTimerProvider.notifier).stopBecauseTimer();
@@ -879,10 +949,12 @@ final podcastQueueSyncProvider = Provider<void>((ref) {
     };
   }
 
-  ref.listen<AsyncValue<RadioAudioHandler>>(audioHandlerProvider, (previous, next) {
+  ref.listen<AsyncValue<RadioAudioHandler>>(audioHandlerProvider,
+      (previous, next) {
     next.whenData(attach);
   });
-  ref.listen<AsyncValue<List<PodcastChapter>>>(playingEpisodeChaptersProvider, (_, next) {
+  ref.listen<AsyncValue<List<PodcastChapter>>>(playingEpisodeChaptersProvider,
+      (_, next) {
     next.whenData((chapters) {
       ref.read(audioHandlerProvider).whenData((handler) {
         handler.setPodcastChapters(chapters);
@@ -900,7 +972,8 @@ final episodeListFilterProvider =
     StateProvider<EpisodeListFilter>((ref) => EpisodeListFilter.all);
 
 final feedCacheProvider =
-    StateNotifierProvider<FeedCacheNotifier, Map<String, CachedFeedSnapshot>>((ref) {
+    StateNotifierProvider<FeedCacheNotifier, Map<String, CachedFeedSnapshot>>(
+        (ref) {
   return FeedCacheNotifier(ref);
 });
 
@@ -920,7 +993,8 @@ class FeedCacheNotifier extends StateNotifier<Map<String, CachedFeedSnapshot>> {
   Future<void> reload() => _load();
 
   Future<void> put(PodcastDetail detail) async {
-    final snapshot = FeedCacheLogic.snapshotFromDetail(detail, fetchedAt: DateTime.now());
+    final snapshot =
+        FeedCacheLogic.snapshotFromDetail(detail, fetchedAt: DateTime.now());
     final storage = await _ref.read(appStorageProvider.future);
     final latest = await storage.getFeedCache();
     latest[snapshot.feedId] = snapshot;
@@ -947,12 +1021,13 @@ class FeedCacheNotifier extends StateNotifier<Map<String, CachedFeedSnapshot>> {
 
 final refreshingFeedIdsProvider = StateProvider<Set<String>>((ref) => const {});
 
-final newEpisodeMutedFeedIdsProvider = StateNotifierProvider<MutedNewEpisodeFeedsNotifier,
-    AsyncValue<Set<String>>>((ref) {
+final newEpisodeMutedFeedIdsProvider = StateNotifierProvider<
+    MutedNewEpisodeFeedsNotifier, AsyncValue<Set<String>>>((ref) {
   return MutedNewEpisodeFeedsNotifier(ref);
 });
 
-class MutedNewEpisodeFeedsNotifier extends StateNotifier<AsyncValue<Set<String>>> {
+class MutedNewEpisodeFeedsNotifier
+    extends StateNotifier<AsyncValue<Set<String>>> {
   MutedNewEpisodeFeedsNotifier(this._ref) : super(const AsyncLoading()) {
     _load();
   }
@@ -996,18 +1071,20 @@ final podcastSearchIndexProvider = Provider<Map<String, Set<String>>>((ref) {
 /// 已打开「自动下载最新一集」的节目：缓存更新后下最新一集。
 final autoDownloadLatestSyncProvider = Provider<void>((ref) {
   Future<void> run() async {
-    final enabledIds = ref.read(podcastDownloadLatestFeedsProvider).value ?? const <String>{};
+    final enabledIds =
+        ref.read(podcastDownloadLatestFeedsProvider).value ?? const <String>{};
     if (enabledIds.isEmpty) return;
-    final feeds = ref.read(subscribedFeedsProvider).value ?? const <PodcastFeed>[];
+    final feeds =
+        ref.read(subscribedFeedsProvider).value ?? const <PodcastFeed>[];
     final cache = ref.read(feedCacheProvider);
     for (final feed in feeds) {
       if (!enabledIds.contains(feed.id)) continue;
       final snapshot = cache[feed.id];
       if (snapshot == null) continue;
       await ref.read(podcastDownloadsProvider.notifier).downloadLatestIfEnabled(
-            feed,
-            [for (final episode in snapshot.episodes) episode.toEpisode()],
-          );
+        feed,
+        [for (final episode in snapshot.episodes) episode.toEpisode()],
+      );
     }
   }
 

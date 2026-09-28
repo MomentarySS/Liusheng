@@ -104,7 +104,9 @@ class _CountingCatalogClient extends PodcastCatalogClient {
   Future<List<PodcastCatalogEntry>> fetch() async => const [];
 
   @override
-  Future<List<PodcastCatalogEntry>> fetchXyzrankCatalog({int pages = 10}) async {
+  Future<List<PodcastCatalogEntry>> fetchXyzrankCatalog({
+    int pages = 10,
+  }) async {
     xyzrankCalls++;
     return const [];
   }
@@ -115,12 +117,15 @@ class _FailingPodcastService extends PodcastService {
   _FailingPodcastService() : super(dio: Dio());
 
   @override
-  Future<PodcastDetail> fetchFeed(PodcastFeed feed, {bool forNewSubscription = false}) async {
+  Future<PodcastDetail> fetchFeed(
+    PodcastFeed feed, {
+    bool forNewSubscription = false,
+  }) async {
     throw const PodcastFeedException('模拟源不可达');
   }
 }
 
-/// 移动网络：仅WiFi下载必须拦住。
+/// 移动网络：仅 WiFi 下载必须拦住。
 class _CellularMonitor extends NetworkMonitor {
   @override
   Future<bool> get isOffline async => false;
@@ -134,14 +139,17 @@ class _CellularMonitor extends NetworkMonitor {
 
 List<Override> _overrides({bool stubDetail = true}) {
   return [
-    appStorageProvider.overrideWith((ref) async => AppStorage(await SharedPreferences.getInstance())),
+    appStorageProvider.overrideWith(
+      (ref) async => AppStorage(await SharedPreferences.getInstance()),
+    ),
     networkMonitorProvider.overrideWith((ref) => _OnlineMonitor()),
     isOfflineProvider.overrideWith((ref) => Stream<bool>.value(false)),
     podcastDownloadStoreProvider.overrideWith((ref) async {
       final storage = await ref.watch(appStorageProvider.future);
       return PodcastDownloadStore(storage, Directory.systemTemp);
     }),
-    if (stubDetail) podcastDetailProvider(_feed).overrideWith((ref) async => _detail),
+    if (stubDetail)
+      podcastDetailProvider(_feed).overrideWith((ref) async => _detail),
   ];
 }
 
@@ -159,7 +167,9 @@ Widget _app({List<Override> extra = const [], bool stubDetail = true}) {
 class _FakeSleepTimerNotifier extends SleepTimerNotifier {
   _FakeSleepTimerNotifier(super.ref, {required bool active}) {
     if (active) {
-      state = SleepTimerState(endsAt: DateTime.now().add(const Duration(minutes: 5)));
+      state = SleepTimerState(
+        endsAt: DateTime.now().add(const Duration(minutes: 5)),
+      );
     }
   }
 }
@@ -175,7 +185,8 @@ void main() {
     // 裸连（不开代理）实测就是这个形态：请求被网络拦下，返回 HTML/空内容。
     // 旧代码会抛 `type 'String' is not a subtype of type 'Map<String, dynamic>?'`。
     final dio = Dio()
-      ..httpClientAdapter = _PlainBodyAdapter('<html>blocked</html>', 'text/html');
+      ..httpClientAdapter =
+          _PlainBodyAdapter('<html>blocked</html>', 'text/html');
     final client = ItunesPodcastClient(dio: dio);
     await expectLater(
       client.search(query: '新闻', hideExplicit: true),
@@ -237,14 +248,16 @@ void main() {
     // 旧格式缓存（升级场景）：也算「用过搜索」，该刷新 —— 不能因为版本不符就跳过。
     expect(
       await callsFor({
-        PodcastCatalogLogic.storageKey: '{"v":1,"entries":[{"title":"x","rssUrl":"y"}]}',
+        PodcastCatalogLogic.storageKey:
+            '{"v":1,"entries":[{"title":"x","rssUrl":"y"}]}',
       }),
       1,
       reason: '旧格式缓存被当成「没搜过」，升级后不会预热',
     );
   });
 
-  group('播放器顶部状态位', () {    /// 窄带高度必须**恒定**：一旦跟着定时状态变，下面的封面就会被重新分配空间、
+  group('播放器顶部状态位', () {
+    /// 窄带高度必须**恒定**：一旦跟着定时状态变，下面的封面就会被重新分配空间、
     /// 视觉上跳一下（用户报过「播客那边会封面缩小」）。所以开/关两态各断言一次。
     const bandHeight = 24.0;
 
@@ -253,7 +266,9 @@ void main() {
         ProviderScope(
           overrides: [
             ..._overrides(),
-            sleepTimerProvider.overrideWith((ref) => _FakeSleepTimerNotifier(ref, active: active)),
+            sleepTimerProvider.overrideWith(
+              (ref) => _FakeSleepTimerNotifier(ref, active: active),
+            ),
           ],
           child: MaterialApp(
             theme: LiushengTheme.light(),
@@ -267,13 +282,20 @@ void main() {
     testWidgets('定时关着：窄带留空，高度不变', (tester) async {
       await pumpBand(tester, active: false);
       expect(find.byType(SleepTimerCountdown), findsNothing);
-      expect(tester.getSize(find.byType(SleepTimerStatusBand)).height, bandHeight);
+      expect(
+        tester.getSize(find.byType(SleepTimerStatusBand)).height,
+        bandHeight,
+      );
       expect(tester.takeException(), isNull);
     });
 
     testWidgets('定时开着：倒计时出现在窄带里，高度仍然不变', (tester) async {
       await pumpBand(tester, active: true);
-      expect(find.byType(SleepTimerCountdown), findsOneWidget, reason: '定时开着却没显示倒计时');
+      expect(
+        find.byType(SleepTimerCountdown),
+        findsOneWidget,
+        reason: '定时开着却没显示倒计时',
+      );
       expect(
         tester.getSize(find.byType(SleepTimerStatusBand)).height,
         bandHeight,
@@ -306,8 +328,8 @@ void main() {
       // 分组标题：跳过片头/尾 属于「播放」，不是下载 —— 面板名与分组要能自洽。
       expect(find.text('下载'), findsOneWidget);
       expect(find.text('播放'), findsOneWidget);
-      // 仅WiFi下载只在这里露状态（只读），改它的地方在设置里。
-      expect(find.text('仅WiFi下载'), findsOneWidget);
+      // 仅 WiFi 下载只在这里露状态（只读），改它的地方在设置里。
+      expect(find.text('仅 WiFi 下载'), findsOneWidget);
       expect(find.text('在 设置 → 播放与收听 里修改'), findsOneWidget);
       expect(tester.takeException(), isNull);
     });
@@ -324,7 +346,8 @@ void main() {
       await tester.tap(find.text('节目设置'));
       await tester.pumpAndSettle();
 
-      final screenHeight = tester.view.physicalSize.height / tester.view.devicePixelRatio;
+      final screenHeight =
+          tester.view.physicalSize.height / tester.view.devicePixelRatio;
       final tail = find.text('跳过片头/尾');
       expect(tail, findsOneWidget);
       expect(
@@ -378,7 +401,8 @@ void main() {
 
       final save = find.widgetWithText(FilledButton, '保存');
       expect(save, findsOneWidget);
-      final screenHeight = tester.view.physicalSize.height / tester.view.devicePixelRatio;
+      final screenHeight =
+          tester.view.physicalSize.height / tester.view.devicePixelRatio;
       expect(
         tester.getBottomLeft(save).dy,
         lessThanOrEqualTo(screenHeight),
@@ -409,7 +433,10 @@ void main() {
       await tester.pumpWidget(
         _app(
           stubDetail: false,
-          extra: [podcastServiceProvider.overrideWith((ref) => _FailingPodcastService())],
+          extra: [
+            podcastServiceProvider
+                .overrideWith((ref) => _FailingPodcastService()),
+          ],
         ),
       );
       await tester.pumpAndSettle();
@@ -425,7 +452,10 @@ void main() {
       await tester.pumpWidget(
         _app(
           stubDetail: false,
-          extra: [podcastServiceProvider.overrideWith((ref) => _FailingPodcastService())],
+          extra: [
+            podcastServiceProvider
+                .overrideWith((ref) => _FailingPodcastService()),
+          ],
         ),
       );
       await tester.pumpAndSettle();
@@ -435,9 +465,10 @@ void main() {
       expect(tester.takeException(), isNull);
     });
 
-    testWidgets('仅WiFi下载 从详情页消失，改挂到播放与收听', (tester) async {      await tester.pumpWidget(_app());
+    testWidgets('仅 WiFi 下载从详情页消失，改挂到播放与收听', (tester) async {
+      await tester.pumpWidget(_app());
       await tester.pumpAndSettle();
-      expect(find.text('仅WiFi下载'), findsNothing);
+      expect(find.text('仅 WiFi 下载'), findsNothing);
 
       await tester.pumpWidget(
         ProviderScope(
@@ -449,17 +480,28 @@ void main() {
         ),
       );
       await tester.pumpAndSettle();
-      expect(find.text('仅WiFi下载'), findsOneWidget);
-      expect(tester.widget<SwitchListTile>(find.widgetWithText(SwitchListTile, '仅WiFi下载')).value, isFalse);
+      expect(find.text('仅 WiFi 下载'), findsOneWidget);
+      expect(
+        tester
+            .widget<SwitchListTile>(
+              find.widgetWithText(SwitchListTile, '仅 WiFi 下载'),
+            )
+            .value,
+        isFalse,
+      );
     });
 
-    testWidgets('仅WiFi下载开着时，移动网络下「全部下载」被拦住', (tester) async {
+    testWidgets('仅 WiFi 下载开着时，移动网络下「全部下载」被拦住', (tester) async {
       // 说明：面板里那行只读状态会 watch `downloadWifiOnlyProvider`，等于把它
       // 预热了，所以这条 widget 测试**不再覆盖竞态**（旧代码在这条路径上也会
       // 拦住）。竞态本身由下面那条 resolveDownloadWifiOnly 的单元测试守着。
       SharedPreferences.setMockInitialValues({'download_wifi_only': true});
       await tester.pumpWidget(
-        _app(extra: [networkMonitorProvider.overrideWith((ref) => _CellularMonitor())]),
+        _app(
+          extra: [
+            networkMonitorProvider.overrideWith((ref) => _CellularMonitor()),
+          ],
+        ),
       );
       await tester.pumpAndSettle();
 
@@ -473,12 +515,13 @@ void main() {
       expect(
         find.text(NetworkStatusLogic.wifiOnlyBlocked),
         findsOneWidget,
-        reason: '移动网络下没有拦住「全部下载」—— 仅WiFi下载被当成了「没开」',
+        reason: '移动网络下没有拦住「全部下载」—— 仅 WiFi 下载被当成了「没开」',
       );
       expect(tester.widget<SwitchListTile>(downloadAll).value, isFalse);
     });
 
-    test('resolveDownloadWifiOnly：provider 没加载完时问存储，不把 null 当成「没开」', () async {      // 这条守着 D3 引入的竞态本身：`downloadWifiOnlyProvider` 是懒创建的
+    test('resolveDownloadWifiOnly：provider 没加载完时问存储，不把 null 当成「没开」', () async {
+      // 这条守着 D3 引入的竞态本身：`downloadWifiOnlyProvider` 是懒创建的
       // AsyncValue，第一次读它时还是 AsyncLoading、`.value == null`。
       // 详情页那个常驻开关搬走后就没人预热它了，而自动下载 / 滑动下载 /
       // 播放器下载图标这些路径都不会先 watch 它。
@@ -486,23 +529,33 @@ void main() {
       final storage = await AppStorage.create();
 
       expect(
-        await resolveDownloadWifiOnly(const AsyncLoading(), storage: Future.value(storage)),
+        await resolveDownloadWifiOnly(
+          const AsyncLoading(),
+          storage: Future.value(storage),
+        ),
         isTrue,
         reason: 'AsyncLoading 被当成「没开」了 —— 移动网络下会放行下载',
       );
       expect(
-        await resolveDownloadWifiOnly(const AsyncData(false), storage: Future.value(storage)),
+        await resolveDownloadWifiOnly(
+          const AsyncData(false),
+          storage: Future.value(storage),
+        ),
         isFalse,
         reason: '已加载的「关」要覆盖存储值',
       );
       expect(
-        await resolveDownloadWifiOnly(const AsyncData(true), storage: Future.value(storage)),
+        await resolveDownloadWifiOnly(
+          const AsyncData(true),
+          storage: Future.value(storage),
+        ),
         isTrue,
       );
     });
   });
 
-  group('播放器与迷你条（源码结构断言）', () {    late String nowPlaying;
+  group('播放器与迷你条（源码结构断言）', () {
+    late String nowPlaying;
     late String miniPlayer;
 
     setUp(() {
@@ -512,10 +565,22 @@ void main() {
     });
 
     test('辅助行不再用带文字标签的 chip，也不再有停止', () {
-      expect(nowPlaying.contains('ActionChip('), isFalse, reason: '辅助行又用回 chip 了');
-      expect(nowPlaying.contains('Icons.stop_outlined'), isFalse, reason: '「停止」又回到播放器了');
+      expect(
+        nowPlaying.contains('ActionChip('),
+        isFalse,
+        reason: '辅助行又用回 chip 了',
+      );
+      expect(
+        nowPlaying.contains('Icons.stop_outlined'),
+        isFalse,
+        reason: '「停止」又回到播放器了',
+      );
       // 只有迷你条的 ✕ 保留这个动作。
-      expect(miniPlayer.contains("tooltip: '停止'"), isTrue, reason: '「停止」现在一个入口都没有了');
+      expect(
+        miniPlayer.contains("tooltip: '停止'"),
+        isTrue,
+        reason: '「停止」现在一个入口都没有了',
+      );
       expect(miniPlayer.contains('playerControllerProvider).stop()'), isTrue);
     });
 
@@ -523,7 +588,11 @@ void main() {
       // 文案可能是三元（如「下载 / 重新下载」），所以断言的是标签字面量本身
       // 还在 —— 删掉某个 tooltip 就会失败。
       for (final label in ['简介', '下载', '重新下载', '睡眠定时', '关闭睡眠定时', '书签']) {
-        expect(nowPlaying.contains("'$label'"), isTrue, reason: '「$label」的文案没了');
+        expect(
+          nowPlaying.contains("'$label'"),
+          isTrue,
+          reason: '「$label」的文案没了',
+        );
       }
       // 已下载是状态不是动作：静态图标 + Semantics 标签。
       expect(nowPlaying.contains("label: '已下载'"), isTrue);

@@ -1,0 +1,84 @@
+package com.liusheng.liusheng
+
+import android.app.PendingIntent
+import android.appwidget.AppWidgetManager
+import android.appwidget.AppWidgetProvider
+import android.content.Context
+import android.content.Intent
+import android.net.Uri
+import android.os.Build
+import android.widget.RemoteViews
+import es.antonborri.home_widget.HomeWidgetPlugin
+
+class LiushengWidgetProvider : AppWidgetProvider() {
+    override fun onUpdate(
+        context: Context,
+        appWidgetManager: AppWidgetManager,
+        appWidgetIds: IntArray
+    ) {
+        val data = HomeWidgetPlugin.getData(context)
+        val title = data.getString("widget_title", context.getString(R.string.app_name))
+        val subtitle = data.getString("widget_subtitle", "点此打开")
+        val playing = data.getBoolean("widget_playing", false)
+        // B1 动态色开关：缺省走品牌色；App 开关 + API >= 31 才走 Material You accent1。
+        val useDynamic = data.getBoolean("widget_use_dynamic_color", false)
+        val dynamicOk = useDynamic && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S
+        val bgRes = if (dynamicOk) android.R.color.system_accent1_600
+                    else            R.color.widget_background
+        val onRes = if (dynamicOk) android.R.color.system_accent1_0
+                    else            R.color.widget_on_background
+
+        appWidgetIds.forEach { widgetId ->
+            val views = RemoteViews(context.packageName, R.layout.liusheng_widget)
+            views.setTextViewText(R.id.widget_title, title)
+            views.setTextViewText(R.id.widget_subtitle, subtitle)
+            views.setInt(R.id.widget_root, "setBackgroundColor", context.getColor(bgRes))
+            val onColor = context.getColor(onRes)
+            views.setTextColor(R.id.widget_title, onColor)
+            views.setTextColor(R.id.widget_subtitle, onColor)
+            views.setTextColor(R.id.widget_resume, onColor)
+            views.setImageViewResource(
+                R.id.widget_toggle,
+                if (playing) R.drawable.ic_widget_pause
+                else R.drawable.ic_widget_play
+            )
+            views.setOnClickPendingIntent(
+                R.id.widget_root,
+                launch(context, "liusheng://open", 0)
+            )
+            views.setOnClickPendingIntent(
+                R.id.widget_resume,
+                launch(context, "liusheng://resume", 2)
+            )
+            views.setOnClickPendingIntent(
+                R.id.widget_toggle,
+                launch(context, "liusheng://toggle", 1)
+            )
+            views.setOnClickPendingIntent(
+                R.id.widget_next,
+                launch(context, "liusheng://next", 3)
+            )
+            appWidgetManager.updateAppWidget(widgetId, views)
+        }
+    }
+
+    private fun launch(context: Context, uri: String, requestCode: Int): PendingIntent =
+        buildLaunchPendingIntent(context, uri, requestCode)
+
+    companion object {
+        // 暴露给 B2 待听 widget provider 复用（计划 §4.3）。B1+B2 都合后再考虑抽 helper。
+        @JvmStatic
+        fun buildLaunchPendingIntent(context: Context, uri: String, requestCode: Int): PendingIntent {
+            val intent = Intent(context, MainActivity::class.java).apply {
+                data = Uri.parse(uri)
+                flags = Intent.FLAG_ACTIVITY_SINGLE_TOP or Intent.FLAG_ACTIVITY_CLEAR_TOP
+            }
+            return PendingIntent.getActivity(
+                context,
+                requestCode,
+                intent,
+                PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+            )
+        }
+    }
+}

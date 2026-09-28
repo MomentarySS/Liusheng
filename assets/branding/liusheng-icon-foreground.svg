@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" role="img" aria-labelledby="title desc">
+  <title id="title">流声 adaptive icon foreground</title>
+  <desc id="desc">A compact pale listening pebble with a five-part deep-blue waveform.</desc>
+  <defs>
+    <linearGradient id="pebble" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#FAFCFF"/>
+      <stop offset="1" stop-color="#B5D7FF"/>
+    </linearGradient>
+  </defs>
+  <path d="M512 184C389 184 287 287 205 410C133 522 102 655 184 747C276 860 440 891 594 870C778 850 932 768 952 635C983 512 891 358 799 276C707 205 604 174 512 184Z" fill="url(#pebble)"/>
+  <g fill="#0D4F8C">
+    <circle cx="348" cy="532" r="30"/>
+    <rect x="400" y="435" width="59" height="195" rx="29"/>
+    <rect x="494" y="368" width="59" height="328" rx="29"/>
+    <rect x="589" y="430" width="59" height="205" rx="29"/>
+    <circle cx="747" cy="532" r="30"/>
+  </g>
+</svg>

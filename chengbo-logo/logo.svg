@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 320" role="img" aria-labelledby="title">
+  <title id="title">澄波 Chengbo logo</title>
+  <g transform="translate(32 32) scale(.5)">
+    <rect x="24" y="24" width="464" height="464" rx="118" fill="#0D4F8C"/>
+    <path d="M132 292V220 M194 342V170 M256 382V130 M318 342V170 M380 292V220" fill="none" stroke="#FFFFFF" stroke-width="32" stroke-linecap="round"/>
+  </g>
+  <text x="344" y="148" fill="#0D4F8C" font-family="'Noto Sans SC','Microsoft YaHei','Segoe UI',Arial,sans-serif" font-size="92" font-weight="700">澄波</text>
+  <text x="350" y="206" fill="#0D4F8C" font-family="'Segoe UI',Arial,sans-serif" font-size="27" font-weight="600" letter-spacing="6">CHENGBO</text>
+  <text x="350" y="254" fill="#0D4F8C" opacity=".72" font-family="'Noto Sans SC','Microsoft YaHei','Segoe UI',Arial,sans-serif" font-size="24">静水之上，波声不息</text>
+</svg>

@@ -1,0 +1,417 @@
+import 'dart:io';
+
+import 'package:dio/dio.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_test/flutter_test.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+
+import 'package:liusheng/core/brand.dart';
+import 'package:liusheng/core/network/itunes_podcast_client.dart';
+import 'package:liusheng/core/network/network_status.dart';
+import 'package:liusheng/core/network/podcast_catalog.dart';
+import 'package:liusheng/core/network/podcast_discovery.dart';
+import 'package:liusheng/core/network/podcast_index.dart';
+import 'package:liusheng/core/network/podcast_index_client.dart';
+import 'package:liusheng/core/network/station_probe.dart';
+import 'package:liusheng/core/network/stream_url_tester.dart';
+import 'package:liusheng/core/network/xyzrank_catalog_client.dart';
+import 'package:liusheng/core/models/radio_station.dart';
+import 'package:liusheng/core/providers/app_providers.dart';
+import 'package:liusheng/core/storage/app_storage.dart';
+import 'package:liusheng/core/storage/podcast_download_store.dart';
+import 'package:liusheng/core/theme.dart';
+import 'package:liusheng/features/podcast/podcast_discovery_screen.dart';
+import 'package:liusheng/features/podcast/podcast_providers.dart';
+import 'package:liusheng/features/radio/radio_providers.dart';
+import 'package:liusheng/features/radio/radio_screen.dart';
+import 'package:liusheng/features/radio/station_catalog_setup_screen.dart';
+import 'package:liusheng/features/settings/about_screen.dart';
+import 'package:liusheng/features/settings/appearance_screen.dart';
+import 'package:liusheng/features/settings/data_management_screen.dart';
+import 'package:liusheng/features/settings/unreachable_stations_screen.dart';
+import 'package:liusheng/shared/widgets/empty_state.dart';
+import 'package:liusheng/shared/widgets/station_probe_status.dart';
+
+class _NoopStationsNotifier extends StationsNotifier {
+  _NoopStationsNotifier(super.ref);
+
+  @override
+  Future<StationReloadResult> reload({bool forceProbe = false}) async {
+    state = const AsyncData([]);
+    return StationReloadResult.skipped;
+  }
+}
+
+class _OnlineMonitor extends NetworkMonitor {
+  @override
+  Future<bool> get isOffline async => false;
+
+  @override
+  Stream<bool> changes() => Stream<bool>.value(false);
+}
+
+class _FakeItunes extends ItunesPodcastClient {
+  _FakeItunes() : super(dio: Dio());
+
+  @override
+  Future<List<PodcastDiscoveryHit>> search({
+    required String query,
+    required bool hideExplicit,
+  }) async {
+    return const [
+      PodcastDiscoveryHit(
+        title: '公开节目',
+        feedUrl: 'https://example.com/feed.xml',
+        author: '作者',
+      ),
+      PodcastDiscoveryHit(
+        title: '转接源',
+        feedUrl: 'https://rsshub.app/podcast/x/1',
+        author: 'RSSHub',
+      ),
+      PodcastDiscoveryHit(
+        title: '喜马专辑',
+        feedUrl: 'https://www.ximalaya.com/album/123.xml',
+        author: '喜马',
+      ),
+    ];
+  }
+}
+
+class _FailingItunes extends ItunesPodcastClient {
+  _FailingItunes() : super(dio: Dio());
+
+  @override
+  Future<List<PodcastDiscoveryHit>> search({
+    required String query,
+    required bool hideExplicit,
+  }) async {
+    throw const ItunesPodcastException('iTunes 搜索失败: 连接超时');
+  }
+}
+
+class _SuccessfulStreamTester extends StreamUrlTester {
+  @override
+  Future<StreamTestResult> test(String rawUrl,
+          {CancelToken? cancelToken}) async =>
+      const StreamTestResult(true, '连接正常 · audio/mpeg');
+}
+
+class _FakeIndexClient extends PodcastIndexClient {
+  _FakeIndexClient() : super(dio: Dio());
+
+  @override
+  Future<List<PodcastIndexHit>> search({
+    required String query,
+    required String apiKey,
+    required String apiSecret,
+    required bool hideExplicit,
+    int Function()? unixTime,
+  }) async {
+    return const [
+      PodcastIndexHit(
+          title: '索引里的节目', feedUrl: 'https://example.com/index.xml'),
+    ];
+  }
+}
+
+class _FakeRank extends XyzrankCatalogClient {
+  _FakeRank() : super(dio: Dio());
+
+  @override
+  Future<XyzrankPage> fetchPodcasts({required int offset}) async {
+    return XyzrankPage(
+      items: const [
+        PodcastDiscoveryHit(
+            title: '热榜节目', feedUrl: 'https://rank.example/rss.xml'),
+      ],
+      total: 1,
+      offset: offset,
+    );
+  }
+}
+
+List<Override> _storageOverrides() {
+  return [
+    appStorageProvider.overrideWith(
+        (ref) async => AppStorage(await SharedPreferences.getInstance())),
+    networkMonitorProvider.overrideWith((ref) => _OnlineMonitor()),
+    isOfflineProvider.overrideWith((ref) => Stream<bool>.value(false)),
+    podcastDownloadStoreProvider.overrideWith((ref) async {
+      final storage = await ref.watch(appStorageProvider.future);
+      return PodcastDownloadStore(storage, Directory.systemTemp);
+    }),
+    stationsProvider.overrideWith(_NoopStationsNotifier.new),
+  ];
+}
+
+Widget _app(Widget home, {List<Override> extra = const []}) {
+  return ProviderScope(
+    overrides: [..._storageOverrides(), ...extra],
+    child: MaterialApp(
+      theme: LiushengTheme.light(),
+      home: home,
+    ),
+  );
+}
+
+void main() {
+  TestWidgetsFlutterBinding.ensureInitialized();
+
+  setUp(() {
+    SharedPreferences.setMockInitialValues({});
+  });
+
+  testWidgets('StationProbeStatus shows cancel and listen-early copy',
+      (tester) async {
+    var cancelled = false;
+    await tester.pumpWidget(
+      MaterialApp(
+        theme: LiushengTheme.light(),
+        home: Scaffold(
+          body: StationProbeStatus(
+            progress: const StationProbeProgress(
+                done: 4, total: 10, probing: true, found: 2),
+            onCancel: () => cancelled = true,
+          ),
+        ),
+      ),
+    );
+    expect(find.text(StationProbeLogic.cancelLabel), findsOneWidget);
+    expect(find.textContaining('可先听'), findsOneWidget);
+    expect(find.textContaining('4 / 10'), findsOneWidget);
+    await tester.tap(find.text(StationProbeLogic.cancelLabel));
+    expect(cancelled, isTrue);
+  });
+
+  testWidgets(
+      'unreachable station can be tested without changing its saved source',
+      (tester) async {
+    const station = RadioStation(
+      id: 'broken',
+      name: '测试电台',
+      streamUrl: 'https://example.com/radio',
+    );
+    await tester.pumpWidget(
+      _app(
+        const UnreachableStationsScreen(),
+        extra: [
+          unreachableStationsProvider.overrideWith((ref) => const [station]),
+          streamUrlTesterProvider
+              .overrideWith((ref) => _SuccessfulStreamTester()),
+        ],
+      ),
+    );
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 100));
+    expect(find.text(station.streamUrl), findsOneWidget);
+    await tester.tap(find.byTooltip('检测此台'));
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 100));
+    expect(find.text('连接正常 · audio/mpeg'), findsOneWidget);
+    expect(find.text(station.streamUrl), findsNothing);
+    final storage = AppStorage(await SharedPreferences.getInstance());
+    expect(await storage.getStationPatches(), isEmpty);
+  });
+
+  testWidgets('catalog setup requires at least one pick', (tester) async {
+    await tester
+        .pumpWidget(_app(const StationCatalogSetupScreen(firstLaunch: true)));
+    await tester.pumpAndSettle();
+    expect(find.text('选择想听的电台'), findsOneWidget);
+    await tester.tap(find.text('开始检测并进入'));
+    await tester.pump();
+    expect(find.text('请至少选择一种类型或一个省份'), findsOneWidget);
+  });
+
+  testWidgets(
+      'data management shows backup actions and empty clipboard restore',
+      (tester) async {
+    tester.binding.defaultBinaryMessenger
+        .setMockMethodCallHandler(SystemChannels.platform, (call) async {
+      if (call.method == 'Clipboard.getData') {
+        return <String, dynamic>{'text': ''};
+      }
+      return null;
+    });
+    addTearDown(() {
+      tester.binding.defaultBinaryMessenger
+          .setMockMethodCallHandler(SystemChannels.platform, null);
+    });
+    await tester.pumpWidget(_app(const DataManagementScreen()));
+    await tester.pumpAndSettle();
+    expect(find.text('导出本机备份'), findsOneWidget);
+    expect(find.text('从剪贴板恢复'), findsOneWidget);
+    expect(find.text('从文件恢复'), findsOneWidget);
+    expect(find.text('选择文件'), findsOneWidget);
+    await tester.tap(find.widgetWithText(TextButton, '恢复'));
+    await tester.pumpAndSettle();
+    expect(find.text('剪贴板是空的'), findsOneWidget);
+  });
+
+  testWidgets('podcast discovery searches iTunes without API keys',
+      (tester) async {
+    await tester.pumpWidget(
+      _app(
+        const PodcastDiscoveryScreen(),
+        extra: [
+          itunesPodcastClientProvider.overrideWith((ref) => _FakeItunes()),
+          xyzrankCatalogClientProvider.overrideWith((ref) => _FakeRank()),
+        ],
+      ),
+    );
+    await tester.pumpAndSettle();
+    expect(find.text('发现播客'), findsOneWidget);
+    expect(find.text('搜索'), findsWidgets);
+    expect(find.text('中文热榜'), findsOneWidget);
+    expect(find.textContaining('免密钥'), findsOneWidget);
+
+    await tester.enterText(find.byType(TextField).first, '新闻');
+    await tester.testTextInput.receiveAction(TextInputAction.search);
+    await tester.pumpAndSettle();
+    expect(find.text('公开节目', skipOffstage: false), findsOneWidget);
+    // 只有第三方转接源被标成无法订阅；喜马拉雅这种平台自己的 RSS 出口放行。
+    expect(find.text('无法在流声订阅', skipOffstage: false), findsOneWidget);
+    expect(find.text('喜马专辑', skipOffstage: false), findsOneWidget);
+    expect(find.text('订阅', skipOffstage: false), findsNWidgets(2));
+
+    await tester.tap(find.text('中文热榜'));
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 600));
+    await tester.pump();
+    expect(find.text('热榜节目', skipOffstage: false), findsOneWidget);
+  });
+
+  testWidgets('iTunes 搜不了且没填 Podcast Index 密钥时，提示要能照做', (tester) async {
+    await tester.pumpWidget(
+      _app(
+        const PodcastDiscoveryScreen(),
+        extra: [
+          itunesPodcastClientProvider.overrideWith((ref) => _FailingItunes()),
+          // 目录也空：这条测的是「三级都不行」时的提示。
+          podcastCatalogProvider.overrideWith((ref) async => const []),
+        ],
+      ),
+    );
+    await tester.pumpAndSettle();
+    await tester.enterText(find.byType(TextField).first, '新闻');
+    await tester.testTextInput.receiveAction(TextInputAction.search);
+    await tester.pumpAndSettle();
+
+    // 不能只说「搜索失败，请稍后再试」—— 要告诉用户去哪儿填密钥。
+    expect(find.textContaining('免费密钥'), findsOneWidget);
+    expect(find.textContaining('连接超时'), findsOneWidget);
+  });
+
+  testWidgets('iTunes 搜不了但填了 Podcast Index 密钥时自动兜底', (tester) async {
+    SharedPreferences.setMockInitialValues({
+      'podcast_index_api_key': 'k',
+      'podcast_index_api_secret': 's',
+    });
+    await tester.pumpWidget(
+      _app(
+        const PodcastDiscoveryScreen(),
+        extra: [
+          itunesPodcastClientProvider.overrideWith((ref) => _FailingItunes()),
+          podcastIndexClientProvider.overrideWith((ref) => _FakeIndexClient()),
+          podcastCatalogProvider.overrideWith((ref) async => const []),
+        ],
+      ),
+    );
+    await tester.pumpAndSettle();
+    await tester.enterText(find.byType(TextField).first, '新闻');
+    await tester.testTextInput.receiveAction(TextInputAction.search);
+    await tester.pumpAndSettle();
+
+    expect(find.text('索引里的节目'), findsOneWidget,
+        reason: '没有自动兜底到 Podcast Index');
+    expect(find.text('来自 Podcast Index'), findsOneWidget,
+        reason: '没标明结果来自哪个目录');
+  });
+
+  testWidgets('两个在线目录都不行时，用本机目录兜底（零配置）', (tester) async {
+    const catalog = [
+      PodcastCatalogEntry(
+        title: '目录里的节目',
+        rssUrl: 'https://example.com/cat.xml',
+        author: '目录作者',
+      ),
+    ];
+    await tester.pumpWidget(
+      _app(
+        const PodcastDiscoveryScreen(),
+        extra: [
+          itunesPodcastClientProvider.overrideWith((ref) => _FailingItunes()),
+          podcastCatalogProvider.overrideWith((ref) async => catalog),
+        ],
+      ),
+    );
+    await tester.pumpAndSettle();
+    await tester.enterText(find.byType(TextField).first, '目录');
+    await tester.testTextInput.receiveAction(TextInputAction.search);
+    await tester.pumpAndSettle();
+
+    expect(find.text('目录里的节目'), findsOneWidget, reason: '没有兜底到本机目录');
+    expect(find.textContaining('本机目录'), findsOneWidget, reason: '没标明结果来自本机目录');
+  });
+
+  testWidgets('appearance compact list switch defaults off', (tester) async {
+    await tester.pumpWidget(_app(const AppearanceScreen()));
+    await tester.pumpAndSettle();
+    final tile = find.widgetWithText(SwitchListTile, '紧凑列表');
+    expect(tile, findsOneWidget);
+    expect(tester.widget<SwitchListTile>(tile).value, isFalse);
+  });
+
+  testWidgets('radio screen empty filter shows 显示全部', (tester) async {
+    await tester.pumpWidget(
+      _app(
+        const Scaffold(body: RadioScreen()),
+        extra: [
+          stationSearchProvider.overrideWith((ref) => 'zzzz-no-match'),
+        ],
+      ),
+    );
+    await tester.pumpAndSettle();
+    expect(find.text('没有找到匹配的电台'), findsOneWidget);
+    expect(find.text('显示全部'), findsOneWidget);
+    expect(find.text('64k+'), findsOneWidget);
+  });
+
+  testWidgets('AppEmptyState 显示全部 fires the action', (tester) async {
+    var cleared = false;
+    await tester.pumpWidget(
+      MaterialApp(
+        theme: LiushengTheme.light(),
+        home: Scaffold(
+          body: AppEmptyState(
+            icon: Icons.radio_outlined,
+            message: '没有找到匹配的电台',
+            actionLabel: '显示全部',
+            onAction: () => cleared = true,
+          ),
+        ),
+      ),
+    );
+    await tester.tap(find.text('显示全部'));
+    expect(cleared, isTrue);
+  });
+
+  testWidgets('About screen renders tagline and brand slogan', (tester) async {
+    await tester.pumpWidget(
+      _app(
+        const Scaffold(body: AboutScreen()),
+      ),
+    );
+    // Full subtitle line (tagline + version) is one Text widget.
+    final subtitleLine =
+        '${AppBrand.displayName} · ${AppBrand.tagline} v${AppBrand.version}';
+    expect(find.text(subtitleLine), findsOneWidget);
+    // slogan is its own Text widget below the subtitle.
+    expect(find.text(AppBrand.slogan), findsOneWidget);
+    // tagline appears inside the subtitle (substring match).
+    expect(find.textContaining(AppBrand.tagline), findsAtLeastNWidgets(1));
+  });
+}

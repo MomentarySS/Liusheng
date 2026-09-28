@@ -139,8 +139,10 @@ class _RadioFavoritesTab extends ConsumerWidget {
         icon: offline ? Icons.wifi_off : Icons.error_outline,
         message:
             NetworkStatusLogic.loadFailureMessage('电台列表加载失败', offline: offline),
-        detail: NetworkStatusLogic.loadFailureDetail(stationsAsync.error!,
-            offline: offline),
+        detail: NetworkStatusLogic.loadFailureDetail(
+          stationsAsync.error!,
+          offline: offline,
+        ),
         actionLabel: '重试',
         onAction: () => ref.read(stationsProvider.notifier).reload(),
       );
@@ -160,7 +162,7 @@ class _RadioFavoritesTab extends ConsumerWidget {
           padding:
               const EdgeInsets.only(bottom: LiushengTheme.listBottomPadding),
           children: [
-            for (final station in stations) StationListTile(station: station)
+            for (final station in stations) StationListTile(station: station),
           ],
         );
       },
@@ -233,8 +235,9 @@ class _PodcastFavoritesTab extends ConsumerWidget {
               ..sort(
                 (a, b) =>
                     (b.publishedAt ?? DateTime.fromMillisecondsSinceEpoch(0))
-                        .compareTo(a.publishedAt ??
-                            DateTime.fromMillisecondsSinceEpoch(0)),
+                        .compareTo(
+                  a.publishedAt ?? DateTime.fromMillisecondsSinceEpoch(0),
+                ),
               );
             if (sorted.isEmpty) {
               return const AppEmptyState(
@@ -244,10 +247,10 @@ class _PodcastFavoritesTab extends ConsumerWidget {
               );
             }
             return ListView(
-              padding:
-                  const EdgeInsets.only(bottom: LiushengTheme.listBottomPadding),
+              padding: const EdgeInsets.only(
+                  bottom: LiushengTheme.listBottomPadding,),
               children: [
-                for (final item in sorted) _PodcastFavoriteTile(item: item)
+                for (final item in sorted) _PodcastFavoriteTile(item: item),
               ],
             );
           },
@@ -287,7 +290,10 @@ class _PodcastFavoriteTile extends ConsumerWidget {
       leading: NowPlayingLeading(
         active: isCurrent,
         child: StationArtwork(
-            url: item.artworkUrl, size: 48, icon: Icons.podcasts),
+          url: item.artworkUrl,
+          size: 48,
+          icon: Icons.podcasts,
+        ),
       ),
       title: Text(item.title, maxLines: 2, overflow: TextOverflow.ellipsis),
       subtitle: Text(subtitle, maxLines: 2, overflow: TextOverflow.ellipsis),
@@ -429,7 +435,8 @@ class _RecentTab extends ConsumerWidget {
         ),
         recent.when(
           loading: () => StationProbeStatus(
-              progress: ref.watch(stationProbeProgressProvider)),
+            progress: ref.watch(stationProbeProgressProvider),
+          ),
           error: (error, _) => ListTile(title: Text('加载历史失败: $error')),
           data: (stations) {
             if (stations.isEmpty) {
@@ -442,7 +449,7 @@ class _RecentTab extends ConsumerWidget {
             return Column(
               children: [
                 for (final station in stations)
-                  StationListTile(station: station)
+                  StationListTile(station: station),
               ],
             );
           },
@@ -459,11 +466,13 @@ class _RecentTab extends ConsumerWidget {
             content: const Text('将清空播客收听记录列表，不会删除订阅，也不会清除单集播放进度。'),
             actions: [
               TextButton(
-                  onPressed: () => Navigator.pop(context, false),
-                  child: const Text('取消')),
+                onPressed: () => Navigator.pop(context, false),
+                child: const Text('取消'),
+              ),
               FilledButton(
-                  onPressed: () => Navigator.pop(context, true),
-                  child: const Text('清除')),
+                onPressed: () => Navigator.pop(context, true),
+                child: const Text('清除'),
+              ),
             ],
           ),
         ) ??
@@ -484,11 +493,13 @@ class _RecentTab extends ConsumerWidget {
             content: const Text('将清空电台的最近播放记录，不影响收藏和正在播放。'),
             actions: [
               TextButton(
-                  onPressed: () => Navigator.pop(context, false),
-                  child: const Text('取消')),
+                onPressed: () => Navigator.pop(context, false),
+                child: const Text('取消'),
+              ),
               FilledButton(
-                  onPressed: () => Navigator.pop(context, true),
-                  child: const Text('清除')),
+                onPressed: () => Navigator.pop(context, true),
+                child: const Text('清除'),
+              ),
             ],
           ),
         ) ??
@@ -503,8 +514,11 @@ class _RecentTab extends ConsumerWidget {
 }
 
 class _SectionHeader extends StatelessWidget {
-  const _SectionHeader(
-      {required this.title, required this.icon, this.trailing});
+  const _SectionHeader({
+    required this.title,
+    required this.icon,
+    this.trailing,
+  });
 
   final String title;
   final IconData icon;

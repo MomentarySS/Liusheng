@@ -8,13 +8,7 @@ Format follows [Keep a Changelog](https://keepachangelog.com/zh-CN/), and the pr
 
 ## [Unreleased]
 
-### Changed
-
-- 品牌由「澄波」更名为「流声」，并建立全新的 Liusheng 技术身份：Dart 包名、Android applicationId、Windows 可执行文件、User-Agent 与新深链统一迁移。
-- 作为 Chengbo 的全新升级版，保留旧 `chengbo://` 深链、`chengbo.device-backup` 备份格式和旧播客状态目录的读取兼容；历史版本正文不改写。
-- Android applicationId 变更带来的旧包私有数据隔离已在文档和数据管理页明确：收藏、订阅、设置、历史与播客进度走旧 App 导出 / 流声恢复；下载音频、缓存和旧 Widget 不自动迁移。
-- Windows 开机启动迁移到 `Liusheng` 注册表项；启用新项时清理旧 `Chengbo` 项。
-- 修复本机备份恢复入口：导出的 JSON 现在可以直接通过「从文件恢复」导入，剪贴板恢复继续保留。
+<!-- 后续改动从这里开始记录；本次 Liusheng 升级已归档到 v2.2.1。 -->
 
 ## [2.2.1] - 2026-09-24
 
@@ -30,6 +24,13 @@ Format follows [Keep a Changelog](https://keepachangelog.com/zh-CN/), and the pr
 - 设置首页按内容、播放、数据分组；播客首页只预览 3 条未听单集，可进入独立列表查看全部，避免订阅节目被长列表挤到下方
 - 电台分类筛选栏调整为与收藏页一致的标签导航样式
 - 移除废土终端、第三新东京、夜之城三套氛围皮肤，保留澄波主题、浅深色和动态配色
+- 品牌由「澄波」更名为「流声」，并建立全新的 Liusheng 技术身份：Dart 包名、Android applicationId、Windows 可执行文件、User-Agent 与新深链统一迁移。
+- 作为 Chengbo 的全新升级版，保留旧 `chengbo://` 深链、`chengbo.device-backup` 备份格式和旧播客状态目录的读取兼容；历史版本正文不改写。
+- Android applicationId 变更带来的旧包私有数据隔离已在文档和数据管理页明确：收藏、订阅、设置、历史与播客进度走旧 App 导出 / 流声恢复；下载音频、缓存和旧 Widget 不自动迁移。
+- Windows 开机启动迁移到 `Liusheng` 注册表项；启用新项时清理旧 `Chengbo` 项。
+
+### Fixed
+- 修复本机备份恢复入口：导出的 JSON 现在可以直接通过「从文件恢复」导入，剪贴板恢复继续保留。
 
 ## [2.2.0] - 2026-09-24
 

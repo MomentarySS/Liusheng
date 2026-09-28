@@ -94,8 +94,10 @@ class _FailingItunes extends ItunesPodcastClient {
 
 class _SuccessfulStreamTester extends StreamUrlTester {
   @override
-  Future<StreamTestResult> test(String rawUrl,
-          {CancelToken? cancelToken}) async =>
+  Future<StreamTestResult> test(
+    String rawUrl, {
+    CancelToken? cancelToken,
+  }) async =>
       const StreamTestResult(true, '连接正常 · audio/mpeg');
 }
 
@@ -112,7 +114,9 @@ class _FakeIndexClient extends PodcastIndexClient {
   }) async {
     return const [
       PodcastIndexHit(
-          title: '索引里的节目', feedUrl: 'https://example.com/index.xml'),
+        title: '索引里的节目',
+        feedUrl: 'https://example.com/index.xml',
+      ),
     ];
   }
 }
@@ -125,7 +129,9 @@ class _FakeRank extends XyzrankCatalogClient {
     return XyzrankPage(
       items: const [
         PodcastDiscoveryHit(
-            title: '热榜节目', feedUrl: 'https://rank.example/rss.xml'),
+          title: '热榜节目',
+          feedUrl: 'https://rank.example/rss.xml',
+        ),
       ],
       total: 1,
       offset: offset,
@@ -136,7 +142,8 @@ class _FakeRank extends XyzrankCatalogClient {
 List<Override> _storageOverrides() {
   return [
     appStorageProvider.overrideWith(
-        (ref) async => AppStorage(await SharedPreferences.getInstance())),
+      (ref) async => AppStorage(await SharedPreferences.getInstance()),
+    ),
     networkMonitorProvider.overrideWith((ref) => _OnlineMonitor()),
     isOfflineProvider.overrideWith((ref) => Stream<bool>.value(false)),
     podcastDownloadStoreProvider.overrideWith((ref) async {
@@ -173,7 +180,11 @@ void main() {
         home: Scaffold(
           body: StationProbeStatus(
             progress: const StationProbeProgress(
-                done: 4, total: 10, probing: true, found: 2),
+              done: 4,
+              total: 10,
+              probing: true,
+              found: 2,
+            ),
             onCancel: () => cancelled = true,
           ),
         ),
@@ -325,10 +336,16 @@ void main() {
     await tester.testTextInput.receiveAction(TextInputAction.search);
     await tester.pumpAndSettle();
 
-    expect(find.text('索引里的节目'), findsOneWidget,
-        reason: '没有自动兜底到 Podcast Index');
-    expect(find.text('来自 Podcast Index'), findsOneWidget,
-        reason: '没标明结果来自哪个目录');
+    expect(
+      find.text('索引里的节目'),
+      findsOneWidget,
+      reason: '没有自动兜底到 Podcast Index',
+    );
+    expect(
+      find.text('来自 Podcast Index'),
+      findsOneWidget,
+      reason: '没标明结果来自哪个目录',
+    );
   });
 
   testWidgets('两个在线目录都不行时，用本机目录兜底（零配置）', (tester) async {

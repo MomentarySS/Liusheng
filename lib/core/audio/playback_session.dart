@@ -7,7 +7,8 @@ enum PlaybackSessionProfile { music, speech }
 
 /// Android 音频会话：电台 music、播客 speech。只在种类变化时 configure。
 abstract final class PlaybackSessionLogic {
-  static PlaybackSessionProfile get startupProfile => PlaybackSessionProfile.music;
+  static PlaybackSessionProfile get startupProfile =>
+      PlaybackSessionProfile.music;
 
   static bool offered({
     TargetPlatform? platform,
@@ -41,10 +42,14 @@ abstract final class PlaybackSession {
     if (!PlaybackSessionLogic.offeredOnThisPlatform) return false;
     try {
       final session = await AudioSession.instance;
-      await session.configure(switch (profile) {
-        PlaybackSessionProfile.music => const AudioSessionConfiguration.music(),
-        PlaybackSessionProfile.speech => const AudioSessionConfiguration.speech(),
-      });
+      await session.configure(
+        switch (profile) {
+          PlaybackSessionProfile.music =>
+            const AudioSessionConfiguration.music(),
+          PlaybackSessionProfile.speech =>
+            const AudioSessionConfiguration.speech(),
+        },
+      );
       return true;
     } catch (_) {
       return false;

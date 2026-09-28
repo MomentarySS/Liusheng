@@ -52,11 +52,13 @@ class _DataManagementScreenState extends ConsumerState<DataManagementScreen> {
             content: const Text('将删除已缓存的电台台标图片，不会影响收藏和播放记录。'),
             actions: [
               TextButton(
-                  onPressed: () => Navigator.pop(context, false),
-                  child: const Text('取消')),
+                onPressed: () => Navigator.pop(context, false),
+                child: const Text('取消'),
+              ),
               FilledButton(
-                  onPressed: () => Navigator.pop(context, true),
-                  child: const Text('清除')),
+                onPressed: () => Navigator.pop(context, true),
+                child: const Text('清除'),
+              ),
             ],
           ),
         ) ??
@@ -79,11 +81,13 @@ class _DataManagementScreenState extends ConsumerState<DataManagementScreen> {
             content: const Text('将删除已下载的播客音频。直播电台本来就不会保存。订阅和播放进度不受影响。'),
             actions: [
               TextButton(
-                  onPressed: () => Navigator.pop(context, false),
-                  child: const Text('取消')),
+                onPressed: () => Navigator.pop(context, false),
+                child: const Text('取消'),
+              ),
               FilledButton(
-                  onPressed: () => Navigator.pop(context, true),
-                  child: const Text('清除')),
+                onPressed: () => Navigator.pop(context, true),
+                child: const Text('清除'),
+              ),
             ],
           ),
         ) ??
@@ -185,11 +189,13 @@ class _DataManagementScreenState extends ConsumerState<DataManagementScreen> {
             ),
             actions: [
               TextButton(
-                  onPressed: () => Navigator.pop(context, false),
-                  child: const Text('取消')),
+                onPressed: () => Navigator.pop(context, false),
+                child: const Text('取消'),
+              ),
               FilledButton(
-                  onPressed: () => Navigator.pop(context, true),
-                  child: const Text('恢复')),
+                onPressed: () => Navigator.pop(context, true),
+                child: const Text('恢复'),
+              ),
             ],
           ),
         ) ??
@@ -249,9 +255,12 @@ class _DataManagementScreenState extends ConsumerState<DataManagementScreen> {
                 ? const SizedBox(
                     width: 24,
                     height: 24,
-                    child: CircularProgressIndicator(strokeWidth: 2))
+                    child: CircularProgressIndicator(strokeWidth: 2),
+                  )
                 : TextButton(
-                    onPressed: _confirmClearCache, child: const Text('清除')),
+                    onPressed: _confirmClearCache,
+                    child: const Text('清除'),
+                  ),
           ),
           ListTile(
             leading: const Icon(Icons.podcasts_outlined),
@@ -263,13 +272,15 @@ class _DataManagementScreenState extends ConsumerState<DataManagementScreen> {
             ),
             onTap: () => Navigator.of(context).push(
               MaterialPageRoute<void>(
-                  builder: (_) => const PodcastDownloadsScreen()),
+                builder: (_) => const PodcastDownloadsScreen(),
+              ),
             ),
             trailing: _clearingPodcasts
                 ? const SizedBox(
                     width: 24,
                     height: 24,
-                    child: CircularProgressIndicator(strokeWidth: 2))
+                    child: CircularProgressIndicator(strokeWidth: 2),
+                  )
                 : TextButton(
                     onPressed: podcastDownloads.records.isEmpty
                         ? null
@@ -291,12 +302,14 @@ class _DataManagementScreenState extends ConsumerState<DataManagementScreen> {
             leading: const Icon(Icons.file_upload_outlined),
             title: const Text('导出本机备份'),
             subtitle: const Text(
-                '可用于 Chengbo → 流声迁移；含收藏、订阅、进度、隐藏台和收听范围，不含直播、下载音频和缓存'),
+              '可用于 Chengbo → 流声迁移；含收藏、订阅、进度、隐藏台和收听范围，不含直播、下载音频和缓存',
+            ),
             trailing: _exportingBackup
                 ? const SizedBox(
                     width: 24,
                     height: 24,
-                    child: CircularProgressIndicator(strokeWidth: 2))
+                    child: CircularProgressIndicator(strokeWidth: 2),
+                  )
                 : TextButton(onPressed: _exportBackup, child: const Text('导出')),
           ),
           ListTile(
@@ -307,9 +320,12 @@ class _DataManagementScreenState extends ConsumerState<DataManagementScreen> {
                 ? const SizedBox(
                     width: 24,
                     height: 24,
-                    child: CircularProgressIndicator(strokeWidth: 2))
+                    child: CircularProgressIndicator(strokeWidth: 2),
+                  )
                 : TextButton(
-                    onPressed: _restoreBackup, child: const Text('恢复')),
+                    onPressed: _restoreBackup,
+                    child: const Text('恢复'),
+                  ),
           ),
           ListTile(
             leading: const Icon(Icons.folder_open_outlined),
@@ -319,7 +335,8 @@ class _DataManagementScreenState extends ConsumerState<DataManagementScreen> {
                 ? const SizedBox(
                     width: 24,
                     height: 24,
-                    child: CircularProgressIndicator(strokeWidth: 2))
+                    child: CircularProgressIndicator(strokeWidth: 2),
+                  )
                 : TextButton(
                     onPressed: _restoreBackupFromFile,
                     child: const Text('选择文件'),

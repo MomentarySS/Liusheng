@@ -738,7 +738,8 @@ class DeskWindowModeNotifier extends StateNotifier<AsyncValue<DeskWindowMode>> {
       final position = stored == null
           ? await DeskSidebarWindowController.defaultPosition()
           : await DeskSidebarWindowController.clampToWorkArea(
-              Offset(stored[0], stored[1]));
+              Offset(stored[0], stored[1]),
+            );
       if (position != null) await windowManager.setPosition(position);
     }
   }
@@ -753,7 +754,8 @@ class DeskWindowModeNotifier extends StateNotifier<AsyncValue<DeskWindowMode>> {
       final position = stored == null
           ? await DeskSidebarWindowController.defaultPosition()
           : await DeskSidebarWindowController.clampToWorkArea(
-              Offset(stored[0], stored[1]));
+              Offset(stored[0], stored[1]),
+            );
       if (position != null) await windowManager.setPosition(position);
     }
   }
@@ -1112,8 +1114,11 @@ class FavoriteEpisodeGuidsNotifier
     state = AsyncData(await storage.getFavoriteEpisodeGuids());
   }
 
-  Future<void> toggle(String episodeGuid,
-      {PodcastFeed? feed, PodcastEpisode? episode}) async {
+  Future<void> toggle(
+    String episodeGuid, {
+    PodcastFeed? feed,
+    PodcastEpisode? episode,
+  }) async {
     if (episodeGuid.isEmpty) return;
     final current = state.value ?? <String>{};
     final removing = current.contains(episodeGuid);

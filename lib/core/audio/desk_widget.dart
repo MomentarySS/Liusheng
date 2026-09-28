@@ -95,8 +95,10 @@ abstract final class DeskWidgetLogic {
 
   /// 序列化为 JSON 字符串。空列表返回 `[]`（原生侧据此显示空态）。
   /// `take(max)` 语义：超过 max 截断。
-  static String episodesPayload(List<InboxItem> items,
-      {int max = maxEpisodes}) {
+  static String episodesPayload(
+    List<InboxItem> items, {
+    int max = maxEpisodes,
+  }) {
     final rows = items.take(max).map(
           (item) => {
             'title': item.episode.title,
@@ -139,8 +141,9 @@ abstract final class DeskWidgetLogic {
   /// 冷启动只处理一条 URI，避免 Activity 与 HomeWidget 各触发一次播停/切台。
   static Uri? initialLaunchUri({Uri? activityUri, Uri? homeWidgetUri}) {
     if (actionForUri(activityUri) != DeskWidgetAction.none) return activityUri;
-    if (actionForUri(homeWidgetUri) != DeskWidgetAction.none)
+    if (actionForUri(homeWidgetUri) != DeskWidgetAction.none) {
       return homeWidgetUri;
+    }
     return null;
   }
 

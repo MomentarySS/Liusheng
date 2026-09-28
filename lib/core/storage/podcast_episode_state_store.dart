@@ -46,7 +46,7 @@ class PodcastEpisodeState {
     return {
       'progress': {
         for (final entry in progress.entries)
-          entry.key: entry.value.inMilliseconds
+          entry.key: entry.value.inMilliseconds,
       },
       'listened': listenedGuids.toList()..sort(),
     };
@@ -97,7 +97,8 @@ class PodcastEpisodeStateStore {
         await root.create(recursive: true);
       }
       final file = File(
-          '${root.path}${Platform.pathSeparator}podcast_episode_state.json');
+        '${root.path}${Platform.pathSeparator}podcast_episode_state.json',
+      );
       final legacyFile = File(
         '${legacyRoot.path}${Platform.pathSeparator}podcast_episode_state.json',
       );

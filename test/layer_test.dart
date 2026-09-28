@@ -105,22 +105,34 @@ void main() {
   test('StationProbeLogic probes once unless forced', () {
     expect(
       StationProbeLogic.shouldProbe(
-          force: false, offline: false, probeCompleted: false),
+        force: false,
+        offline: false,
+        probeCompleted: false,
+      ),
       isTrue,
     );
     expect(
       StationProbeLogic.shouldProbe(
-          force: false, offline: false, probeCompleted: true),
+        force: false,
+        offline: false,
+        probeCompleted: true,
+      ),
       isFalse,
     );
     expect(
       StationProbeLogic.shouldProbe(
-          force: true, offline: false, probeCompleted: true),
+        force: true,
+        offline: false,
+        probeCompleted: true,
+      ),
       isTrue,
     );
     expect(
       StationProbeLogic.shouldProbe(
-          force: true, offline: true, probeCompleted: false),
+        force: true,
+        offline: true,
+        probeCompleted: false,
+      ),
       isFalse,
     );
 
@@ -161,9 +173,13 @@ void main() {
       ['user-1', 'cnr-1', 'dead-1'],
     );
     expect(
-        StationProbeLogic.rememberId({'cnr-1'}, 'dead-1'), {'cnr-1', 'dead-1'});
+      StationProbeLogic.rememberId({'cnr-1'}, 'dead-1'),
+      {'cnr-1', 'dead-1'},
+    );
     expect(
-        StationProbeLogic.forgetId({'cnr-1', 'dead-1'}, 'dead-1'), {'cnr-1'});
+      StationProbeLogic.forgetId({'cnr-1', 'dead-1'}, 'dead-1'),
+      {'cnr-1'},
+    );
     expect(StationProbeLogic.forgetId({'cnr-1'}, 'missing'), {'cnr-1'});
 
     const live =
@@ -171,7 +187,10 @@ void main() {
     const stale =
         RadioStation(id: 'old', name: '旧', streamUrl: 'https://old.example/a');
     const failed = RadioStation(
-        id: 'fail', name: '死', streamUrl: 'https://dead.example/a');
+      id: 'fail',
+      name: '死',
+      streamUrl: 'https://dead.example/a',
+    );
     expect(
       StationProbeLogic.visibleDuringProbe(
         catalog: [custom, live, stale, failed],
@@ -230,7 +249,9 @@ void main() {
     );
     expect(
       CatalogFetchLogic.useRadioBrowser(
-          offline: false, discoveryEnabled: false),
+        offline: false,
+        discoveryEnabled: false,
+      ),
       isFalse,
     );
     expect(
@@ -251,11 +272,14 @@ void main() {
     expect(RadioBrowserCatalogLogic.keepCountry(''), isFalse);
 
     final queries = RadioBrowserCatalogLogic.chinaCatalogQueries();
-    expect(queries.any((q) => q.language == 'chinese' && q.countrycode == null),
-        isTrue);
     expect(
-        queries.any((q) => q.language == 'mandarin' && q.countrycode == null),
-        isTrue);
+      queries.any((q) => q.language == 'chinese' && q.countrycode == null),
+      isTrue,
+    );
+    expect(
+      queries.any((q) => q.language == 'mandarin' && q.countrycode == null),
+      isTrue,
+    );
     expect(queries.any((q) => q.tag == 'traffic'), isTrue);
     expect(queries.any((q) => q.tag == '交通'), isTrue);
     expect(queries.any((q) => q.state == 'Jiangsu'), isTrue);
@@ -358,12 +382,16 @@ void main() {
     expect(PlaybackLogic.shouldRetry(retryCount: 0, offline: true), isFalse);
     expect(
       PlaybackLogic.preloadBeforePlay(
-          isLocalFile: false, kind: PlaybackKind.radio),
+        isLocalFile: false,
+        kind: PlaybackKind.radio,
+      ),
       isFalse,
     );
     expect(
       PlaybackLogic.preloadBeforePlay(
-          isLocalFile: false, kind: PlaybackKind.podcast),
+        isLocalFile: false,
+        kind: PlaybackKind.podcast,
+      ),
       isTrue,
     );
     expect(PlaybackLogic.stillOpening(ProcessingState.buffering), isTrue);
@@ -371,7 +399,9 @@ void main() {
     expect(PlaybackLogic.playTimeout, PlaybackLogic.setUrlTimeout);
     expect(PlaybackLogic.skipIcyMetadataHeader(TargetPlatform.windows), isTrue);
     expect(
-        PlaybackLogic.skipIcyMetadataHeader(TargetPlatform.android), isFalse);
+      PlaybackLogic.skipIcyMetadataHeader(TargetPlatform.android),
+      isFalse,
+    );
     expect(
       PlaybackLogic.playbackHeaders(
         platform: TargetPlatform.windows,
@@ -508,19 +538,30 @@ void main() {
 
   test('PlaybackSessionLogic switches speech only when kind changes on Android',
       () {
-    expect(PlaybackSessionLogic.offered(platform: TargetPlatform.windows),
-        isFalse);
     expect(
-        PlaybackSessionLogic.offered(
-            platform: TargetPlatform.android, isWeb: true),
-        isFalse);
+      PlaybackSessionLogic.offered(platform: TargetPlatform.windows),
+      isFalse,
+    );
     expect(
-        PlaybackSessionLogic.offered(platform: TargetPlatform.android), isTrue);
+      PlaybackSessionLogic.offered(
+        platform: TargetPlatform.android,
+        isWeb: true,
+      ),
+      isFalse,
+    );
+    expect(
+      PlaybackSessionLogic.offered(platform: TargetPlatform.android),
+      isTrue,
+    );
     expect(PlaybackSessionLogic.startupProfile, PlaybackSessionProfile.music);
-    expect(PlaybackSessionLogic.profileFor(PlaybackKind.radio),
-        PlaybackSessionProfile.music);
-    expect(PlaybackSessionLogic.profileFor(PlaybackKind.podcast),
-        PlaybackSessionProfile.speech);
+    expect(
+      PlaybackSessionLogic.profileFor(PlaybackKind.radio),
+      PlaybackSessionProfile.music,
+    );
+    expect(
+      PlaybackSessionLogic.profileFor(PlaybackKind.podcast),
+      PlaybackSessionProfile.speech,
+    );
     expect(
       PlaybackSessionLogic.shouldReconfigure(
         offered: true,
@@ -566,17 +607,26 @@ void main() {
   test(
       'BluetoothResumeLogic resumes only on bluetooth output when still wanting playback',
       () {
-    expect(BluetoothResumeLogic.offered(platform: TargetPlatform.windows),
-        isFalse);
     expect(
-        BluetoothResumeLogic.offered(
-            platform: TargetPlatform.android, isWeb: true),
-        isFalse);
+      BluetoothResumeLogic.offered(platform: TargetPlatform.windows),
+      isFalse,
+    );
     expect(
-        BluetoothResumeLogic.offered(platform: TargetPlatform.android), isTrue);
+      BluetoothResumeLogic.offered(
+        platform: TargetPlatform.android,
+        isWeb: true,
+      ),
+      isFalse,
+    );
+    expect(
+      BluetoothResumeLogic.offered(platform: TargetPlatform.android),
+      isTrue,
+    );
     expect(BluetoothResumeLogic.isBluetoothOutputType('bluetoothA2dp'), isTrue);
     expect(
-        BluetoothResumeLogic.isBluetoothOutputType('wiredHeadphones'), isFalse);
+      BluetoothResumeLogic.isBluetoothOutputType('wiredHeadphones'),
+      isFalse,
+    );
     expect(
       BluetoothResumeLogic.addedBluetoothOutput(
         added: const [(isOutput: true, typeName: 'bluetoothA2dp')],
@@ -654,25 +704,35 @@ void main() {
 
     expect(await storage.getStationCatalogConfigured(), isFalse);
     await storage.setStationCatalogSelection(
-        StationCatalogSelectionLogic.suggestedFirstLaunch);
+      StationCatalogSelectionLogic.suggestedFirstLaunch,
+    );
     await storage.setStationCatalogConfigured(true);
     expect(await storage.getStationCatalogConfigured(), isTrue);
     final savedSelection = await storage.getStationCatalogSelection();
-    expect(savedSelection.themes,
-        StationCatalogSelectionLogic.suggestedFirstLaunch.themes);
-    expect(savedSelection.provinces,
-        StationCatalogSelectionLogic.suggestedFirstLaunch.provinces);
+    expect(
+      savedSelection.themes,
+      StationCatalogSelectionLogic.suggestedFirstLaunch.themes,
+    );
+    expect(
+      savedSelection.provinces,
+      StationCatalogSelectionLogic.suggestedFirstLaunch.provinces,
+    );
     expect(savedSelection.allCurated, isFalse);
 
     SharedPreferences.setMockInitialValues(
-        {'station_load_scope': 'cnr_guangdong'});
+      {'station_load_scope': 'cnr_guangdong'},
+    );
     final legacyStorage = AppStorage(await SharedPreferences.getInstance());
     expect(await legacyStorage.getStationCatalogConfigured(), isTrue);
     final legacySelection = await legacyStorage.getStationCatalogSelection();
-    expect(legacySelection.themes,
-        StationCatalogSelectionLogic.suggestedFirstLaunch.themes);
-    expect(legacySelection.provinces,
-        StationCatalogSelectionLogic.suggestedFirstLaunch.provinces);
+    expect(
+      legacySelection.themes,
+      StationCatalogSelectionLogic.suggestedFirstLaunch.themes,
+    );
+    expect(
+      legacySelection.provinces,
+      StationCatalogSelectionLogic.suggestedFirstLaunch.provinces,
+    );
 
     expect(await storage.getRememberLastListening(), isTrue);
     await storage.setRememberLastListening(false);
@@ -784,7 +844,9 @@ void main() {
     );
     expect(
       NowPlayingIndicatorLogic.episodeLeading(
-          isCurrent: false, finished: false),
+        isCurrent: false,
+        finished: false,
+      ),
       Icons.play_circle_outline,
     );
 
@@ -805,9 +867,13 @@ void main() {
     expect(NowPlayingIndicatorLogic.isCurrentEpisode(radio, 'guid-1'), isFalse);
     expect(NowPlayingIndicatorLogic.isCurrentEpisode(episode, ''), isFalse);
     expect(
-        NowPlayingIndicatorLogic.isCurrentEpisode(episode, 'guid-1'), isTrue);
+      NowPlayingIndicatorLogic.isCurrentEpisode(episode, 'guid-1'),
+      isTrue,
+    );
     expect(
-        NowPlayingIndicatorLogic.isCurrentEpisode(episode, 'other'), isFalse);
+      NowPlayingIndicatorLogic.isCurrentEpisode(episode, 'other'),
+      isFalse,
+    );
   });
 
   test(
@@ -909,17 +975,17 @@ void main() {
   });
 
   test('PodcastEpisodeState merges progress and listened guids', () {
-    final current = PodcastEpisodeState(
+    final current = const PodcastEpisodeState(
       progress: {
-        'same': const Duration(seconds: 20),
-        'old-only': const Duration(seconds: 10),
+        'same': Duration(seconds: 20),
+        'old-only': Duration(seconds: 10),
       },
       listenedGuids: {'done'},
     );
-    final legacy = PodcastEpisodeState(
+    final legacy = const PodcastEpisodeState(
       progress: {
-        'same': const Duration(seconds: 30),
-        'legacy-only': const Duration(seconds: 5),
+        'same': Duration(seconds: 30),
+        'legacy-only': Duration(seconds: 5),
       },
       listenedGuids: {'legacy-done'},
     );
@@ -928,8 +994,10 @@ void main() {
     expect(merged.progress['old-only'], const Duration(seconds: 10));
     expect(merged.progress['legacy-only'], const Duration(seconds: 5));
     expect(merged.listenedGuids, {'done', 'legacy-done'});
-    expect(PodcastEpisodeState.fromJson(merged.toJson()).toJson(),
-        merged.toJson());
+    expect(
+      PodcastEpisodeState.fromJson(merged.toJson()).toJson(),
+      merged.toJson(),
+    );
   });
 
   test('PodcastEpisodeStateStore keeps in-memory progress when not flushing',
@@ -941,8 +1009,11 @@ void main() {
     // UI 走同步这条路，必须和异步读一致。
     expect(store.progressOf('ep-1'), const Duration(seconds: 42));
 
-    await store.setPodcastProgress('ep-1', const Duration(seconds: 90),
-        flush: true);
+    await store.setPodcastProgress(
+      'ep-1',
+      const Duration(seconds: 90),
+      flush: true,
+    );
     expect(await store.getPodcastProgress('ep-1'), const Duration(seconds: 90));
 
     // 归零等于清除，与旧行为一致。
@@ -984,10 +1055,14 @@ void main() {
     expect(await storage.getThemeMode(), isNull);
     expect(await storage.getPodcastIndexApiKey(), 'keep-me');
     expect(await storage.getRememberLastListening(), isFalse);
-    expect(await storage.getPodcastProgress('ep-old'),
-        const Duration(seconds: 33));
-    expect(await storage.getPodcastProgress('ep-new'),
-        const Duration(seconds: 66));
+    expect(
+      await storage.getPodcastProgress('ep-old'),
+      const Duration(seconds: 33),
+    );
+    expect(
+      await storage.getPodcastProgress('ep-new'),
+      const Duration(seconds: 66),
+    );
     expect(await storage.getListenedEpisodeGuids(), {'ep-done', 'ep-new-done'});
   });
 
@@ -1032,28 +1107,36 @@ void main() {
     expect(PodcastFeedLogic.shouldRetryWithFallbackUa(404), isFalse);
     // 第三方转接源：只有 RSSHub 被拦。
     expect(
-        PodcastFeedLogic.isDeniedCatalogFeed(
-            'https://rsshub.app/xiaoyuzhou/123'),
-        isTrue);
+      PodcastFeedLogic.isDeniedCatalogFeed(
+        'https://rsshub.app/xiaoyuzhou/123',
+      ),
+      isTrue,
+    );
     expect(
-        PodcastFeedLogic.isDeniedCatalogFeed('https://rsshub.app/x/1'), isTrue);
+      PodcastFeedLogic.isDeniedCatalogFeed('https://rsshub.app/x/1'),
+      isTrue,
+    );
     // 平台自己的 RSS 出口：喜马拉雅 / 荔枝 / 蜻蜓 全部放行。
     expect(
       PodcastFeedLogic.isDeniedCatalogFeed(
-          'https://www.ximalaya.com/album/123.xml'),
+        'https://www.ximalaya.com/album/123.xml',
+      ),
       isFalse,
     );
     expect(
-        PodcastFeedLogic.isDeniedCatalogFeed('https://rss.lizhi.fm/rss/1.xml'),
-        isFalse);
-    expect(
-      PodcastFeedLogic.isDeniedCatalogFeed(
-          'https://c.qingting.fm/podcast/v1/vchannels/1'),
+      PodcastFeedLogic.isDeniedCatalogFeed('https://rss.lizhi.fm/rss/1.xml'),
       isFalse,
     );
     expect(
       PodcastFeedLogic.isDeniedCatalogFeed(
-          'https://feed.xyzfm.space/hwen8wf69c6g'),
+        'https://c.qingting.fm/podcast/v1/vchannels/1',
+      ),
+      isFalse,
+    );
+    expect(
+      PodcastFeedLogic.isDeniedCatalogFeed(
+        'https://feed.xyzfm.space/hwen8wf69c6g',
+      ),
       isFalse,
     );
     // 拦截只在**新增订阅**时施加；读取路径（已订阅的节目刷新）不能再拦 ——
@@ -1065,8 +1148,11 @@ void main() {
       ),
       throwsA(
         isA<PodcastFeedException>()
-            .having((e) => e.message, 'message',
-                PodcastFeedLogic.catalogDeniedMessage)
+            .having(
+              (e) => e.message,
+              'message',
+              PodcastFeedLogic.catalogDeniedMessage,
+            )
             .having((e) => e.saveAddress, 'saveAddress', isFalse),
       ),
     );
@@ -1081,7 +1167,8 @@ void main() {
     );
     expect(
       PodcastFeedLogic.resolveUrl(
-          'https://www.ximalaya.com/album/56109512.xml'),
+        'https://www.ximalaya.com/album/56109512.xml',
+      ),
       'https://www.ximalaya.com/album/56109512.xml',
     );
   });
@@ -1153,14 +1240,18 @@ void main() {
   test('ArtworkUrlLogic and MediaItem skip favicon.ico', () {
     expect(ArtworkUrlLogic.resolve('https://www.gdtv.cn/favicon.ico'), isNull);
     expect(
-        ArtworkUrlLogic.resolve('https://example.com/favicon.ico?x=1'), isNull);
+      ArtworkUrlLogic.resolve('https://example.com/favicon.ico?x=1'),
+      isNull,
+    );
     expect(
       ArtworkUrlLogic.resolve('https://pic.qtfm.cn/cover.png'),
       'https://pic.qtfm.cn/cover.png',
     );
     expect(ArtworkUrlLogic.mediaArtUri('https://site/favicon.ico'), isNull);
-    expect(ArtworkUrlLogic.mediaArtUri('https://pic.qtfm.cn/a.jpg')?.host,
-        'pic.qtfm.cn');
+    expect(
+      ArtworkUrlLogic.mediaArtUri('https://pic.qtfm.cn/a.jpg')?.host,
+      'pic.qtfm.cn',
+    );
   });
 
   test(
@@ -1170,16 +1261,22 @@ void main() {
       ListSwipeLogic.stationAction(DismissDirection.endToStart),
       StationSwipeAction.hide,
     );
-    expect(ListSwipeLogic.stationShouldDismiss(StationSwipeAction.favorite),
-        isFalse);
     expect(
-        ListSwipeLogic.stationShouldDismiss(StationSwipeAction.hide), isTrue);
+      ListSwipeLogic.stationShouldDismiss(StationSwipeAction.favorite),
+      isFalse,
+    );
+    expect(
+      ListSwipeLogic.stationShouldDismiss(StationSwipeAction.hide),
+      isTrue,
+    );
     expect(
       ListSwipeLogic.episodeAction(DismissDirection.startToEnd),
       EpisodeSwipeAction.download,
     );
     expect(
-        ListSwipeLogic.canStartDownload(EpisodeDownloadStatus.ready), isFalse);
+      ListSwipeLogic.canStartDownload(EpisodeDownloadStatus.ready),
+      isFalse,
+    );
     expect(ListSwipeLogic.canStartDownload(EpisodeDownloadStatus.none), isTrue);
     expect(
       ListSwipeLogic.miniPlayerKind(dx: 20, isPodcast: false, loading: false),
@@ -1237,7 +1334,10 @@ void main() {
     );
     expect(
       PodcastChapterLogic.skipTarget(
-          chapters: const [], position: Duration.zero, delta: 1),
+        chapters: const [],
+        position: Duration.zero,
+        delta: 1,
+      ),
       isNull,
     );
   });
@@ -1247,15 +1347,20 @@ void main() {
       existing: const [],
       incoming: const [
         PodcastFeed(
-            id: 'ok',
-            title: '故事',
-            feedUrl: 'https://feeds.storyfm.cn/storyfm.xml'),
+          id: 'ok',
+          title: '故事',
+          feedUrl: 'https://feeds.storyfm.cn/storyfm.xml',
+        ),
         PodcastFeed(
-            id: 'bad', title: '转接', feedUrl: 'https://rsshub.app/podcast/x/1'),
+          id: 'bad',
+          title: '转接',
+          feedUrl: 'https://rsshub.app/podcast/x/1',
+        ),
         PodcastFeed(
-            id: 'ximalaya',
-            title: '喜马',
-            feedUrl: 'https://www.ximalaya.com/album/1.xml'),
+          id: 'ximalaya',
+          title: '喜马',
+          feedUrl: 'https://www.ximalaya.com/album/1.xml',
+        ),
       ],
       newId: () => 'n1',
     );
@@ -1271,13 +1376,17 @@ void main() {
   });
 
   test('Android load control is construction-only and skipped on Windows', () {
-    expect(PlaybackLogic.audioLoadConfigurationFor(TargetPlatform.windows),
-        isNull);
+    expect(
+      PlaybackLogic.audioLoadConfigurationFor(TargetPlatform.windows),
+      isNull,
+    );
     final android =
         PlaybackLogic.audioLoadConfigurationFor(TargetPlatform.android);
     expect(android, isNotNull);
-    expect(android!.androidLoadControl?.minBufferDuration,
-        PlaybackLogic.androidMinBuffer);
+    expect(
+      android!.androidLoadControl?.minBufferDuration,
+      PlaybackLogic.androidMinBuffer,
+    );
     expect(
       android.androidLoadControl?.bufferForPlaybackDuration,
       PlaybackLogic.androidBufferForPlayback,
@@ -1306,8 +1415,10 @@ void main() {
     expect(PodcastPlaybackLogic.speedLabel(0.6), '0.6×');
     expect(PodcastPlaybackLogic.speedLabel(1.5), '1.5×');
     expect(PodcastPlaybackLogic.speedLabel(2), '2×');
-    expect(PodcastPlaybackLogic.speeds,
-        containsAll([0.5, 0.6, 0.8, 1.0, 1.25, 1.5, 2.0]));
+    expect(
+      PodcastPlaybackLogic.speeds,
+      containsAll([0.5, 0.6, 0.8, 1.0, 1.25, 1.5, 2.0]),
+    );
     expect(
       PodcastPlaybackLogic.stripHtml('<p>你好&nbsp;<b>流声</b></p>'),
       '你好 流声',
@@ -1355,7 +1466,9 @@ void main() {
     );
     expect(PodcastPlaybackLogic.speedForFeed(stored: 1.5, fallback: 1.0), 1.5);
     expect(
-        PodcastPlaybackLogic.speedForFeed(stored: null, fallback: 1.25), 1.25);
+      PodcastPlaybackLogic.speedForFeed(stored: null, fallback: 1.25),
+      1.25,
+    );
     expect(
       PodcastPlaybackLogic.progressFraction(
         progress: const Duration(minutes: 5),
@@ -1378,18 +1491,22 @@ void main() {
     );
     expect(
       PodcastPlaybackLogic.sortedEpisodes(
-              [older, newer], PodcastEpisodeSort.newestFirst)
-          .map((item) => item.guid),
+        [older, newer],
+        PodcastEpisodeSort.newestFirst,
+      ).map((item) => item.guid),
       ['new', 'old'],
     );
     expect(
       PodcastPlaybackLogic.sortedEpisodes(
-              [older, newer], PodcastEpisodeSort.oldestFirst)
-          .map((item) => item.guid),
+        [older, newer],
+        PodcastEpisodeSort.oldestFirst,
+      ).map((item) => item.guid),
       ['old', 'new'],
     );
-    expect(PodcastEpisodeSort.parse('oldestFirst'),
-        PodcastEpisodeSort.oldestFirst);
+    expect(
+      PodcastEpisodeSort.parse('oldestFirst'),
+      PodcastEpisodeSort.oldestFirst,
+    );
     expect(PodcastEpisodeSort.parse('nope'), PodcastEpisodeSort.newestFirst);
 
     // 无发布日期时按标题自然序：第2集 < 第10集 < 第100集，且方向跟随模式。
@@ -1464,7 +1581,10 @@ void main() {
     );
 
     const feed = PodcastFeed(
-        id: 'feed-1', title: '新闻', feedUrl: 'https://example.com/rss');
+      id: 'feed-1',
+      title: '新闻',
+      feedUrl: 'https://example.com/rss',
+    );
     expect(
       PodcastQueueLogic.resolveFeed(
         subscribed: const [feed],
@@ -1496,22 +1616,22 @@ void main() {
       isNull,
     );
 
-    final day4 = PodcastEpisode(
+    final day4 = const PodcastEpisode(
       guid: 'd4',
       title: '4号',
       audioUrl: 'https://example.com/4.mp3',
     );
-    final day3 = PodcastEpisode(
+    final day3 = const PodcastEpisode(
       guid: 'd3',
       title: '3号',
       audioUrl: 'https://example.com/3.mp3',
     );
-    final day2 = PodcastEpisode(
+    final day2 = const PodcastEpisode(
       guid: 'd2',
       title: '2号',
       audioUrl: 'https://example.com/2.mp3',
     );
-    final day1 = PodcastEpisode(
+    final day1 = const PodcastEpisode(
       guid: 'd1',
       title: '1号',
       audioUrl: 'https://example.com/1.mp3',
@@ -1703,17 +1823,20 @@ void main() {
     // 跳过片头尾只在设过时出现，秒数按 0:30 / 1:30 展示。
     expect(summary(skipIntroSeconds: 30), '跳过片头 0:30');
     expect(summary(skipOutroSeconds: 90), '跳过片尾 1:30');
-    expect(summary(skipIntroSeconds: 30, skipOutroSeconds: 45),
-        '跳过片头 0:30 · 跳过片尾 0:45');
+    expect(
+      summary(skipIntroSeconds: 30, skipOutroSeconds: 45),
+      '跳过片头 0:30 · 跳过片尾 0:45',
+    );
 
     // 组合：顺序固定，分隔符固定。
     expect(
       summary(
-          ready: 1,
-          downloading: 2,
-          allEnabled: true,
-          latestEnabled: true,
-          skipIntroSeconds: 120),
+        ready: 1,
+        downloading: 2,
+        allEnabled: true,
+        latestEnabled: true,
+        skipIntroSeconds: 120,
+      ),
       '正在下载 3/12 · 全部下载 开 · 自动下载最新 开 · 跳过片头 2:00',
     );
   });
@@ -1745,17 +1868,22 @@ void main() {
     // 搜索排序：标题精确 > 前缀 > 包含 > 作者 > 标签。
     const catalog = [
       PodcastCatalogEntry(
-          title: '科技早8点',
-          rssUrl: 'https://a/k.xml',
-          author: '编辑部',
-          tags: ['科技']),
+        title: '科技早8点',
+        rssUrl: 'https://a/k.xml',
+        author: '编辑部',
+        tags: ['科技'],
+      ),
       PodcastCatalogEntry(
-          title: '新闻酸菜馆',
-          rssUrl: 'https://a/n.xml',
-          author: '老张',
-          tags: ['新闻']),
+        title: '新闻酸菜馆',
+        rssUrl: 'https://a/n.xml',
+        author: '老张',
+        tags: ['新闻'],
+      ),
       PodcastCatalogEntry(
-          title: '八点新闻', rssUrl: 'https://a/b.xml', author: '新闻组'),
+        title: '八点新闻',
+        rssUrl: 'https://a/b.xml',
+        author: '新闻组',
+      ),
       PodcastCatalogEntry(title: '新闻', rssUrl: 'https://a/e.xml'),
     ];
     expect(
@@ -1763,11 +1891,13 @@ void main() {
       ['新闻', '新闻酸菜馆', '八点新闻'],
     );
     expect(
-        PodcastCatalogLogic.search(catalog, '科技').map((entry) => entry.title),
-        ['科技早8点']);
+      PodcastCatalogLogic.search(catalog, '科技').map((entry) => entry.title),
+      ['科技早8点'],
+    );
     expect(
-        PodcastCatalogLogic.search(catalog, '老张').map((entry) => entry.title),
-        ['新闻酸菜馆']);
+      PodcastCatalogLogic.search(catalog, '老张').map((entry) => entry.title),
+      ['新闻酸菜馆'],
+    );
     expect(PodcastCatalogLogic.search(catalog, '   '), isEmpty);
 
     // xyzrank 榜单页 → 目录条目（取 links 里的 rss）；没有 rss 的条目要跳过。
@@ -1796,17 +1926,22 @@ void main() {
     final cached = PodcastCatalogLogic.decode(encoded);
     expect(cached?.entries.map((entry) => entry.title), ['岩中花述', '声动早咖啡']);
     expect(
-        PodcastCatalogLogic.isStale(cached!.fetchedAt, DateTime(2026, 9, 25)),
-        isFalse);
-    expect(PodcastCatalogLogic.isStale(cached.fetchedAt, DateTime(2026, 10, 5)),
-        isTrue);
+      PodcastCatalogLogic.isStale(cached!.fetchedAt, DateTime(2026, 9, 25)),
+      isFalse,
+    );
+    expect(
+      PodcastCatalogLogic.isStale(cached.fetchedAt, DateTime(2026, 10, 5)),
+      isTrue,
+    );
     expect(PodcastCatalogLogic.decode(''), isNull);
     expect(PodcastCatalogLogic.decode('{"entries":[]}'), isNull);
     // 缓存格式版本不符（例如语料来源变了）→ 当作没有缓存，强制重拉。
     expect(
-        PodcastCatalogLogic.decode(
-            '{"v":1,"entries":[{"title":"x","rssUrl":"y"}]}'),
-        isNull);
+      PodcastCatalogLogic.decode(
+        '{"v":1,"entries":[{"title":"x","rssUrl":"y"}]}',
+      ),
+      isNull,
+    );
   });
 
   test('PodcastPlaybackLogic.skipDurationLabel formats mm:ss', () {
@@ -1937,7 +2072,7 @@ void main() {
     expect(state.statusFor('none'), EpisodeDownloadStatus.none);
     expect(state.totalBytes, 10);
     expect(
-      PodcastDownloadState(
+      const PodcastDownloadState(
         records: {
           'old': PodcastDownloadRecord(
             guid: 'old',
@@ -2097,8 +2232,9 @@ void main() {
     expect(continued.single.id, AutoBrowseLogic.episodeMediaId('ep-12'));
     expect(
       AutoBrowseLogic.playbackItemFor(
-              mediaId: continued.single.id, catalog: catalog)
-          ?.title,
+        mediaId: continued.single.id,
+        catalog: catalog,
+      )?.title,
       '第 12 期',
     );
     final saved =
@@ -2209,21 +2345,31 @@ void main() {
 
   test('DeskTrayLogic routes tray menu and only offers Windows', () {
     expect(DeskTrayLogic.offered(platform: TargetPlatform.android), isFalse);
-    expect(DeskTrayLogic.offered(platform: TargetPlatform.windows, isWeb: true),
-        isFalse);
+    expect(
+      DeskTrayLogic.offered(platform: TargetPlatform.windows, isWeb: true),
+      isFalse,
+    );
     expect(DeskTrayLogic.offered(platform: TargetPlatform.windows), isTrue);
     expect(DeskTrayLogic.tooltip(), AppBrand.displayName);
     expect(DeskTrayLogic.tooltip(title: '  中国之声  '), contains('中国之声'));
     expect(DeskTrayLogic.toggleLabel(playing: true), '暂停');
     expect(DeskTrayLogic.toggleLabel(playing: false), '播放');
-    expect(DeskTrayLogic.actionForMenuKey(DeskTrayLogic.showKey),
-        DeskTrayAction.restore);
-    expect(DeskTrayLogic.actionForMenuKey(DeskTrayLogic.toggleKey),
-        DeskTrayAction.toggle);
-    expect(DeskTrayLogic.actionForMenuKey(DeskTrayLogic.sidebarKey),
-        DeskTrayAction.sidebar);
-    expect(DeskTrayLogic.actionForMenuKey(DeskTrayLogic.quitKey),
-        DeskTrayAction.quit);
+    expect(
+      DeskTrayLogic.actionForMenuKey(DeskTrayLogic.showKey),
+      DeskTrayAction.restore,
+    );
+    expect(
+      DeskTrayLogic.actionForMenuKey(DeskTrayLogic.toggleKey),
+      DeskTrayAction.toggle,
+    );
+    expect(
+      DeskTrayLogic.actionForMenuKey(DeskTrayLogic.sidebarKey),
+      DeskTrayAction.sidebar,
+    );
+    expect(
+      DeskTrayLogic.actionForMenuKey(DeskTrayLogic.quitKey),
+      DeskTrayAction.quit,
+    );
     expect(DeskTrayLogic.actionForMenuKey('other'), DeskTrayAction.none);
     expect(DeskTrayLogic.subtitle(), contains('托盘'));
     expect(DeskTrayLogic.shouldPreventClose(trayReady: true), isTrue);
@@ -2234,8 +2380,9 @@ void main() {
       () {
     expect(DeskHotkeyLogic.offered(platform: TargetPlatform.android), isFalse);
     expect(
-        DeskHotkeyLogic.offered(platform: TargetPlatform.windows, isWeb: true),
-        isFalse);
+      DeskHotkeyLogic.offered(platform: TargetPlatform.windows, isWeb: true),
+      isFalse,
+    );
     expect(DeskHotkeyLogic.offered(platform: TargetPlatform.windows), isTrue);
     expect(
       DeskHotkeyLogic.actionForKey(
@@ -2347,21 +2494,31 @@ void main() {
       () {
     expect(DeskLaunchLogic.offered(platform: TargetPlatform.android), isFalse);
     expect(
-        DeskLaunchLogic.offered(platform: TargetPlatform.windows, isWeb: true),
-        isFalse);
+      DeskLaunchLogic.offered(platform: TargetPlatform.windows, isWeb: true),
+      isFalse,
+    );
     expect(DeskLaunchLogic.offered(platform: TargetPlatform.windows), isTrue);
     expect(
-        DeskLaunchLogic.compactOnLaunch(
-            compactEnabled: false, launchCompact: false),
-        isFalse);
+      DeskLaunchLogic.compactOnLaunch(
+        compactEnabled: false,
+        launchCompact: false,
+      ),
+      isFalse,
+    );
     expect(
-        DeskLaunchLogic.compactOnLaunch(
-            compactEnabled: true, launchCompact: false),
-        isTrue);
+      DeskLaunchLogic.compactOnLaunch(
+        compactEnabled: true,
+        launchCompact: false,
+      ),
+      isTrue,
+    );
     expect(
-        DeskLaunchLogic.compactOnLaunch(
-            compactEnabled: false, launchCompact: true),
-        isTrue);
+      DeskLaunchLogic.compactOnLaunch(
+        compactEnabled: false,
+        launchCompact: true,
+      ),
+      isTrue,
+    );
     expect(
       DeskLaunchLogic.compactOnLaunch(
         compactEnabled: false,
@@ -2379,16 +2536,22 @@ void main() {
     );
     expect(
       DeskLaunchLogic.shouldWriteStartup(
-          executable: r'C:\Program Files\流声\Liusheng.exe'),
+        executable: r'C:\Program Files\流声\Liusheng.exe',
+      ),
       isTrue,
     );
-    expect(DeskLaunchLogic.shouldApplyNative(offered: true, flutterTest: true),
-        isFalse);
     expect(
-        DeskLaunchLogic.shouldApplyNative(offered: false, flutterTest: false),
-        isFalse);
-    expect(DeskLaunchLogic.shouldApplyNative(offered: true, flutterTest: false),
-        isTrue);
+      DeskLaunchLogic.shouldApplyNative(offered: true, flutterTest: true),
+      isFalse,
+    );
+    expect(
+      DeskLaunchLogic.shouldApplyNative(offered: false, flutterTest: false),
+      isFalse,
+    );
+    expect(
+      DeskLaunchLogic.shouldApplyNative(offered: true, flutterTest: false),
+      isTrue,
+    );
     final enable =
         DeskLaunchLogic.enableArgs(r'C:\Program Files\流声\Liusheng.exe');
     expect(enable, contains('add'));
@@ -2507,9 +2670,12 @@ void main() {
     );
     expect(snoozed.isSnoozed, isTrue);
     expect(
-        SleepTimerLogic.fadeOutLabel(snoozed,
-            now: now.add(const Duration(seconds: 9 * 60 + 50))),
-        isNull);
+      SleepTimerLogic.fadeOutLabel(
+        snoozed,
+        now: now.add(const Duration(seconds: 9 * 60 + 50)),
+      ),
+      isNull,
+    );
     expect(
       SleepTimerLogic.statusLabel(snoozed, now: now),
       SleepTimerLogic.formatRemaining(SleepTimerLogic.snoozeDuration),
@@ -2526,7 +2692,10 @@ void main() {
   test('DeskWidgetLogic snapshot and toggle URI', () {
     expect(
       DeskWidgetLogic.snapshot(
-          item: null, playing: false, useDynamicColor: false),
+        item: null,
+        playing: false,
+        useDynamicColor: false,
+      ),
       DeskWidgetSnapshot.empty,
     );
     const item = PlaybackItem(
@@ -2537,7 +2706,10 @@ void main() {
       subtitle: '新闻',
     );
     final snap = DeskWidgetLogic.snapshot(
-        item: item, playing: true, useDynamicColor: false);
+      item: item,
+      playing: true,
+      useDynamicColor: false,
+    );
     expect(snap.title, '中国之声');
     expect(snap.subtitle, '新闻');
     expect(snap.playing, isTrue);
@@ -2545,24 +2717,34 @@ void main() {
     expect(snap.useDynamicColor, isFalse);
     expect(DeskWidgetLogic.isToggleUri(Uri.parse('liusheng://toggle')), isTrue);
     expect(DeskWidgetLogic.isToggleUri(Uri.parse('liusheng://open')), isFalse);
-    expect(DeskWidgetLogic.actionForUri(Uri.parse('liusheng://next')),
-        DeskWidgetAction.next);
-    expect(DeskWidgetLogic.actionForUri(Uri.parse('liusheng://resume')),
-        DeskWidgetAction.resume);
-    expect(DeskWidgetLogic.actionForUri(Uri.parse('liusheng://open')),
-        DeskWidgetAction.open);
+    expect(
+      DeskWidgetLogic.actionForUri(Uri.parse('liusheng://next')),
+      DeskWidgetAction.next,
+    );
+    expect(
+      DeskWidgetLogic.actionForUri(Uri.parse('liusheng://resume')),
+      DeskWidgetAction.resume,
+    );
+    expect(
+      DeskWidgetLogic.actionForUri(Uri.parse('liusheng://open')),
+      DeskWidgetAction.open,
+    );
     expect(
       DeskWidgetLogic.resumeTarget(hasContinueEpisode: true, hasLastItem: true),
       DeskWidgetResumeTarget.continueEpisode,
     );
     expect(
       DeskWidgetLogic.resumeTarget(
-          hasContinueEpisode: false, hasLastItem: true),
+        hasContinueEpisode: false,
+        hasLastItem: true,
+      ),
       DeskWidgetResumeTarget.lastSession,
     );
     expect(
       DeskWidgetLogic.resumeTarget(
-          hasContinueEpisode: false, hasLastItem: false),
+        hasContinueEpisode: false,
+        hasLastItem: false,
+      ),
       DeskWidgetResumeTarget.none,
     );
     expect(
@@ -2634,7 +2816,10 @@ void main() {
     expect(NewEpisodeLogic.newestEpisode([older, newer])?.guid, 'new');
     expect(
       NewEpisodeLogic.detect(
-          feed: feed, episodes: [older, newer], lastGuids: const {}),
+        feed: feed,
+        episodes: [older, newer],
+        lastGuids: const {},
+      ),
       isNull,
     );
     expect(
@@ -2679,13 +2864,17 @@ void main() {
       isTrue,
     );
     expect(
-        NewEpisodeLogic.shouldNotifyFeed(globallyEnabled: false, muted: false),
-        isFalse);
-    expect(NewEpisodeLogic.shouldNotifyFeed(globallyEnabled: true, muted: true),
-        isFalse);
+      NewEpisodeLogic.shouldNotifyFeed(globallyEnabled: false, muted: false),
+      isFalse,
+    );
     expect(
-        NewEpisodeLogic.shouldNotifyFeed(globallyEnabled: true, muted: false),
-        isTrue);
+      NewEpisodeLogic.shouldNotifyFeed(globallyEnabled: true, muted: true),
+      isFalse,
+    );
+    expect(
+      NewEpisodeLogic.shouldNotifyFeed(globallyEnabled: true, muted: false),
+      isTrue,
+    );
     expect(
       NewEpisodeLogic.shouldRefresh(now: now, lastCheckAt: null),
       isTrue,
@@ -2702,11 +2891,20 @@ void main() {
   test('FeedCacheLogic builds inbox from snapshots and skips listened newest',
       () {
     const news = PodcastFeed(
-        id: 'news', title: '新闻', feedUrl: 'https://example.com/news');
+      id: 'news',
+      title: '新闻',
+      feedUrl: 'https://example.com/news',
+    );
     const music = PodcastFeed(
-        id: 'music', title: '音乐', feedUrl: 'https://example.com/music');
+      id: 'music',
+      title: '音乐',
+      feedUrl: 'https://example.com/music',
+    );
     const stale = PodcastFeed(
-        id: 'stale', title: '过期', feedUrl: 'https://example.com/stale');
+      id: 'stale',
+      title: '过期',
+      feedUrl: 'https://example.com/stale',
+    );
     PodcastEpisode episode(String guid, DateTime published) => PodcastEpisode(
           guid: guid,
           title: guid,
@@ -2744,8 +2942,10 @@ void main() {
       cache: cache,
       listened: const {},
     );
-    expect(both.map((item) => item.episode.guid).toList(),
-        ['new-music', 'new-news']);
+    expect(
+      both.map((item) => item.episode.guid).toList(),
+      ['new-music', 'new-news'],
+    );
 
     final titles = FeedCacheLogic.searchTitles(cache);
     expect(titles[news.id], containsAll(['old-news', 'new-news']));
@@ -2779,15 +2979,19 @@ void main() {
       force: true,
     );
     expect(
-        forced.map((feed) => feed.id).toSet(), {'f0', 'f1', 'f2', 'f3', 'f4'});
+      forced.map((feed) => feed.id).toSet(),
+      {'f0', 'f1', 'f2', 'f3', 'f4'},
+    );
   });
 
   test('CastSessionLogic maps stream types and stays Android-only', () {
     expect(CastSessionLogic.defaultAppId, 'CC1AD845');
     expect(CastSessionLogic.isLive(PlaybackKind.radio), isTrue);
     expect(CastSessionLogic.isLive(PlaybackKind.podcast), isFalse);
-    expect(CastSessionLogic.contentType('https://ex.com/live.m3u8'),
-        'application/x-mpegURL');
+    expect(
+      CastSessionLogic.contentType('https://ex.com/live.m3u8'),
+      'application/x-mpegURL',
+    );
     expect(CastSessionLogic.contentType('https://ex.com/ep.mp3'), 'audio/mpeg');
     expect(CastSessionLogic.contentType('https://ex.com/a.aac'), 'audio/aac');
   });
@@ -2813,13 +3017,19 @@ void main() {
     }
 
     expect(EpisodeBookmarkLogic.snapPositionMs(1500), 1000);
-    expect(EpisodeBookmarkLogic.formatPosition(const Duration(seconds: 65)),
-        '01:05');
-    expect(EpisodeBookmarkLogic.clampNote('  ${'a' * 200}  ').length,
-        EpisodeBookmarkLogic.maxNoteChars);
+    expect(
+      EpisodeBookmarkLogic.formatPosition(const Duration(seconds: 65)),
+      '01:05',
+    );
+    expect(
+      EpisodeBookmarkLogic.clampNote('  ${'a' * 200}  ').length,
+      EpisodeBookmarkLogic.maxNoteChars,
+    );
     expect(
       EpisodeBookmarkLogic.upsert(
-          current: const [], incoming: mark(guid: '', positionMs: 1000)),
+        current: const [],
+        incoming: mark(guid: '', positionMs: 1000),
+      ),
       isEmpty,
     );
 
@@ -2845,9 +3055,10 @@ void main() {
           mark(guid: 'e1', positionMs: 5000, createdAtMs: 20, note: '另一秒'),
     );
     expect(
-        EpisodeBookmarkLogic.forEpisode(list, 'e1')
-            .map((item) => item.positionMs),
-        [1000, 5000]);
+      EpisodeBookmarkLogic.forEpisode(list, 'e1')
+          .map((item) => item.positionMs),
+      [1000, 5000],
+    );
     list = EpisodeBookmarkLogic.remove(current: list, id: list.first.id);
     expect(list, hasLength(1));
     list = EpisodeBookmarkLogic.pruneFeed(current: list, feedId: 'f1');
@@ -2888,10 +3099,15 @@ void main() {
     // 直播与缺流的播客不入历史。
     final radio = PlaybackItem.fromStation(
       const RadioStation(
-          id: 'r1', name: '电台', streamUrl: 'https://example.com/live.m3u8'),
+        id: 'r1',
+        name: '电台',
+        streamUrl: 'https://example.com/live.m3u8',
+      ),
     );
-    expect(PodcastHistoryLogic.recordPlay(current: const [], item: radio),
-        isEmpty);
+    expect(
+      PodcastHistoryLogic.recordPlay(current: const [], item: radio),
+      isEmpty,
+    );
     const noUrl = PlaybackItem(
       id: 'x',
       title: 'x',
@@ -2899,8 +3115,10 @@ void main() {
       kind: PlaybackKind.podcast,
       episodeGuid: 'x',
     );
-    expect(PodcastHistoryLogic.recordPlay(current: const [], item: noUrl),
-        isEmpty);
+    expect(
+      PodcastHistoryLogic.recordPlay(current: const [], item: noUrl),
+      isEmpty,
+    );
 
     final first =
         PodcastHistoryLogic.recordPlay(current: const [], item: episode('e1'));
@@ -2911,14 +3129,16 @@ void main() {
 
     // 重复播放同一集：去重并移到最前，刷新收听时间。
     final repeated = PodcastHistoryLogic.recordPlay(
-        current: [entry('e1', atMs: 1000)], item: episode('e1'));
+      current: [entry('e1', atMs: 1000)],
+      item: episode('e1'),
+    );
     expect(repeated, hasLength(1));
     expect(repeated.first.playedAtMs, greaterThan(1000));
 
     // 超过 30 条时淘汰最旧一条。
     final many = [
       for (var i = 0; i < PodcastHistoryLogic.maxEntries; i++)
-        entry('g$i', atMs: i)
+        entry('g$i', atMs: i),
     ];
     final capped =
         PodcastHistoryLogic.recordPlay(current: many, item: episode('new'));
@@ -2930,33 +3150,55 @@ void main() {
   test('PodcastHistoryLogic labels played time and progress', () {
     final now = DateTime(2026, 8, 17, 12, 0);
     expect(
-        PodcastHistoryLogic.playedAtLabel(
-            now.subtract(const Duration(seconds: 30)), now),
-        '刚刚');
+      PodcastHistoryLogic.playedAtLabel(
+        now.subtract(const Duration(seconds: 30)),
+        now,
+      ),
+      '刚刚',
+    );
     expect(
-        PodcastHistoryLogic.playedAtLabel(
-            now.subtract(const Duration(minutes: 5)), now),
-        '5 分钟前');
+      PodcastHistoryLogic.playedAtLabel(
+        now.subtract(const Duration(minutes: 5)),
+        now,
+      ),
+      '5 分钟前',
+    );
     expect(
-        PodcastHistoryLogic.playedAtLabel(
-            now.subtract(const Duration(hours: 3)), now),
-        '3 小时前');
+      PodcastHistoryLogic.playedAtLabel(
+        now.subtract(const Duration(hours: 3)),
+        now,
+      ),
+      '3 小时前',
+    );
     expect(
-        PodcastHistoryLogic.playedAtLabel(
-            now.subtract(const Duration(days: 2)), now),
-        '2 天前');
-    expect(PodcastHistoryLogic.playedAtLabel(DateTime(2026, 7, 1), now),
-        '2026-07-01');
+      PodcastHistoryLogic.playedAtLabel(
+        now.subtract(const Duration(days: 2)),
+        now,
+      ),
+      '2 天前',
+    );
+    expect(
+      PodcastHistoryLogic.playedAtLabel(DateTime(2026, 7, 1), now),
+      '2026-07-01',
+    );
 
     const done = false;
     expect(
       PodcastHistoryLogic.progressLabel(
-          progress: null, duration: null, finished: done, isCurrent: false),
+        progress: null,
+        duration: null,
+        finished: done,
+        isCurrent: false,
+      ),
       '尚未开始',
     );
     expect(
       PodcastHistoryLogic.progressLabel(
-          progress: null, duration: null, finished: done, isCurrent: true),
+        progress: null,
+        duration: null,
+        finished: done,
+        isCurrent: true,
+      ),
       '正在收听',
     );
     expect(
@@ -3037,23 +3279,39 @@ void main() {
         );
     final radioItem = PlaybackItem.fromStation(
       const RadioStation(
-          id: 'r1', name: '电台', streamUrl: 'https://example.com/live.m3u8'),
+        id: 'r1',
+        name: '电台',
+        streamUrl: 'https://example.com/live.m3u8',
+      ),
     );
     final now = DateTime(2026, 8, 17, 12);
 
     var stats = const ListeningStats();
     stats = stats.recordTick(
-        item: podcastItem(),
-        kind: PlaybackKind.podcast,
-        seconds: 120,
-        now: now);
+      item: podcastItem(),
+      kind: PlaybackKind.podcast,
+      seconds: 120,
+      now: now,
+    );
     stats = stats.recordTick(
-        item: radioItem, kind: PlaybackKind.radio, seconds: 60, now: now);
+      item: radioItem,
+      kind: PlaybackKind.radio,
+      seconds: 60,
+      now: now,
+    );
     // 同一节目再次累计；负数秒忽略。
     stats = stats.recordTick(
-        item: podcastItem(), kind: PlaybackKind.podcast, seconds: 30, now: now);
+      item: podcastItem(),
+      kind: PlaybackKind.podcast,
+      seconds: 30,
+      now: now,
+    );
     stats = stats.recordTick(
-        item: podcastItem(), kind: PlaybackKind.podcast, seconds: -5, now: now);
+      item: podcastItem(),
+      kind: PlaybackKind.podcast,
+      seconds: -5,
+      now: now,
+    );
 
     expect(stats.totalSeconds, 210);
     expect(ListeningStatsLogic.todaySeconds(stats, now), 210);
@@ -3066,10 +3324,11 @@ void main() {
     // 昨天的不算今日/本周？仍在 7 天内算本周。
     final yesterday = now.subtract(const Duration(days: 1));
     stats = stats.recordTick(
-        item: radioItem,
-        kind: PlaybackKind.radio,
-        seconds: 3600,
-        now: yesterday);
+      item: radioItem,
+      kind: PlaybackKind.radio,
+      seconds: 3600,
+      now: yesterday,
+    );
     expect(ListeningStatsLogic.todaySeconds(stats, now), 210);
     expect(ListeningStatsLogic.weekSeconds(stats, now), 3810);
 
@@ -3105,7 +3364,10 @@ void main() {
     final withOld = stats.recordTick(
       item: PlaybackItem.fromStation(
         const RadioStation(
-            id: 'old', name: '老电台', streamUrl: 'https://example.com/o.mp3'),
+          id: 'old',
+          name: '老电台',
+          streamUrl: 'https://example.com/o.mp3',
+        ),
       ),
       kind: PlaybackKind.radio,
       seconds: 999,
@@ -3113,7 +3375,9 @@ void main() {
     );
     final compacted2 = ListeningStatsLogic.compact(withOld, now: now);
     expect(
-        compacted2.byDay.containsKey(ListeningStatsLogic.dayKey(old)), isFalse);
+      compacted2.byDay.containsKey(ListeningStatsLogic.dayKey(old)),
+      isFalse,
+    );
 
     expect(ListeningStatsLogic.formatDuration(0), '0 分钟');
     expect(ListeningStatsLogic.formatDuration(59), '0 分钟');
@@ -3141,7 +3405,9 @@ void main() {
     expect(restored.totalSeconds, 150);
     expect(restored.bySource['feed-1']?.seconds, 150);
     expect(
-        restored.byDay[ListeningStatsLogic.dayKey(now)]?.podcastSeconds, 150);
+      restored.byDay[ListeningStatsLogic.dayKey(now)]?.podcastSeconds,
+      150,
+    );
     expect(restored.bySource['feed-1']?.kind, PlaybackKind.podcast);
     expect(restored.bySource['feed-1']?.title, '测试播客');
   });
@@ -3204,7 +3470,8 @@ void main() {
     );
     expect(
       PodcastDownloadLogic.episodeDownloadLabel(
-          status: EpisodeDownloadStatus.failed),
+        status: EpisodeDownloadStatus.failed,
+      ),
       '下载失败',
     );
     expect(
@@ -3216,7 +3483,8 @@ void main() {
     );
     expect(
       PodcastDownloadLogic.episodeDownloadLabel(
-          status: EpisodeDownloadStatus.none),
+        status: EpisodeDownloadStatus.none,
+      ),
       isNull,
     );
   });
@@ -3444,7 +3712,7 @@ void main() {
       fileName: 'drop.mp3',
       bytes: 8,
     );
-    final before = PodcastDownloadState(
+    final before = const PodcastDownloadState(
       records: {'keep': keep, 'drop': drop},
       progress: {'drop': 0.2, 'inflight': 0.5, 'keep': 0.1},
       failed: {'drop', 'other-fail'},
@@ -3466,10 +3734,14 @@ void main() {
     expect(reloaded.failureSeq, 3);
     expect(reloaded.lastFailureTitle, '删');
 
-    expect(PodcastDownloadRecord.tryFromJson({'guid': '', 'fileName': 'x.mp3'}),
-        isNull);
-    expect(PodcastDownloadRecord.tryFromJson({'guid': 'g', 'fileName': ''}),
-        isNull);
+    expect(
+      PodcastDownloadRecord.tryFromJson({'guid': '', 'fileName': 'x.mp3'}),
+      isNull,
+    );
+    expect(
+      PodcastDownloadRecord.tryFromJson({'guid': 'g', 'fileName': ''}),
+      isNull,
+    );
     expect(
       PodcastDownloadRecord.tryFromJson({
         'guid': 'g',
@@ -3529,12 +3801,16 @@ void main() {
     );
     expect(
       StationSkipLogic.catalogStillLoading(
-          filteredLoading: true, visibleLoading: false),
+        filteredLoading: true,
+        visibleLoading: false,
+      ),
       isTrue,
     );
     expect(
       StationSkipLogic.catalogStillLoading(
-          filteredLoading: false, visibleLoading: false),
+        filteredLoading: false,
+        visibleLoading: false,
+      ),
       isFalse,
     );
   });
@@ -3633,7 +3909,7 @@ void main() {
 
   test('SleepLastValue json roundtrip and remaining episode countdown', () {
     expect(
-      SleepTimerLogic.parseLastValue(SleepLastValue.minutes(25).toJson())
+      SleepTimerLogic.parseLastValue(const SleepLastValue.minutes(25).toJson())
           ?.minutes,
       25,
     );
@@ -3643,13 +3919,15 @@ void main() {
       isTrue,
     );
     expect(
-      SleepTimerLogic.parseLastValue(SleepLastValue.episodes(2).toJson())
+      SleepTimerLogic.parseLastValue(const SleepLastValue.episodes(2).toJson())
           ?.count,
       2,
     );
     expect(SleepTimerLogic.parseLastValue({'kind': 'nope'}), isNull);
-    expect(SleepTimerLogic.parseLastValue({'kind': 'minutes', 'minutes': 0}),
-        isNull);
+    expect(
+      SleepTimerLogic.parseLastValue({'kind': 'minutes', 'minutes': 0}),
+      isNull,
+    );
     expect(SleepTimerLogic.afterEpisodeCompleted(null), isNull);
     expect(SleepTimerLogic.afterEpisodeCompleted(2), 1);
     expect(SleepTimerLogic.afterEpisodeCompleted(1), 0);
@@ -3676,10 +3954,12 @@ void main() {
     expect(storage.getSleepTimerLast(), isNull);
     await storage.setSleepTimerLast(SleepLastValue.untilEnd);
     expect(storage.getSleepTimerLast()?.isUntilEnd, isTrue);
-    await storage.setSleepTimerLast(SleepLastValue.episodes(3));
+    await storage.setSleepTimerLast(const SleepLastValue.episodes(3));
     expect(storage.getSleepTimerLast()?.count, 3);
-    expect((await SharedPreferences.getInstance()).getString('app_skin_id'),
-        isNull);
+    expect(
+      (await SharedPreferences.getInstance()).getString('app_skin_id'),
+      isNull,
+    );
   });
 
   test('PodcastChapterLogic parses Podlove, JSON, and prefers JSON', () {
@@ -3695,14 +3975,18 @@ void main() {
 </item>
 ''').rootElement;
 
-    expect(PodcastChapterLogic.chaptersUrlFromItem(item),
-        'https://example.com/chapters.json');
+    expect(
+      PodcastChapterLogic.chaptersUrlFromItem(item),
+      'https://example.com/chapters.json',
+    );
     final podlove = PodcastChapterLogic.parsePodloveChapters(item);
     expect(podlove.map((c) => c.title), ['开场', '秒数', '正题']);
     expect(podlove[1].start, const Duration(seconds: 90));
     expect(podlove[2].toc, isFalse);
     expect(
-        PodcastChapterLogic.tocOf(podlove).map((c) => c.title), ['开场', '秒数']);
+      PodcastChapterLogic.tocOf(podlove).map((c) => c.title),
+      ['开场', '秒数'],
+    );
 
     final json = PodcastChapterLogic.parseJsonChapters('''
 {"chapters":[
@@ -3740,8 +4024,10 @@ void main() {
       )?.title,
       'JSON中段',
     );
-    expect(PodcastChapterLogic.parseStart('1:02:03'),
-        const Duration(hours: 1, minutes: 2, seconds: 3));
+    expect(
+      PodcastChapterLogic.parseStart('1:02:03'),
+      const Duration(hours: 1, minutes: 2, seconds: 3),
+    );
     expect(PodcastChapterLogic.parseJsonChapters('not-json'), isEmpty);
   });
 

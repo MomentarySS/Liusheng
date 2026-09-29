@@ -72,6 +72,9 @@ windows/runner/resources/test_icon*.ico
 /ADULT_SOURCES.md
 /SOURCES.md
 
+# Internal design and release records (not for public repo)
+/docs/design/
+
 # Internal tooling (scripts, probes, scrapers; not for public repo)
 /tools/
 

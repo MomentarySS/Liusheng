@@ -89,7 +89,7 @@ flutter pub get
 
 产物在 `dist/`，文件名跟 `pubspec.yaml` 的 `x.y.z` 走（当前为 `liusheng-2.2.1.apk`、`liusheng-windows-2.2.1.zip`、`liusheng-windows-2.2.1.exe`）。改版本后需重新 `.\scripts\pack.ps1`。本地签名配置文件存在时 APK 用正式密钥签名；没有则回退 debug 签名。`minSdk` 23。Windows 双击 `.exe` 安装包安装，安装后从开始菜单启动；安装包支持卸载（控制面板 / 设置 → 应用）。
 
-正式构建需要本地签名配置文件；该配置不会进入 Git。请在仓库外妥善备份，丢了就无法再发「同一个 App」的更新。以前用 debug 签名装过的手机，不能直接覆盖安装，需先卸载（收藏等本机数据会清掉）。
+正式构建需要本地签名配置文件；该配置不会进入 Git。请在仓库外妥善备份，丢失后将无法再发「同一个 App」的更新。以前用 debug 签名装过的手机，不能直接覆盖安装，需先卸载（收藏等本机数据会清掉）。
 
 首次打 APK 会从腾讯云拉取 NDK（约 700 MB）到本机 Android SDK，之后会跳过。Android 打包需要 **JDK 17**。Windows 需要 Visual Studio 2022 生成工具，并勾选 **C++ ATL**（`flutter_local_notifications_windows` 要 `atlbase.h`）。
 

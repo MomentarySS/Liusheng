@@ -8,7 +8,21 @@ Format follows [Keep a Changelog](https://keepachangelog.com/zh-CN/), and the pr
 
 ## [Unreleased]
 
-<!-- 后续改动从这里开始记录；本次 Liusheng 升级已归档到 v2.2.2。 -->
+### Added
+
+- 播客订阅分组：可自建分组（新闻 / 科技 / 商业等），搜索框下方出现分组筛选行（全部 + 各分组带订阅数 + 未分组），长按订阅或 Windows 右键可「移动到分组」，筛选行末尾的「管理」可新建 / 重命名 / 删除分组。**一个订阅属于一个分组；删分组不会删订阅**，其中的订阅回到「未分组」。不建分组时整行不渲染，界面与此前完全一致
+- 分组关系自动纳入本机备份（沿用 SharedPreferences 全量快照机制，无需备份格式迁移）
+- **Windows 端补上新一集通知**：此前通知能力在 Windows 上一直可用（`local_notifications` 的 Windows 初始化早就在），但除了手动刷新没有任何触发源。现在应用运行期间每小时轮询一次，真正的 6 小时节流与「首次只记 guid 不提醒」沿用既有逻辑。关掉主窗口、留在托盘会继续检查，退出应用则不再检查；轮询生命周期跟随「新一集通知」开关，与 Android 取消 workmanager 任务的行为一致。设置页该开关的副标题会按平台说明这一点
+
+### Changed
+
+- 浅色主题主色改用 Material 3 的 `DynamicSchemeVariant.vibrant`：`primary` 从去饱和的 `#405F90` 变为接近品牌种子的 `#005DB7`，品牌蓝在浅色界面上重新可见。**深色保留默认 `tonalSpot`**——`vibrant` 会把深色 `onPrimary` 从深蓝 `#08305F` 变成深绿 `#003D03`，主播放键的图标会变绿
+- `ThemeData` 补上此前完全缺失的 `textTheme`，把 `DESIGN.md` 的 10 档排版 scale 显式写全（字号 / 字重 / 行高比）。此前字号全靠各页手写与 Material 默认值，设计文档定的 scale 没有任何强制力
+- 设置「外观」等页面上的 `vibrant` 与排版 token 现由 `test/design_tokens_test.dart` 锁定，token 被无意改动会立刻失败
+
+### Fixed
+
+- `DESIGN.md` 内部 6 处与实现不一致的表述已按代码现值定稿（迷你条播放键触控 48、Now Playing 渐变淡出 62%、渐变 wash 36%、封面光晕 blur 28 / 下偏 12 / 28%），版本标注更新为 2.2.2，并记录两处 scale 外的合法例外
 
 ## [2.2.2] - 2026-10-05
 

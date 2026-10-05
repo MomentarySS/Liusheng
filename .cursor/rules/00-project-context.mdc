@@ -13,6 +13,8 @@ alwaysApply: true
 - 当前版本以 `pubspec.yaml` + `lib/core/brand.dart` 为准（对齐 `AppBrand.version` 与 User-Agent）
 - 定位：国内精选电台 + 可开关 Radio Browser + 手动添加；Spotify 式迷你条 + RSS 播客
 - 明确不做：蜻蜓/喜马拉雅版权点播、直播录音、独立闹钟、均衡器、音量增强、逐字稿、全球 RB 浏览器、iOS/Web
+- 分发策略：**不上架 Google Play**（2026-10-05 决策）。APK 走签名后手动分发，Windows 走 Inno Setup。推论：`targetSdk` 保持 Flutter 默认即可，**不要**为满足 Play 的 API 36 要求去升 Flutter 或抬高 `minSdk`（保持 23）；Android 16 的 edge-to-edge 等行为变化按 `targetSdk` 开关，不选 36 就不触发
+- 新版本分发：**GitHub Release**（2026-10-05 决策），tag 跟随版本号。`pack.ps1` 只产出到 `dist/`（该目录被 gitignore），上传是独立步骤。长期计划与决策见 `docs/EXPANSION-PLAN.md`（注意 `docs/design/*-plan.md` 一类通配规则会把它排除，写在 `docs/` 根目录才可追溯）
 - 状态管理：Riverpod；音频：`just_audio` + `audio_service`；Windows 用 `third_party/just_audio_windows`
 - 改功能：代码 → 能测则补 `test/layer_test.dart` → 更新 README/CHANGELOG/PRODUCT
 - 打包：`scripts/pack.ps1` + `scripts/liusheng-windows.iss` → `dist/liusheng-*`；升版本须同步 pubspec、AppBrand、安装程序脚本和文档

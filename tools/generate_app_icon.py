@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from dataclasses import dataclass
 from pathlib import Path
 
 import numpy as np
@@ -12,9 +13,43 @@ BRANDING = ROOT / "assets" / "branding"
 
 BG_CENTER = np.array([21, 101, 192], dtype=np.float64)  # #1565C0
 BG_EDGE = np.array([13, 79, 140], dtype=np.float64)  # #0D4F8C
-PEBBLE_TOP = np.array([250, 252, 255], dtype=np.float64)
-PEBBLE_BOTTOM = np.array([181, 215, 255], dtype=np.float64)
 WAVE = (13, 79, 140, 255)
+
+
+@dataclass(frozen=True)
+class Style:
+    """Geometry and fill overrides for one rendering target.
+
+    Positions are fractions of the canvas. Bars and dots are mirrored about the
+    canvas centre line, so a style only has to state the left-hand half.
+    """
+
+    dots: tuple[float, ...] = (0.30, 0.70)
+    bars: tuple[tuple[float, float], ...] = (
+        (0.40, 0.19),
+        (0.50, 0.32),
+        (0.60, 0.20),
+    )
+    wave_width: float = 0.058
+    pebble_top: tuple[int, int, int] = (250, 252, 255)
+    pebble_bottom: tuple[int, int, int] = (181, 215, 255)
+
+
+MASTER = Style()
+
+# The Windows notification area shows the tray icon at 16-24px. At 16px the
+# master's 0.058 stroke is 0.93px - under a single pixel - and five marks spread
+# across 7.1px cannot stay separated however the stroke is tuned: keeping the
+# 0.042 gaps needs 0.042px at that size, so the marks merge into one band. The
+# tray variant therefore drops the two lead-in dots, keeps three bars on the
+# same centre line at 0.32/0.50/0.68, widens the stroke to 1.6px at 16px, and
+# lifts the stone's lower gradient stop so the fill does not band.
+TRAY = Style(
+    dots=(),
+    bars=((0.32, 0.19), (0.50, 0.32), (0.68, 0.20)),
+    wave_width=0.10,
+    pebble_bottom=(205, 229, 255),
+)
 
 ANDROID_LEGACY = {
     "mipmap-mdpi": 48,
@@ -31,6 +66,9 @@ ANDROID_FOREGROUND = {
     "mipmap-xxxhdpi": 432,
 }
 ICO_SIZES = (16, 24, 32, 48, 64, 128, 256)
+# Windows picks the notification-area frame by display scale: 16px at 100%,
+# 20px at 125%, 24px at 150%, 32px at 200%.
+TRAY_ICO_SIZES = (16, 20, 24, 32, 48, 64, 128, 256)
 ADAPTIVE_VISIBLE = 72 / 108  # Android masks adaptive icons to 72dp of 108dp.
 
 
@@ -131,43 +169,40 @@ def _pebble_points(size: int) -> list[tuple[float, float]]:
     return points
 
 
-def _draw_pebble(canvas: Image.Image, size: int) -> None:
+def _draw_pebble(canvas: Image.Image, size: int, style: Style) -> None:
     mask = Image.new("L", (size, size), 0)
     ImageDraw.Draw(mask).polygon(_pebble_points(size), fill=255)
 
+    top = np.array(style.pebble_top, dtype=np.float64)
+    bottom = np.array(style.pebble_bottom, dtype=np.float64)
     yy, xx = np.mgrid[0:size, 0:size]
     t = np.clip(
         0.34 * xx / max(size - 1, 1) + 0.66 * yy / max(size - 1, 1),
         0,
         1,
     )[..., None]
-    gradient = (PEBBLE_TOP * (1 - t) + PEBBLE_BOTTOM * t).astype(np.uint8)
+    gradient = (top * (1 - t) + bottom * t).astype(np.uint8)
     rgba = np.concatenate(
         [gradient, np.full((size, size, 1), 255, dtype=np.uint8)], axis=2
     )
     canvas.paste(Image.fromarray(rgba, "RGBA"), (0, 0), mask)
 
 
-def _draw_waveform(draw: ImageDraw.ImageDraw, size: int) -> None:
+def _draw_waveform(
+    draw: ImageDraw.ImageDraw, size: int, style: Style
+) -> None:
     center_y = size * 0.52
-    dot = size * 0.029
-    # Dots and bars are mirrored about the canvas centre line (0.50): the bars
-    # sit at 0.40/0.50/0.60 and the dots at 0.30/0.70, so both the inner bar
-    # gaps and the two outer dot gaps come out equal. The old 0.34/0.73 pair
-    # put the axis at 0.54 and left the right outer gap 10px narrower at 1024.
-    for x in (0.30, 0.70):
+    width = size * style.wave_width
+    # A dot reads as a mark of the same weight as the bars when its diameter
+    # matches the bar width, so the radius is always half the stroke.
+    dot = width / 2
+    for x in style.dots:
         draw.ellipse(
             (size * x - dot, center_y - dot, size * x + dot, center_y + dot),
             fill=WAVE,
         )
 
-    bars = (
-        (0.40, 0.19),
-        (0.50, 0.32),
-        (0.60, 0.20),
-    )
-    width = size * 0.058
-    for x, height in bars:
+    for x, height in style.bars:
         h = size * height
         left = size * x - width / 2
         top = center_y - h / 2
@@ -178,7 +213,7 @@ def _draw_waveform(draw: ImageDraw.ImageDraw, size: int) -> None:
         )
 
 
-def _render_art(size: int, *, background: bool) -> Image.Image:
+def _render_art(size: int, *, background: bool, style: Style) -> Image.Image:
     scale = 4 if size >= 48 else (3 if size >= 24 else 2)
     canvas_size = size * scale
     image = (
@@ -186,30 +221,32 @@ def _render_art(size: int, *, background: bool) -> Image.Image:
         if background
         else Image.new("RGBA", (canvas_size, canvas_size), (0, 0, 0, 0))
     )
-    _draw_pebble(image, canvas_size)
-    _draw_waveform(ImageDraw.Draw(image, "RGBA"), canvas_size)
+    _draw_pebble(image, canvas_size, style)
+    _draw_waveform(ImageDraw.Draw(image, "RGBA"), canvas_size, style)
     return image.resize((size, size), Image.Resampling.LANCZOS)
 
 
-def render(*, size: int, background: bool) -> Image.Image:
+def render(*, size: int, background: bool, style: Style = MASTER) -> Image.Image:
     if background:
-        return _render_art(size, background=True)
+        return _render_art(size, background=True, style=style)
 
     # Keep the adaptive foreground inside Android's mask-safe area.
     inner_size = max(int(size * 0.72), 2)
-    inner = _render_art(inner_size, background=False)
+    inner = _render_art(inner_size, background=False, style=style)
     output = Image.new("RGBA", (size, size), (0, 0, 0, 0))
     offset = (size - inner_size) // 2
     output.alpha_composite(inner, (offset, offset))
     return output
 
 
-def _save_ico(path: Path) -> None:
-    images = [render(size=s, background=True).convert("RGBA") for s in ICO_SIZES]
+def _save_ico(path: Path, style: Style, sizes: tuple[int, ...]) -> None:
+    images = [
+        render(size=s, background=True, style=style).convert("RGBA") for s in sizes
+    ]
     images[-1].save(
         path,
         format="ICO",
-        sizes=[(s, s) for s in ICO_SIZES],
+        sizes=[(s, s) for s in sizes],
         append_images=images[:-1],
     )
 
@@ -237,15 +274,17 @@ def main() -> None:
         background / "ic_launcher_background.png", "PNG", optimize=True
     )
 
-    # Two consumers, one source: the Windows executable reads the runner copy,
-    # and lib/core/platform/desk_tray.dart reads the bundled asset.
-    ico = ROOT / "windows" / "runner" / "resources" / "app_icon.ico"
-    _save_ico(ico)
-    _save_ico(BRANDING / "app_icon.ico")
+    # Two consumers, one generator but two icon sets: the Windows executable
+    # and installer read the runner copy and get the full master, while
+    # lib/core/platform/desk_tray.dart reads the bundled asset and gets the
+    # tray variant tuned for 16-24px.
+    runner_ico = ROOT / "windows" / "runner" / "resources" / "app_icon.ico"
+    _save_ico(runner_ico, MASTER, ICO_SIZES)
+    _save_ico(BRANDING / "app_icon.ico", TRAY, TRAY_ICO_SIZES)
     print(f"Wrote {BRANDING / 'app_icon.png'}")
     print(f"Wrote {background / 'ic_launcher_background.png'}")
-    print(f"Wrote {ico}")
-    print(f"Wrote {BRANDING / 'app_icon.ico'}")
+    print(f"Wrote {runner_ico} (master)")
+    print(f"Wrote {BRANDING / 'app_icon.ico'} (tray)")
 
 
 if __name__ == "__main__":

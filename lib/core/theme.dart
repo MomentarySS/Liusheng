@@ -45,10 +45,29 @@ abstract final class ListDensityLogic {
 
 /// 壁纸 / 系统强调色 → ColorScheme。没有平台色时退回流声蓝种子。
 abstract final class DynamicThemeLogic {
+  /// 浅色生成策略：`vibrant`。
+  ///
+  /// Material 默认的 `tonalSpot` 会把种子压成低 chroma 的 `#405F90`，品牌蓝在界面上
+  /// 基本看不见；`vibrant` 生成的 `#005DB7` 最接近流声蓝种子 `#1565C0`。
+  /// 不能选 `expressive`（变绿 `#3A6931`）或 `fruitSalad`（变青 `#006876`）——
+  /// 那会把品牌从蓝变成别的色相。
+  static const lightVariant = DynamicSchemeVariant.vibrant;
+
+  /// 深色保留 Material 默认的 `tonalSpot`，**不要**跟着换成 `vibrant`。
+  ///
+  /// 实测（`docs/variant-color-cards.png`）：`vibrant` 在深色下 `primary` 确实仍是
+  /// `#A9C7FF`，但 `onPrimary` 会从深蓝 `#08305F` 变成深绿 `#003D03`。`DESIGN.md`
+  /// 规定主播放键用 `primary` + `onPrimary`，照搬会让深色播放键的图标变绿。
+  static const darkVariant = DynamicSchemeVariant.tonalSpot;
+
+  static DynamicSchemeVariant variantFor(Brightness brightness) =>
+      brightness == Brightness.dark ? darkVariant : lightVariant;
+
   static ColorScheme fallback({required Brightness brightness}) {
     return ColorScheme.fromSeed(
       seedColor: LiushengTheme.seed,
       brightness: brightness,
+      dynamicSchemeVariant: variantFor(brightness),
     );
   }
 
@@ -63,7 +82,13 @@ abstract final class DynamicThemeLogic {
       return platformScheme;
     }
     if (accent != null && isUsableAccent(accent)) {
-      return ColorScheme.fromSeed(seedColor: accent, brightness: brightness);
+      // 与品牌种子共用同一个 variant：用户选系统强调色时也要鲜明，
+      // 否则会出现"品牌色 vivid、系统色发灰"的分裂感。
+      return ColorScheme.fromSeed(
+        seedColor: accent,
+        brightness: brightness,
+        dynamicSchemeVariant: variantFor(brightness),
+      );
     }
     return fallback(brightness: brightness);
   }
@@ -110,6 +135,7 @@ abstract final class LiushengTheme {
       useMaterial3: true,
       colorScheme: scheme,
       visualDensity: VisualDensity.standard,
+      textTheme: _textTheme(brightness),
       extensions: const [LiushengSkinTheme()],
       filledButtonTheme: FilledButtonThemeData(
         style: FilledButton.styleFrom(shape: const StadiumBorder()),
@@ -219,6 +245,53 @@ abstract final class LiushengTheme {
         style: IconButton.styleFrom(minimumSize: const Size(48, 48)),
       ),
       progressIndicatorTheme: ProgressIndicatorThemeData(color: scheme.primary),
+    );
+  }
+
+  /// 把 `DESIGN.md` 的 typography scale 钉进 `ThemeData.textTheme`。
+  ///
+  /// 之前 `ThemeData` 完全没有 `textTheme`，排版 scale 只存在于设计文档里，没有任何
+  /// 强制力。这里显式写全每个角色的字号、字重与行高比，不依赖 Material 默认值。
+  ///
+  /// **不能只基于 `Typography.material2021()` 的角色做 `copyWith`**：Material 3 把
+  /// 早期版本下沉的字号与字重从角色样式里移走了，那些角色只带 `color` / `family` /
+  /// `decoration`，`fontSize` 是 null。只补 `fontWeight` 会得到"看起来设置了、其实字号
+  /// 一个都没落"的假实现。
+  ///
+  /// 行高用 `DESIGN.md` 的比例：headline 1.33、title 1.5、body 1.43、label 1.33。
+  /// `DESIGN.md` 声明本系统不使用 Display 角色，因此不覆盖 `display*`。
+  static TextTheme _textTheme(Brightness brightness) {
+    final base =
+        brightness == Brightness.dark
+            ? Typography.material2021().white
+            : Typography.material2021().black;
+    TextStyle role(
+      double size,
+      FontWeight weight,
+      double height, [
+      double? spacing,
+    ]) => TextStyle(
+      fontSize: size,
+      fontWeight: weight,
+      height: height,
+      letterSpacing: spacing,
+    );
+    return base.copyWith(
+      // headline：24px w700，Now Playing 台名与睡眠倒计时，App 内最大的字。
+      headlineSmall: role(24, FontWeight.w700, 1.33),
+      // titleLarge 22 用于分区头；titleMedium / titleSmall 走 16 与 14，均 w600。
+      titleLarge: role(22, FontWeight.w400, 1.27),
+      titleMedium: role(16, FontWeight.w600, 1.5),
+      titleSmall: role(14, FontWeight.w600, 1.43),
+      // body：16 / 14 / 12 三档，信息密度主力，w400。
+      bodyLarge: role(16, FontWeight.w400, 1.5),
+      bodyMedium: role(14, FontWeight.w400, 1.43),
+      bodySmall: role(12, FontWeight.w400, 1.33),
+      // label：labelLarge 14 w600 用于设置分组标题与倒计时；
+      // labelMedium 12 w500 带 0.4px 字距；labelSmall 11 用于迷你条紧凑倒计时。
+      labelLarge: role(14, FontWeight.w600, 1.43),
+      labelMedium: role(12, FontWeight.w500, 1.33, 0.4),
+      labelSmall: role(11, FontWeight.w500, 1.45),
     );
   }
 }

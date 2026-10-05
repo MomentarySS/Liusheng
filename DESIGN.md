@@ -1,10 +1,10 @@
 ---
 name: 流声
-description: 电台与播客，一处收听 — Material 3 列表与 Spotify 式迷你播放条（对应产品 2.1.0）
+description: 电台与播客，一处收听 — Material 3 列表与 Spotify 式迷你播放条（对应产品 2.2.2）
 colors:
   liusheng-blue: "#1565C0"
   deep-liusheng: "#0D4F8C"
-  primary: "#405F90"
+  primary: "#005DB7"
   on-primary: "#FFFFFF"
   primary-container: "#D6E3FF"
   on-primary-container: "#001B3D"
@@ -131,7 +131,7 @@ components:
 
 # Design System: 流声
 
-对应产品版本 **2.1.0**。相对 2.0.2：mini player 标题行右侧新增播客精确剩余时间（`剩余 mm:ss` / `剩余 h:mm:ss`，等宽数字）；Android 桌面 widget 改为 Material You 动态色（API 31+，尊重 App 内「壁纸 / 系统配色」开关）+ 深色系统配色变体 + M3 矢量图标；新增 Android「待听」桌面 widget（4×2 cell：1 行「待听」标题 + 4 行单集标题/节目名）；新增关于页品牌口号；其余设计 token 与组件库与 2.0.2 一致。
+对应产品版本 **2.2.2**。本节组件规格自 2.1.0 建立，2.1.1–2.2.2 未改动这些 token（2.2.1 移除了三套氛围皮肤，2.2.2 对齐设置页文案）。相对 2.0.2：mini player 标题行右侧新增播客精确剩余时间（`剩余 mm:ss` / `剩余 h:mm:ss`，等宽数字）；Android 桌面 widget 改为 Material You 动态色（API 31+，尊重 App 内「壁纸 / 系统配色」开关）+ 深色系统配色变体 + M3 矢量图标；新增 Android「待听」桌面 widget（4×2 cell：1 行「待听」标题 + 4 行单集标题/节目名）；新增关于页品牌口号；其余设计 token 与组件库与 2.0.2 一致。
 
 底部导航「收藏」已改为「收听」三段式 tab（收藏 / 最近 / 统计）；播放器控制行改为 `spaceEvenly`（电台：睡眠 / 上一台 / 播放 / 下一台 / 列表）；睡眠定时预设为 5–60 分钟，含 30 秒淡出与小睡 10 分钟后续播，并记住上次；播客倍速含 0.5× / 0.6×，可跳过片头片尾，± 秒数 10/15/30/60，有章节时按章跳；桌面迷你窗仅 Windows；收听统计页展示总时长、电台 vs 播客占比、最常收听 Top 5（热力图已于 1.4.8 移除）；外观切换带 200ms AnimatedTheme 过渡；Chromecast 投屏默认关闭，仅 Android 外观页可手动开启；播客主页与收听 tab 均可「继续收听」，空订阅主按钮与「发现节目」进入发现页（iTunes + 中文热榜）；单集可标已听/收藏并用芯片筛选；有章节时封面下显示章名、进度条打点；订阅列表项改为长按菜单，单集 tile 右侧可直接打开 Show Notes；设置页「源」改名为「电台管理」；Now Playing 顶部无「电台/播客」标题；桌面迷你窗修复无边框窗口下首次点击穿透问题。Android 电台/单集可水平滑动；手机迷你条封面标题区可左右滑切台或跳秒。
 
@@ -158,7 +158,15 @@ components:
 
 ## Colors
 
-一套由种子生成的蓝调 Material 角色色。品牌记忆落在种子与启动底；屏幕上的按钮、播放键、选中强调走生成后的 `primary`。打开「壁纸 / 系统配色」时，Android 12+ 改用壁纸（Material You），Windows 改用系统强调色；拿不到平台色或关掉开关，仍回流声蓝。外观默认跟随系统，不要再做成只能浅/深二选一。
+一套由种子生成的蓝调 Material 角色色。品牌记忆落在种子与启动底；屏幕上的按钮、播放键、选中强调走生成后的 `primary`。
+
+**浅色用 `vibrant`，深色保留 `tonalSpot`。** 默认变体把种子 `#1565C0` 压成低 chroma 的 `#405F90`，品牌蓝在浅色界面上基本看不见；`vibrant` 生成的浅色 `primary` 是 `#005DB7`，最接近种子。
+
+**深色不要跟着换 `vibrant`。** 实测（`docs/variant-color-cards.png`）：`vibrant` 在深色下 `primary` 确实仍是 `#A9C7FF`，但 **`onPrimary` 会从深蓝 `#08305F` 变成深绿 `#003D03`**——本系统的主播放键正是 `primary` + `onPrimary`，照搬会让深色播放键的图标变绿。深色保留 `tonalSpot` 就没有这个问题，且深色 `primary` 本来就是清晰的浅蓝，不存在"品牌蓝不可见"。
+
+**不可选 `expressive`（变绿 `#3A6931`）或 `fruitSalad`（变青 `#006876`）**，那会把品牌色相换掉。品牌种子与「系统强调色」两条路径共用同一个 variant，避免品牌色鲜明而系统色发灰的分裂感。
+
+打开「壁纸 / 系统配色」时，Android 12+ 改用壁纸（Material You），Windows 改用系统强调色；拿不到平台色或关掉开关，仍回流声蓝。外观默认跟随系统，不要再做成只能浅/深二选一。
 
 ### Primary
 - **流声蓝**：主题种子与启动器叙事色，也出现在上海台标占位里。不要把它当每个 Filled 按钮的填色。
@@ -177,7 +185,7 @@ components:
 - **error**：连不上的台数、测试失败、已改址仍失败的副文。播放失败用 `error-container` 条。
 
 ### Named Rules
-**The Seed-Is-Not-the-Paint Rule.** 流声蓝是种子，不是按钮填色。组件必须用 ColorScheme 角色（浅色 `primary`，深色 `primary-dark`）。把种子 hex 直接刷上控件，浅色会过饱和、深色会过暗。
+**The Seed-Is-Not-the-Paint Rule.** 流声蓝是种子，不是按钮填色。组件必须用 ColorScheme 角色（浅色 `primary` = `#005DB7`，深色 `primary-dark` = `#A9C7FF`），不要把种子 hex `#1565C0` 直接刷上控件——浅色会过饱和、深色会过暗。
 
 **The Placeholder-Not-Brand Rule.** 央广红、广东青绿、北京紫、交通橙等渐变只填无台标封面。导航、按钮、芯片、列表底禁止借用这些色。
 
@@ -194,6 +202,11 @@ components:
 - **Title**（titleLarge 22 用于分区头如「收藏」；titleMedium 16 w600 用于表单小节与空状态主句；titleSmall 14 w600 用于迷你条台名）：列表与播放器的可读层。
 - **Body**（bodyLarge 16 用于 Now Playing 副标题；bodyMedium 14 用于说明；bodySmall 12 用于列表副文、设置分组说明、进度时间）：信息密度的主力。
 - **Label**（labelLarge 14 w600 用于设置分组标题与倒计时；labelSmall 11 用于迷你条上的紧凑倒计时）：控件与状态，倒计时必须等宽数字。
+
+**已知 scale 外例外**（2026-10-05 审计记录，不要当漂移改掉）：
+
+- `podcast_now_playing.dart:613` 的 ± 秒跳按钮内刻度数字用 `fontSize: 20` / w700 / 等宽数字。那是 60px 正圆按钮里的刻度，不是文本层级，不套任何 label 角色。
+- `theme.dart` 里 NavigationBar 与 NavigationRail 的标签字号 12 是手写，与 `labelMedium` 同值且**有意保持独立**：导航标签不应随正文 scale 一起调整。
 
 ### Named Rules
 **The Platform Face Rule.** 禁止引入独立 Display 字体或装饰性中文字库。品牌识别走颜色与封面，不走字标。
@@ -212,11 +225,11 @@ components:
 
 ## Elevation & Depth
 
-混合：列表与设置几乎是平的，深度只为「正在听」服务。迷你条是一块被抬起的石（Material elevation 6，阴影色为 `shadow` 的 22% 透明）。Now Playing 不是再抬一层卡片，而是从封面主色 55% 叠到 `surface` 的纵向渐变，在 45% 高度淡出；封面本身带同色光晕（blur 32、下偏 16）。音量槽是半透明的 `surface-container-highest`，没有投影。对话框走 Material 默认 28 半径色调表面；SnackBar 悬浮，不另加品牌阴影。
+混合：列表与设置几乎是平的，深度只为「正在听」服务。迷你条是一块被抬起的石（Material elevation 6，阴影色为 `shadow` 的 22% 透明）。Now Playing 不是再抬一层卡片，而是从封面主色 36% 叠到 `surface` 的纵向渐变，在 62% 高度淡出；封面本身带同色光晕（blur 28、下偏 12、28% 透明）。音量槽是半透明的 `surface-container-highest`，没有投影。对话框走 Material 默认 28 半径色调表面；SnackBar 悬浮，不另加品牌阴影。
 
 ### Shadow Vocabulary
 - **迷你条抬起**（Material elevation 6，`shadow` @ 22%）：底部播放条唯一的结构阴影。
-- **封面光晕**（`0 16px 32px`，封面主色 @ 35%）：只用于 Now Playing 大封面。
+- **封面光晕**（`0 12px 28px`，封面主色 @ 28%）：只用于 Now Playing 大封面。电台与播客两处实现相同参数，宜收敛到 `LiushengSkinTheme`。
 - **其余**：无。卡片、列表、芯片、设置行走色调表面，不另加阴影。
 
 ### Named Rules
@@ -233,7 +246,7 @@ components:
 ### Buttons
 柔软而明确。主操作 Filled，次操作 Text 或 Outlined，破坏性确认仍是 Filled 主色（清除缓存、删除）配「取消」TextButton。
 
-- **Shape:** 体育馆形（pill）。Now Playing 主播放为正圆 72；迷你条播放为 Filled IconButton 最小 52。
+- **Shape:** 体育馆形（pill）。Now Playing 主播放为正圆 72；迷你条播放为 Filled IconButton 最小 48。
 - **Primary:** `primary` 底 + `on-primary` 字。用于添加、重试、保存、空状态「检测可播放的源」。
 - **Secondary:** TextButton 用于取消、关闭定时、列表内「清除 / 检测 / 刷新」。Outlined IconButton 用于 Now Playing 的停止、睡眠；Android 另有投屏（Cast）。
 - **Hover / Focus:** 跟随 Material 状态层；不要加描边光晕或位移。忙碌时整行 `enabled: false`，转圈放在 trailing，不要替换 leading 图标。
@@ -269,7 +282,7 @@ components:
 有图则圆角裁切，200ms 淡入；`.ico` / favicon 当低清，改走占位。无图则二字白字 + 斜向渐变，极淡白图标印在字下。渐变按标签选功能色（央广红、广东青绿、上海用种子蓝、北京紫、江苏青、音乐紫、新闻蓝、交通橙）；否则由名称哈希出 HSL（饱和 0.52、明度 0.42→0.55）。这些色不是品牌主色。
 
 ### Now Playing sheet（签名）
-铺满屏幕，无顶圆角卡片感。背景：封面主色叠 `surface`，在 45% 高度淡出。大封面最大 340，放在 `Expanded` 里，标题变长时封面变矮，控制键钉在底部。标题 headlineSmall 加粗居中，最多 5 行。副标题同样：ICY 过长跑马灯，否则分类。音量在半径 16 的半透明槽里，轨道 4px、滑块半径 7。控制键用 `MainAxisAlignment.spaceEvenly` 均分间距，按钮保持固定大小不压缩。电台：睡眠定时 | 上一台 | 圆形主播放 72 | 下一台 | 播放列表。播客：倍速 | −15 | 圆形主播放 72 | +15 | 播放列表；进度条下另有简介 / 下载（未下可下、下载中可取消、已下载为徽章） / 睡眠 / 跳过片头尾 / 停止芯片。Outlined 辅助键固定 48–60 正圆，主播放 72 正圆。宽窗保持设计尺寸居中，窄窗只压缩间距不压缩按钮。播放列表弹出当前队列：电台为筛选/收藏/可见台，播客为这档节目的单集。Android 再跟一个线性投屏图标（外观开关默认关）。投屏只在 Android 出现，不要为 Windows 做假按钮。
+铺满屏幕，无顶圆角卡片感。背景：封面主色叠 `surface`，在 62% 高度淡出。大封面最大 340，放在 `Expanded` 里，标题变长时封面变矮，控制键钉在底部。标题 headlineSmall 加粗居中，最多 5 行。副标题同样：ICY 过长跑马灯，否则分类。音量在半径 16 的半透明槽里，轨道 4px、滑块半径 7。控制键用 `MainAxisAlignment.spaceEvenly` 均分间距，按钮保持固定大小不压缩。电台：睡眠定时 | 上一台 | 圆形主播放 72 | 下一台 | 播放列表。播客：倍速 | −15 | 圆形主播放 72 | +15 | 播放列表；进度条下另有简介 / 下载（未下可下、下载中可取消、已下载为徽章） / 睡眠 / 跳过片头尾 / 停止芯片。Outlined 辅助键固定 48–60 正圆，主播放 72 正圆。宽窗保持设计尺寸居中，窄窗只压缩间距不压缩按钮。播放列表弹出当前队列：电台为筛选/收藏/可见台，播客为这档节目的单集。Android 再跟一个线性投屏图标（外观开关默认关）。投屏只在 Android 出现，不要为 Windows 做假按钮。
 
 ### Settings station group（签名）
 设置「电台管理」与存储组同一套词汇：操作行左侧图标固定，右侧 TextButton（检测 / 刷新 / 清除）；刷新目录忙碌时按钮禁用，trailing 换 24 的细转圈。探测进行中「检测」行改成「停止检测」，保持可点，不要整行禁用。**收听范围** 用 ListTile 进全屏编辑页（与首次启动同一界面）：类型 FilterChip、省份 FilterChip、「加载全部精选」Switch；首次启动无预选，须至少选一项才能继续。有连不上的台时，副文改 `error`。空的「连不上的电台」页与尚无台时的探测进度共用居中短句；探测中可「停止检测」。空页主操作是「检测可播放的源」。不要把源管理做成仪表盘或第二套导航。

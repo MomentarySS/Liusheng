@@ -25,13 +25,12 @@ import 'package:liusheng/features/podcast/podcast_screen.dart';
 import 'package:liusheng/features/settings/playback_screen.dart';
 import 'package:liusheng/shared/widgets/sleep_timer_sheet.dart';
 
-/// v2.2 播客两页瘦身的守卫测试。对应工单
-/// `docs/design/mobile-v2-2-density-work-order.md` §6.2。
+/// v2.2 播客两页瘦身的守卫测试。对应 v2.2 密度工单 §6.2。
 ///
 /// 播放器页（`podcast_now_playing.dart`）与迷你条（`mini_player.dart`）都要
 /// `audioHandlerProvider` 给一个真的 `RadioAudioHandler`，而它的构造会起
 /// just_audio 平台通道 —— widget 测试里拿不到。这两处的守卫因此降级为**源码
-/// 结构断言**（见文件末尾），理由与降级范围记在工单 §6.2 的备注里。
+/// 结构断言**（见文件末尾）。
 const _feed = PodcastFeed(
   id: 'feed-1',
   title: '能力有限电台',

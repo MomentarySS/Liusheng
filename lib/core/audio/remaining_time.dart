@@ -1,8 +1,8 @@
 /// 播客单集「剩余时间」格式化。
 ///
 /// 进 mini player 标题行右侧使用，**仅播客**：电台没有总时长语义
-/// （直播流 duration 为 null 或不断增长的已缓冲长度），见
-/// `docs/design/mobile-v2-1-plan.md` §5 第 4 条。
+/// （直播流 duration 为 null 或不断增长的已缓冲长度）。
+/// 依据 v2.1 mini player 计划 §5 第 4 条。
 abstract final class RemainingTimeLogic {
   /// 把「剩余时长」格式化为中文文案。
   ///

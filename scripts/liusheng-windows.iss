@@ -1,13 +1,13 @@
 ; 流声 Windows Installer - Inno Setup 7
 #define AppName "流声"
 #define AppExeName "Liusheng.exe"
-#define AppVersion "2.2.2"
+#define AppVersion "2.2.3"
 #define AppPublisher "流声"
 #define AppURL "https://github.com/MomentarySS/Liusheng"
 #define AppDescription "电台与播客，一处收听"
 #define SourceDir "..\build\windows\x64\runner\Release"
 #define OutputDir "..\dist"
-#define OutputBaseFilename "liusheng-windows-2.2.2"
+#define OutputBaseFilename "liusheng-windows-2.2.3"
 
 [Setup]
 ; Basic Application Information

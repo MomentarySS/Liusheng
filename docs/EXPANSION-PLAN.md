@@ -4,7 +4,7 @@
 
 本文件在 `docs/` 根目录，**不受 `.gitignore` 排除**。注意 `docs/design/*-plan.md` 一类通配规则会把计划文档排除在仓库外，写在这里才可追溯。
 
-对应产品版本：2.2.2
+对应产品版本：2.2.3
 
 ---
 
@@ -209,9 +209,10 @@ Android 已有 `workmanager` 后台检查，Windows 此前完全没有触发源�
 
 ## 四、GitHub Release 分发
 
-- tag 跟随版本号（`v2.2.2`），产物为 `liusheng-2.2.2.apk`、`liusheng-windows-2.2.2.zip`、`liusheng-windows-2.2.2.exe`
+- tag 跟随版本号（`v2.2.3`），产物为 `liusheng-2.2.3.apk`、`liusheng-windows-2.2.3.zip`、`liusheng-windows-2.2.3.exe`
 - `scripts/pack.ps1` 只负责产出到 `dist/`，**不负责上传**；发布是独立步骤
-- 升版本需同步：`pubspec.yaml`、`lib/core/brand.dart`（`AppBrand.version` 与 `userAgent`）、`scripts/liusheng-windows.iss`、README、CHANGELOG
+- 升版本需同步（2026-10-05 实测补全，原清单漏了 5 个文件）：`pubspec.yaml`、`lib/core/brand.dart`（`AppBrand.version` 与三个 userAgent）、`scripts/pack.ps1`、`scripts/liusheng-windows.iss`（`AppVersion` 与 `OutputBaseFilename`）、`README.md`、`CHANGELOG.md`、`ROADMAP.md`、`PRODUCT.md`、`PRIVACY.md`（仓库文档里的 User-Agent 字面量）、`DESIGN.md`（frontmatter 与「对应产品版本」标注）、`docs/EXPANSION-PLAN.md`（本行）
+- **只有 `lib/core/brand.dart` ↔ `pubspec.yaml` 有自动门**（`test/layer_test.dart` 的 `AppBrand version matches pubspec and user agents`）。其余文档字面量全部无测试覆盖，只能靠上面这份清单人工核。`test/layer_test.dart` 里断言的 `PrivacyCopy` 是应用内隐私文案，与仓库的 `PRIVACY.md` 是两处，后者不受该测试保护
 - **注意**：`/dist/` 在 `.gitignore` 内，产物不走 git 提交，只作为 Release 附件
 - **注意**：`ADULT_SOURCES.md` 与 `SOURCES.md` 是 local-only（`.gitignore` 第 71-72 行），不要带进 Release 说明
 - **注意**：Release 附件即公开可下载。`README.md` 写明"丢失签名配置后无法再发同一个 App 的更新"，公开发布后需要考虑 apk 的公开面
@@ -229,3 +230,5 @@ Android 已有 `workmanager` 后台检查，Windows 此前完全没有触发源�
 | 2026-10-05 | A 落地后复跑三道门：format 幂等、analyze No issues found、test **191 项全过**。色卡存档 `docs/color-scheme-cards.png`（旧图已替换，旧图把被否决的深色 `vibrant` 标成 "AFTER"，会误导） |
 | 2026-10-05 | **P2 播客订阅分组完成**：新增 `core/podcast/feed_groups.dart`（127 行纯逻辑）、`features/podcast/feed_group_providers.dart`（127 行）、`features/podcast/feed_group_ui.dart`（364 行）、`test/feed_groups_test.dart`（250 行）。既有文件的实测增量（`git diff --stat`）：`podcast_screen.dart` 65 行、`theme.dart` 75 行、`app_storage.dart` 24 行、`podcast_providers.dart` 5 行——两个巨型文件都只被"调用"而没有被塞进实现。分组存独立 key，`subscribed_podcast_feeds` 与 `feed_cache` 零改动。三道门：format 幂等、analyze No issues found、test **210 项全过**（新增 19 项）。测试抓出 `filter` 的 `isEmpty` / `allGroups` 判据 bug，会让筛选行任何一次点击都坏掉 |
 | 2026-10-05 | **P3 Windows 新一集通知完成**：新增 `core/platform/new_episode_poller.dart`（31 行）与 `test/new_episode_poller_test.dart`（126 行）；既有文件实测增量 `new_episode_checker.dart` 63 行、`playback_screen.dart` 18 行、`main.dart` 12 行。**动手前先查清 `local_notifications.dart` 早已初始化 Windows**——所以这是补触发源而非加通知支持。三道门：format 幂等、analyze No issues found、test **220 项全过**（新增 10 项） |
+| 2026-10-05 | 四条线收口为 4 个 commit（`7ff7829` 视觉 / `47b9a89` P2 / `3de2ecf` P3 / `1437136` 文档），相对 `main` 合计 21 文件 +1878/−40，**未 push** |
+| 2026-10-05 | **发版 2.2.3+44**：全仓版本字面量同步（`pubspec.yaml` / `brand.dart` / `pack.ps1` / `liusheng-windows.iss` + 6 份 md）。发现两处历史遗留的不一致并修掉：① `DESIGN.md` 那句「2.1.1–2.2.2 未改动这些 token」在本版已不成立（2.2.3 改了浅色 `primary` 与 typography scale），已补记例外；② 第四节「升版本需同步」清单漏列 5 个文件（`pack.ps1`、`PRIVACY.md`、`PRODUCT.md`、`ROADMAP.md`、`DESIGN.md`），已补全并标注这些字面量无测试覆盖 |

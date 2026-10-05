@@ -17,5 +17,5 @@ alwaysApply: true
 - 新版本分发：**GitHub Release**（2026-10-05 决策），tag 跟随版本号。`pack.ps1` 只产出到 `dist/`（该目录被 gitignore），上传是独立步骤。长期计划与决策见 `docs/EXPANSION-PLAN.md`（注意 `docs/design/*-plan.md` 一类通配规则会把它排除，写在 `docs/` 根目录才可追溯）
 - 状态管理：Riverpod；音频：`just_audio` + `audio_service`；Windows 用 `third_party/just_audio_windows`
 - 改功能：代码 → 能测则补 `test/layer_test.dart` → 更新 README/CHANGELOG/PRODUCT
-- 打包：`scripts/pack.ps1` + `scripts/liusheng-windows.iss` → `dist/liusheng-*`；升版本须同步 pubspec、AppBrand、安装程序脚本和文档
+- 打包：`scripts/pack.ps1` + `scripts/liusheng-windows.iss` → `dist/liusheng-*`。升版本的完整同步清单（11 个文件）见 `docs/EXPANSION-PLAN.md` 第四节，不要在这里另抄一份短的——2026-10-05 那次就是因为短清单漏了 `pack.ps1`、`PRIVACY.md` 等 5 个文件
 - 仅在我明确要求时 git commit；不自动 push

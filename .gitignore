@@ -79,7 +79,10 @@ windows/runner/resources/test_icon*.ico
 /docs/design/*.html
 
 # Internal tooling (scripts, probes, scrapers; not for public repo)
-/tools/
+# The launcher icon generator is the exception: it is the source of truth for
+# the shipped PNG/ICO assets, so the artwork has to stay reproducible.
+/tools/*
+!/tools/generate_app_icon.py
 
 # Agent-local learnings; not product documentation
 /.learnings/

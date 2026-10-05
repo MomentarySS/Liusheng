@@ -2,7 +2,6 @@
 
 from __future__ import annotations
 
-from dataclasses import dataclass
 from pathlib import Path
 
 import numpy as np
@@ -14,42 +13,18 @@ BRANDING = ROOT / "assets" / "branding"
 BG_CENTER = np.array([21, 101, 192], dtype=np.float64)  # #1565C0
 BG_EDGE = np.array([13, 79, 140], dtype=np.float64)  # #0D4F8C
 WAVE = (13, 79, 140, 255)
+PEBBLE_TOP = np.array([250, 252, 255], dtype=np.float64)  # #FAFCFF
+PEBBLE_BOTTOM = np.array([205, 229, 255], dtype=np.float64)  # #CDE5FF
 
-
-@dataclass(frozen=True)
-class Style:
-    """Geometry and fill overrides for one rendering target.
-
-    Positions are fractions of the canvas. Bars and dots are mirrored about the
-    canvas centre line, so a style only has to state the left-hand half.
-    """
-
-    dots: tuple[float, ...] = (0.30, 0.70)
-    bars: tuple[tuple[float, float], ...] = (
-        (0.40, 0.19),
-        (0.50, 0.32),
-        (0.60, 0.20),
-    )
-    wave_width: float = 0.058
-    pebble_top: tuple[int, int, int] = (250, 252, 255)
-    pebble_bottom: tuple[int, int, int] = (181, 215, 255)
-
-
-MASTER = Style()
-
-# The Windows notification area shows the tray icon at 16-24px. At 16px the
-# master's 0.058 stroke is 0.93px - under a single pixel - and five marks spread
-# across 7.1px cannot stay separated however the stroke is tuned: keeping the
-# 0.042 gaps needs 0.042px at that size, so the marks merge into one band. The
-# tray variant therefore drops the two lead-in dots, keeps three bars on the
-# same centre line at 0.32/0.50/0.68, widens the stroke to 1.6px at 16px, and
-# lifts the stone's lower gradient stop so the fill does not band.
-TRAY = Style(
-    dots=(),
-    bars=((0.32, 0.19), (0.50, 0.32), (0.68, 0.20)),
-    wave_width=0.10,
-    pebble_bottom=(205, 229, 255),
-)
+# The waveform. Bars are mirrored about the canvas centre line (0.50) and the
+# two side bars share a height, so the mark is symmetric on both axes. The 0.10
+# stroke is what makes this survive the 16-24px the Windows notification area
+# actually renders: the previous 0.058 stroke was 0.93px at 16px, and drawing
+# five marks (two lead-in dots plus three bars) across that same 7.1px left
+# 0.042px between them, so they merged into a single band. Three marks on a
+# thicker stroke is the smallest change that stays legible.
+BARS = ((0.32, 0.19), (0.50, 0.32), (0.68, 0.19))
+WAVE_WIDTH = 0.10
 
 ANDROID_LEGACY = {
     "mipmap-mdpi": 48,
@@ -65,10 +40,9 @@ ANDROID_FOREGROUND = {
     "mipmap-xxhdpi": 324,
     "mipmap-xxxhdpi": 432,
 }
-ICO_SIZES = (16, 24, 32, 48, 64, 128, 256)
-# Windows picks the notification-area frame by display scale: 16px at 100%,
-# 20px at 125%, 24px at 150%, 32px at 200%.
-TRAY_ICO_SIZES = (16, 20, 24, 32, 48, 64, 128, 256)
+# Windows picks the notification-area frame by display scale - 16px at 100%,
+# 20px at 125%, 24px at 150%, 32px at 200% - so 20px belongs in the set.
+ICO_SIZES = (16, 20, 24, 32, 48, 64, 128, 256)
 ADAPTIVE_VISIBLE = 72 / 108  # Android masks adaptive icons to 72dp of 108dp.
 
 
@@ -104,10 +78,10 @@ def _adaptive_background(size: int) -> Image.Image:
     """Background layer for the Android adaptive icon.
 
     Android stretches the background layer across the whole 108dp canvas and
-    then masks it down to the centre 72dp, so handing it the master artwork
-    verbatim would only ever show the middle third of the gradient. Pre-zoom by
-    108/72 so the region that survives the mask carries the same gradient range
-    the legacy tile shows.
+    then masks it down to the centre 72dp, so handing it the artwork verbatim
+    would only ever show the middle third of the gradient. Pre-zoom by 108/72 so
+    the region that survives the mask carries the same gradient range the
+    legacy tile shows.
     """
     visible = int(size * ADAPTIVE_VISIBLE)
     offset = (size - visible) // 2
@@ -143,66 +117,55 @@ def _cubic(
     return points
 
 
-# The stone outline was authored about 3.3% right of the canvas centre, which
-# left its side margins uneven (left 136px / right 67px at 1024). A cubic
-# bezier is affine in its control points, so shifting every control point by
-# the same delta moves the rendered outline rigidly: the stone keeps its exact
-# shape and only its placement changes.
+# The stone outline was authored off-centre on both axes: about 3.3% right of
+# the canvas centre (side margins 136px / 67px at 1024) and 17px low (top margin
+# 183px / bottom 149px). A cubic bezier is affine in its control points, so
+# shifting every control point by the same delta moves the rendered outline
+# rigidly: the stone keeps its exact shape and only its placement changes.
 PEBBLE_DX = -0.033
+PEBBLE_DY = -0.0166
+
+PEBBLE_CURVES = (
+    ((0.50, 0.18), (0.38, 0.18), (0.28, 0.28), (0.20, 0.40)),
+    ((0.20, 0.40), (0.13, 0.51), (0.10, 0.64), (0.18, 0.73)),
+    ((0.18, 0.73), (0.27, 0.84), (0.43, 0.87), (0.58, 0.85)),
+    ((0.58, 0.85), (0.76, 0.83), (0.91, 0.75), (0.93, 0.62)),
+    ((0.93, 0.62), (0.96, 0.50), (0.87, 0.35), (0.78, 0.27)),
+    ((0.78, 0.27), (0.69, 0.20), (0.59, 0.17), (0.50, 0.18)),
+)
 
 
 def _pebble_points(size: int) -> list[tuple[float, float]]:
-    curves = [
-        ((0.50, 0.18), (0.38, 0.18), (0.28, 0.28), (0.20, 0.40)),
-        ((0.20, 0.40), (0.13, 0.51), (0.10, 0.64), (0.18, 0.73)),
-        ((0.18, 0.73), (0.27, 0.84), (0.43, 0.87), (0.58, 0.85)),
-        ((0.58, 0.85), (0.76, 0.83), (0.91, 0.75), (0.93, 0.62)),
-        ((0.93, 0.62), (0.96, 0.50), (0.87, 0.35), (0.78, 0.27)),
-        ((0.78, 0.27), (0.69, 0.20), (0.59, 0.17), (0.50, 0.18)),
-    ]
     points: list[tuple[float, float]] = []
-    for curve in curves:
+    for curve in PEBBLE_CURVES:
         points.extend(
-            ((x + PEBBLE_DX) * size, y * size)
+            ((x + PEBBLE_DX) * size, (y + PEBBLE_DY) * size)
             for x, y in _cubic(*curve, samples=20)
         )
     return points
 
 
-def _draw_pebble(canvas: Image.Image, size: int, style: Style) -> None:
+def _draw_pebble(canvas: Image.Image, size: int) -> None:
     mask = Image.new("L", (size, size), 0)
     ImageDraw.Draw(mask).polygon(_pebble_points(size), fill=255)
 
-    top = np.array(style.pebble_top, dtype=np.float64)
-    bottom = np.array(style.pebble_bottom, dtype=np.float64)
     yy, xx = np.mgrid[0:size, 0:size]
     t = np.clip(
         0.34 * xx / max(size - 1, 1) + 0.66 * yy / max(size - 1, 1),
         0,
         1,
     )[..., None]
-    gradient = (top * (1 - t) + bottom * t).astype(np.uint8)
+    gradient = (PEBBLE_TOP * (1 - t) + PEBBLE_BOTTOM * t).astype(np.uint8)
     rgba = np.concatenate(
         [gradient, np.full((size, size, 1), 255, dtype=np.uint8)], axis=2
     )
     canvas.paste(Image.fromarray(rgba, "RGBA"), (0, 0), mask)
 
 
-def _draw_waveform(
-    draw: ImageDraw.ImageDraw, size: int, style: Style
-) -> None:
-    center_y = size * 0.52
-    width = size * style.wave_width
-    # A dot reads as a mark of the same weight as the bars when its diameter
-    # matches the bar width, so the radius is always half the stroke.
-    dot = width / 2
-    for x in style.dots:
-        draw.ellipse(
-            (size * x - dot, center_y - dot, size * x + dot, center_y + dot),
-            fill=WAVE,
-        )
-
-    for x, height in style.bars:
+def _draw_waveform(draw: ImageDraw.ImageDraw, size: int) -> None:
+    center_y = size * 0.50
+    width = size * WAVE_WIDTH
+    for x, height in BARS:
         h = size * height
         left = size * x - width / 2
         top = center_y - h / 2
@@ -213,7 +176,7 @@ def _draw_waveform(
         )
 
 
-def _render_art(size: int, *, background: bool, style: Style) -> Image.Image:
+def _render_art(size: int, *, background: bool) -> Image.Image:
     scale = 4 if size >= 48 else (3 if size >= 24 else 2)
     canvas_size = size * scale
     image = (
@@ -221,32 +184,30 @@ def _render_art(size: int, *, background: bool, style: Style) -> Image.Image:
         if background
         else Image.new("RGBA", (canvas_size, canvas_size), (0, 0, 0, 0))
     )
-    _draw_pebble(image, canvas_size, style)
-    _draw_waveform(ImageDraw.Draw(image, "RGBA"), canvas_size, style)
+    _draw_pebble(image, canvas_size)
+    _draw_waveform(ImageDraw.Draw(image, "RGBA"), canvas_size)
     return image.resize((size, size), Image.Resampling.LANCZOS)
 
 
-def render(*, size: int, background: bool, style: Style = MASTER) -> Image.Image:
+def render(*, size: int, background: bool) -> Image.Image:
     if background:
-        return _render_art(size, background=True, style=style)
+        return _render_art(size, background=True)
 
     # Keep the adaptive foreground inside Android's mask-safe area.
     inner_size = max(int(size * 0.72), 2)
-    inner = _render_art(inner_size, background=False, style=style)
+    inner = _render_art(inner_size, background=False)
     output = Image.new("RGBA", (size, size), (0, 0, 0, 0))
     offset = (size - inner_size) // 2
     output.alpha_composite(inner, (offset, offset))
     return output
 
 
-def _save_ico(path: Path, style: Style, sizes: tuple[int, ...]) -> None:
-    images = [
-        render(size=s, background=True, style=style).convert("RGBA") for s in sizes
-    ]
+def _save_ico(path: Path) -> None:
+    images = [render(size=s, background=True).convert("RGBA") for s in ICO_SIZES]
     images[-1].save(
         path,
         format="ICO",
-        sizes=[(s, s) for s in sizes],
+        sizes=[(s, s) for s in ICO_SIZES],
         append_images=images[:-1],
     )
 
@@ -274,17 +235,18 @@ def main() -> None:
         background / "ic_launcher_background.png", "PNG", optimize=True
     )
 
-    # Two consumers, one generator but two icon sets: the Windows executable
-    # and installer read the runner copy and get the full master, while
-    # lib/core/platform/desk_tray.dart reads the bundled asset and gets the
-    # tray variant tuned for 16-24px.
+    # Two consumers, one design. windows/runner/resources/app_icon.ico is a
+    # native build input read by Runner.rc and the Inno Setup script;
+    # assets/branding/app_icon.ico is the Flutter asset that
+    # lib/core/platform/desk_tray.dart loads. They stay separate files because
+    # they are consumed separately, but they hold the same artwork.
     runner_ico = ROOT / "windows" / "runner" / "resources" / "app_icon.ico"
-    _save_ico(runner_ico, MASTER, ICO_SIZES)
-    _save_ico(BRANDING / "app_icon.ico", TRAY, TRAY_ICO_SIZES)
+    _save_ico(runner_ico)
+    _save_ico(BRANDING / "app_icon.ico")
     print(f"Wrote {BRANDING / 'app_icon.png'}")
     print(f"Wrote {background / 'ic_launcher_background.png'}")
-    print(f"Wrote {runner_ico} (master)")
-    print(f"Wrote {BRANDING / 'app_icon.ico'} (tray)")
+    print(f"Wrote {runner_ico}")
+    print(f"Wrote {BRANDING / 'app_icon.ico'}")
 
 
 if __name__ == "__main__":

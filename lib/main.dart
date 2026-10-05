@@ -14,6 +14,8 @@ import 'core/network/system_http_proxy.dart';
 import 'core/platform/cast_controller.dart';
 import 'core/platform/desk_window.dart';
 import 'core/platform/local_notifications.dart';
+import 'core/platform/new_episode_poller.dart';
+import 'core/storage/app_storage.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -60,5 +62,15 @@ Future<void> _initializeDeferredServices() async {
       }(),
       CastController.instance.ensureInitialized().then<void>((_) {}),
     ]);
+  }
+  // Windows 没有 workmanager 的等价物，用进程常驻的定时器补上触发源。
+  // 生命周期跟随「新一集通知」开关：关着就不起轮询，与 Android 取消后台任务的行为一致。
+  if (!kIsWeb && Platform.isWindows) {
+    try {
+      final storage = await AppStorage.create();
+      if (await storage.getNewEpisodeNotificationsEnabled()) {
+        NewEpisodeWindowsPoller.start();
+      }
+    } catch (_) {}
   }
 }

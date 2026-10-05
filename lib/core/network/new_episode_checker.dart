@@ -21,31 +21,20 @@ class NewEpisodeChecker {
   NewEpisodeChecker(this._ref);
 
   final Ref _ref;
-  var _running = false;
 
   Future<void> checkIfDue({bool force = false}) async {
     final storage = await _ref.read(appStorageProvider.future);
-    final due = NewEpisodeLogic.shouldRefresh(
-      now: DateTime.now(),
-      lastCheckAt: force ? null : await storage.getNewEpisodeLastCheckAt(),
-    );
-    if (!due) return;
-    await run(storage: storage, force: force);
+    await checkNewEpisodesIfDue(storage: storage, force: force);
   }
 
   Future<void> run({required AppStorage storage, bool force = false}) async {
-    if (_running) return;
-    _running = true;
-    try {
-      final enabled = await storage.getNewEpisodeNotificationsEnabled();
-      final hits = await scanNewEpisodes(storage: storage, force: force);
-      if (!enabled) return;
-      await _notifyUnmuted(storage, hits);
-    } finally {
-      _running = false;
-    }
+    await runNewEpisodeScan(storage: storage, force: force);
   }
 
+  /// Android 侧注册 / 取消 workmanager 周期任务。
+  ///
+  /// Windows 上直接返回：那边没有等价的后台调度，由 `NewEpisodeWindowsPoller`
+  /// 的常驻定时器负责，设置页会另行启停。
   Future<void> syncBackgroundSchedule({required bool enabled}) async {
     if (!Platform.isAndroid) return;
     try {
@@ -61,6 +50,46 @@ class NewEpisodeChecker {
         await Workmanager().cancelByUniqueName(newEpisodeWorkName);
       }
     } catch (_) {}
+  }
+}
+
+/// 扫描防重入。模块级而不是实例级：Windows 的常驻定时器与 Riverpod 侧的手动检查
+/// 会各自持有 `NewEpisodeChecker`，共用这一个标志才不会并发打同一批 feed。
+var _scanInFlight = false;
+
+/// 跑一次"到期就扫"。不依赖 Riverpod，Windows 的常驻定时器可以直接调。
+///
+/// 返回是否真的执行了扫描；未到期时返回 false 且不做任何网络请求。
+Future<bool> checkNewEpisodesIfDue({
+  required AppStorage storage,
+  bool force = false,
+}) async {
+  final due = NewEpisodeLogic.shouldRefresh(
+    now: DateTime.now(),
+    lastCheckAt: force ? null : await storage.getNewEpisodeLastCheckAt(),
+  );
+  if (!due) return false;
+  await runNewEpisodeScan(storage: storage, force: force);
+  return true;
+}
+
+/// 扫一轮并按开关决定要不要弹通知。
+///
+/// 无论开关开不开都会扫：扫描同时刷新 feed cache，播客页的「未听」列表靠它。
+/// 这与 Android 上 workmanager 的行为一致，不要因为通知关了就跳过扫描。
+Future<void> runNewEpisodeScan({
+  required AppStorage storage,
+  bool force = false,
+}) async {
+  if (_scanInFlight) return;
+  _scanInFlight = true;
+  try {
+    final enabled = await storage.getNewEpisodeNotificationsEnabled();
+    final hits = await scanNewEpisodes(storage: storage, force: force);
+    if (!enabled) return;
+    await _notifyUnmuted(storage, hits);
+  } finally {
+    _scanInFlight = false;
   }
 }
 

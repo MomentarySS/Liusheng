@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:io';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -12,6 +13,7 @@ import '../../core/platform/desk_hotkey.dart';
 import '../../core/platform/desk_launch.dart';
 import '../../core/platform/desk_tray.dart';
 import '../../core/platform/desk_window_mode.dart';
+import '../../core/platform/new_episode_poller.dart';
 import '../../core/platform/notification_permission.dart';
 import '../../core/providers/app_providers.dart';
 import '../podcast/podcast_providers.dart';
@@ -301,7 +303,12 @@ class PlaybackSettingsScreen extends ConsumerWidget {
                         Icons.notifications_active_outlined,
                       ),
                       title: const Text('新一集通知'),
-                      subtitle: const Text('默认关。打开后最少隔 6 小时查一次订阅，首次只记进度不提醒'),
+                      subtitle: Text(
+                        Platform.isWindows
+                            ? '默认关。打开后在应用运行期间最少隔 6 小时查一次订阅；'
+                                '关掉主窗口、留在托盘也会继续检查，退出应用则不再检查'
+                            : '默认关。打开后最少隔 6 小时查一次订阅，首次只记进度不提醒',
+                      ),
                       value: enabled,
                       onChanged: (value) async {
                         await ref
@@ -310,6 +317,15 @@ class PlaybackSettingsScreen extends ConsumerWidget {
                         await ref
                             .read(newEpisodeCheckerProvider)
                             .syncBackgroundSchedule(enabled: value);
+                        // Windows 不用 workmanager，同步BackgroundSchedule 会直接返回，
+                        // 所以常驻定时器要在这里另起/另停。
+                        if (Platform.isWindows) {
+                          if (value) {
+                            NewEpisodeWindowsPoller.start();
+                          } else {
+                            NewEpisodeWindowsPoller.stop();
+                          }
+                        }
                         if (!value) return;
                         await requestPlaybackNotificationPermission();
                         await ref

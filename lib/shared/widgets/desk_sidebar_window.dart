@@ -63,7 +63,7 @@ class DeskSidebarWindow extends ConsumerWidget {
                             () => ref
                                 .read(deskWindowModeProvider.notifier)
                                 .setMode(DeskWindowMode.miniBar),
-                        icon: const Icon(Icons.picture_in_picture_alt_outlined),
+                        icon: const Icon(Icons.picture_in_picture_alt_rounded),
                       ),
                       IconButton(
                         tooltip: '打开完整窗口',
@@ -71,12 +71,12 @@ class DeskSidebarWindow extends ConsumerWidget {
                             () => ref
                                 .read(deskWindowModeProvider.notifier)
                                 .setMode(DeskWindowMode.main),
-                        icon: const Icon(Icons.open_in_full),
+                        icon: const Icon(Icons.open_in_full_rounded),
                       ),
                       const IconButton(
                         tooltip: '隐藏到托盘',
                         onPressed: DeskWindow.hideToTray,
-                        icon: Icon(Icons.close),
+                        icon: Icon(Icons.close_rounded),
                       ),
                     ],
                   ),

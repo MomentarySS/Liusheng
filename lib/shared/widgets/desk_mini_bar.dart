@@ -99,13 +99,10 @@ class DeskMiniBar extends ConsumerWidget {
                           borderRadius: BorderRadius.circular(
                             DeskCompactLogic.barHeight / 2,
                           ),
-                          boxShadow: [
-                            BoxShadow(
-                              color: colorScheme.shadow.withValues(alpha: 0.22),
-                              blurRadius: 22,
-                              offset: const Offset(0, 8),
-                            ),
-                          ],
+                          // 刻意不画投影。系统级阴影在 `DeskWindow.apply` 里
+                          // 已经对浮条关掉了（`setHasShadow(mode == sidebar)`），
+                          // 这层是 Flutter 自己补的第二道影，浮在桌面上时会
+                          // 拖出一圈脏边。浮条本体保持纯 surface + 圆角。
                         ),
                         child: Padding(
                           padding: const EdgeInsets.only(left: 48, right: 6),

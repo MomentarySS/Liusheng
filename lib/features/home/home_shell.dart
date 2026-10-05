@@ -104,6 +104,37 @@ class _HomeShellState extends ConsumerState<HomeShell> {
     setState(() => _index = index);
   }
 
+  /// 已经为哪个紧凑形态退回过根路由。用来避免每次 build 都排一次 pop。
+  DeskWindowMode? _poppedToRootFor;
+
+  /// 浮条 / 侧栏是**换壳**不是加层。
+  ///
+  /// 设置子页（`settings_screen.dart`）、Now Playing、底部弹窗都是 push 到
+  /// `HomeShell` **之上**的路由，而切窗口形态只改窗口尺寸、不动导航栈
+  /// （`DeskWindowModeNotifier.setMode` 只写存储 + 调 `DeskWindow.apply`）。
+  /// 于是那条路由会原样留在 456x100 的浮窗上、把迷你条盖掉——表现就是
+  /// 「浮窗第一次显示的是设置页，点一次返回才变回迷你条」。
+  ///
+  /// 放在 build 里而不是 `ref.listen`：[下方] 渲染迷你条用的就是这个
+  /// `ref.watch(deskWindowModeProvider)`。build 跑不到，迷你条也出不来，
+  /// 两者必然同时发生，不会出现「壳换了但栈没清」的中间态。
+  ///
+  /// 两个紧凑壳自身都不 push 路由（`desk_mini_bar.dart` /
+  /// `desk_sidebar_window.dart` 均无 Navigator 调用），所以这里退回根
+  /// 不会误伤任何合法导航。
+  void _resetNavigationToRoot(DeskWindowMode mode) {
+    if (_poppedToRootFor == mode) return;
+    _poppedToRootFor = mode;
+    // 路由不能在 build 里直接动，挪到本帧之后。
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      final navigator = Navigator.of(context);
+      if (navigator.canPop()) {
+        navigator.popUntil((route) => route.isFirst);
+      }
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     ref.listen(sleepTimerProvider, (previous, next) {
@@ -144,6 +175,12 @@ class _HomeShellState extends ConsumerState<HomeShell> {
     ref.watch(lastSleepValueProvider);
     final deskWindowMode =
         ref.watch(deskWindowModeProvider).value ?? DeskWindowMode.main;
+    // 离开紧凑形态必须清标记，否则「浮条 → 完整窗口 → 再切回浮条」这一轮
+    // 会被上一轮留下的 `_poppedToRootFor == miniBar` 挡掉，导航栈就再也
+    // 回不去 —— 表现是 bug 看起来"只坏一次"，改完第一次就好了、第二次照旧。
+    if (deskWindowMode == DeskWindowMode.main) {
+      _poppedToRootFor = null;
+    }
     final useRail =
         MediaQuery.sizeOf(context).width >= LiushengTheme.railBreakpoint;
 
@@ -173,6 +210,7 @@ class _HomeShellState extends ConsumerState<HomeShell> {
     );
 
     if (deskWindowMode == DeskWindowMode.miniBar) {
+      _resetNavigationToRoot(DeskWindowMode.miniBar);
       return ShakeSleepListener(
         child: Material(
           type: MaterialType.transparency,
@@ -191,6 +229,7 @@ class _HomeShellState extends ConsumerState<HomeShell> {
     }
 
     if (deskWindowMode == DeskWindowMode.sidebar) {
+      _resetNavigationToRoot(DeskWindowMode.sidebar);
       return const DeskSidebarKeyboardNavigation(child: DeskSidebarWindow());
     }
 

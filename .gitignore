@@ -46,7 +46,6 @@ app.*.map.json
 
 # Local pack outputs
 /dist/
-*.exe
 
 # Dev tool local state
 .mimosa/

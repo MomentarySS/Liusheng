@@ -179,15 +179,30 @@ if (-not $proxyPort) {
 $proxy = "http://127.0.0.1:$proxyPort"
 Write-Host "proxy: $proxy" -ForegroundColor DarkGray
 
-switch ($Tool) {
-    'git' {
-        & git -c "http.proxy=$proxy" -c "https.proxy=$proxy" @ToolArgs
+# The tool invocation must not run under ErrorActionPreference = Stop: PowerShell
+# 5.1 turns a native command's stderr into a terminating error, and git writes its
+# "To https://..." progress line to stderr on every push. That aborted the script
+# right here, so it never reached the exit below and always reported 1 - even when
+# the push had actually succeeded. The detection helpers above still need Stop for
+# their catch blocks to work, so the relaxed preference is scoped to this block.
+# Default to a failing exit code so a structural error can never look like success.
+$toolExit = 1
+$strictPreference = $ErrorActionPreference
+$ErrorActionPreference = 'Continue'
+try {
+    switch ($Tool) {
+        'git' {
+            & git -c "http.proxy=$proxy" -c "https.proxy=$proxy" @ToolArgs
+        }
+        'gh' {
+            $env:HTTP_PROXY = $proxy
+            $env:HTTPS_PROXY = $proxy
+            & gh @ToolArgs
+        }
     }
-    'gh' {
-        $env:HTTP_PROXY = $proxy
-        $env:HTTPS_PROXY = $proxy
-        & gh @ToolArgs
-    }
+    $toolExit = $LASTEXITCODE
+} finally {
+    $ErrorActionPreference = $strictPreference
 }
 
-exit $LASTEXITCODE
+exit $toolExit

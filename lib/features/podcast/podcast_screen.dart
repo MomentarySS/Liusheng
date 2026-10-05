@@ -16,6 +16,7 @@ import '../../core/models/radio_station.dart';
 import '../../core/network/network_status.dart';
 import '../../core/network/podcast_feed_logic.dart';
 import '../../core/podcast/feed_cache.dart';
+import '../../core/podcast/feed_groups.dart';
 import '../../core/podcast/podcast_opml.dart';
 import '../../core/providers/app_providers.dart';
 import '../../core/theme.dart';
@@ -26,6 +27,7 @@ import '../../shared/widgets/podcast_settings_sheet.dart';
 import '../../shared/widgets/resume_listening_card.dart';
 import '../../shared/widgets/station_artwork.dart';
 import 'episode_notes_sheet.dart';
+import 'feed_group_ui.dart';
 import 'podcast_discovery_screen.dart';
 import 'podcast_providers.dart';
 
@@ -117,7 +119,7 @@ class _PodcastScreenState extends ConsumerState<PodcastScreen> {
 
     return Column(
       children: [
-        if (feedsAsync.value?.isNotEmpty ?? false)
+        if (feedsAsync.value?.isNotEmpty ?? false) ...[
           Padding(
             padding: const EdgeInsets.fromLTRB(16, 8, 16, 4),
             child: TextField(
@@ -149,6 +151,9 @@ class _PodcastScreenState extends ConsumerState<PodcastScreen> {
                       ref.read(podcastSearchProvider.notifier).state = value,
             ),
           ),
+          // 没有分组时整行不渲染，所以不建分组的用户界面与改动前一致。
+          FeedGroupFilterBar(feeds: feedsAsync.value ?? const []),
+        ],
         Expanded(
           child: feedsAsync.when(
             data: (feeds) {
@@ -171,7 +176,9 @@ class _PodcastScreenState extends ConsumerState<PodcastScreen> {
                 );
               }
               final searchIndex = ref.watch(podcastSearchIndexProvider);
-              final filtered =
+              final groupData = ref.watch(feedGroupsProvider).valueOrNull;
+              final groupFilter = ref.watch(resolvedGroupFilterProvider);
+              final searched =
                   query.isEmpty
                       ? feeds
                       : feeds.where((feed) {
@@ -186,11 +193,24 @@ class _PodcastScreenState extends ConsumerState<PodcastScreen> {
                         }
                         return false;
                       }).toList();
+              // 搜索与分组筛选是 AND 关系：先搜关键词，再在命中的订阅里按分组筛。
+              final filtered =
+                  groupData == null
+                      ? searched
+                      : groupData.filter(searched, groupFilter);
               if (filtered.isEmpty) {
+                if (query.isNotEmpty) {
+                  return AppEmptyState(
+                    icon: Icons.search_off,
+                    message: '没有找到「$query」',
+                    detail: '试试其他关键词',
+                  );
+                }
                 return AppEmptyState(
-                  icon: Icons.search_off,
-                  message: '没有找到「$query」',
-                  detail: '试试其他关键词',
+                  icon: Icons.folder_off_outlined,
+                  message:
+                      '「${groupData?.groupName(groupFilter) ?? '未分组'}」里还没有订阅',
+                  detail: '长按订阅可以从菜单把它移到这个分组',
                 );
               }
               return ResumeAndFeedList(feeds: filtered, query: query);
@@ -1605,6 +1625,12 @@ class _FeedItem extends ConsumerWidget {
     final mutedFeeds = ref.watch(newEpisodeMutedFeedIdsProvider);
     final muted = mutedFeeds.value?.contains(feed.id) ?? false;
     final globalNotifications = ref.watch(newEpisodeNotificationsProvider);
+    final groupData = ref.watch(feedGroupsProvider).valueOrNull;
+    final currentGroupName =
+        groupData?.groupName(
+          groupData.map[feed.id] ?? FeedGroupLogic.ungrouped,
+        ) ??
+        '未分组';
     return Dismissible(
       key: ValueKey('podcast-feed-${feed.id}'),
       direction: DismissDirection.endToStart,
@@ -1622,7 +1648,13 @@ class _FeedItem extends ConsumerWidget {
           (_) => ref.read(subscribedFeedsProvider.notifier).removeFeed(feed.id),
       child: GestureDetector(
         onSecondaryTap:
-            () => _showFeedMenu(context, ref, feed, globalNotifications),
+            () => _showFeedMenu(
+              context,
+              ref,
+              feed,
+              globalNotifications,
+              currentGroupName,
+            ),
         child: ListTile(
           leading: StationArtwork(
             url: feed.imageUrl,
@@ -1670,7 +1702,13 @@ class _FeedItem extends ConsumerWidget {
             );
           },
           onLongPress:
-              () => _showFeedMenu(context, ref, feed, globalNotifications),
+              () => _showFeedMenu(
+                context,
+                ref,
+                feed,
+                globalNotifications,
+                currentGroupName,
+              ),
         ),
       ),
     );
@@ -1681,6 +1719,7 @@ class _FeedItem extends ConsumerWidget {
     WidgetRef ref,
     PodcastFeed feed,
     AsyncValue<bool> globalNotificationState,
+    String currentGroupName,
   ) {
     final mutedState = ref.read(newEpisodeMutedFeedIdsProvider);
     final muted = mutedState.value?.contains(feed.id) ?? false;
@@ -1737,6 +1776,18 @@ class _FeedItem extends ConsumerWidget {
                         ? '尚无本机缓存'
                         : _formatFeedRefreshTime(snapshot.fetchedAt),
                   ),
+                ),
+                ListTile(
+                  leading: Icon(
+                    Icons.folder_outlined,
+                    color: colorScheme.onSurfaceVariant,
+                  ),
+                  title: const Text('移动到分组'),
+                  subtitle: Text('当前：$currentGroupName'),
+                  onTap: () {
+                    Navigator.pop(sheetContext);
+                    showFeedGroupPicker(context, ref, feed);
+                  },
                 ),
                 ListTile(
                   leading: Icon(Icons.refresh, color: colorScheme.primary),

@@ -14,6 +14,7 @@ import '../../core/podcast/feed_cache.dart';
 import '../../core/podcast/podcast_history.dart';
 import '../../core/providers/podcast_bookmark_provider.dart';
 import '../../core/podcast/podcast_opml.dart';
+import 'feed_group_providers.dart';
 import '../../core/models/radio_station.dart';
 import '../../core/network/itunes_podcast_client.dart';
 import '../../core/network/podcast_feed_logic.dart';
@@ -26,6 +27,8 @@ import '../../core/network/xyzrank_catalog_client.dart';
 import '../../core/providers/app_providers.dart';
 import '../../core/providers/podcast_history_provider.dart';
 import '../../core/storage/app_storage.dart';
+
+export 'feed_group_providers.dart';
 
 final podcastServiceProvider = Provider<PodcastService>(
   (ref) => PodcastService(),
@@ -170,6 +173,8 @@ class SubscribedFeedsNotifier
     await _ref.read(feedCacheProvider.notifier).remove(id);
     await _ref.read(podcastBookmarksProvider.notifier).pruneFeed(id);
     await _ref.read(newEpisodeMutedFeedIdsProvider.notifier).remove(id);
+    // 清掉分组映射里的孤儿键，否则删掉的订阅会在分组里留下一个空条目。
+    await _ref.read(feedGroupsProvider.notifier).pruneFeed(id);
   }
 
   Future<void> updateFeedMeta(PodcastFeed feed) async {

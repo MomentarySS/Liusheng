@@ -7,6 +7,7 @@ import '../audio/podcast_playback.dart';
 import '../audio/sleep_timer.dart';
 import '../podcast/episode_bookmark.dart';
 import '../podcast/feed_cache.dart';
+import '../podcast/feed_groups.dart';
 import '../podcast/podcast_history.dart';
 import '../stats/listening_stats.dart';
 import '../station/station_catalog_selection.dart';
@@ -34,6 +35,8 @@ class AppStorage {
   static const _downloadWifiOnlyKey = 'download_wifi_only';
   static const _playQueueKey = 'play_queue_json';
   static const _subscribedFeedsKey = 'subscribed_podcast_feeds';
+  static const _feedGroupsKey = 'podcast_feed_groups_json';
+  static const _feedGroupMapKey = 'podcast_feed_group_map_json';
   static const _customCategoriesKey = 'custom_station_categories';
   static const _categoryOverridesKey = 'station_category_overrides';
   static const _customStationsKey = 'custom_stations';
@@ -260,6 +263,27 @@ class AppStorage {
   }
 
   bool get hasPodcastFeedsRecord => _prefs.containsKey(_subscribedFeedsKey);
+
+  /// 播客订阅分组定义（有序）。
+  ///
+  /// 刻意用独立 key 而不是塞进 `subscribed_podcast_feeds`：分组是筛选维度，
+  /// 不该污染订阅实体，改订阅列表结构会让既有数据与旧备份都要迁移。
+  Future<List<FeedGroup>> getFeedGroups() async {
+    return FeedGroupLogic.decodeList(_prefs.getString(_feedGroupsKey));
+  }
+
+  Future<void> setFeedGroups(List<FeedGroup> groups) async {
+    await _prefs.setString(_feedGroupsKey, FeedGroupLogic.encodeList(groups));
+  }
+
+  /// `feedId -> groupId` 映射。读取时会丢掉指向已不存在分组的孤儿项。
+  Future<Map<String, String>> getFeedGroupMap(List<FeedGroup> groups) async {
+    return FeedGroupLogic.decodeMap(_prefs.getString(_feedGroupMapKey), groups);
+  }
+
+  Future<void> setFeedGroupMap(Map<String, String> map) async {
+    await _prefs.setString(_feedGroupMapKey, FeedGroupLogic.encodeMap(map));
+  }
 
   Future<List<Map<String, dynamic>>> getPodcastDownloads() async {
     final raw = _prefs.getString(_podcastDownloadsKey);

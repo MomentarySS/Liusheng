@@ -42,6 +42,36 @@ New-Item -ItemType Directory -Force -Path "dist" | Out-Null
 Write-Host "Ensuring Android NDK from Tencent mirror..."
 Install-LiushengAndroidNdk
 
+# gradle, flutter and ISCC all write ordinary progress to stderr. This script
+# sets ErrorActionPreference = Stop so the helper functions above can catch
+# failures with try/catch, but under Stop a native tool's stderr line becomes a
+# terminating error: the script used to die right after a successful
+# `flutter build apk` and never reach the Windows step, leaving dist/ without
+# the APK it had just produced. Run every native tool through this wrapper - the
+# preference is relaxed only for the call itself and the real exit code comes
+# back for the explicit checks below. Everything else (Copy-Item,
+# Compress-Archive) stays under Stop and still throws on failure.
+function Invoke-NativeTool {
+    param(
+        [string]$File,
+        [string[]]$ToolArgs
+    )
+
+    $strictPreference = $ErrorActionPreference
+    $ErrorActionPreference = "Continue"
+    try {
+        # Out-Host is required, not decoration: a PowerShell function returns
+        # everything the native command wrote to the output stream, so without
+        # it the caller's exit-code check would compare a whole array of build
+        # log lines against 0 and report a false failure.
+        & $File @ToolArgs | Out-Host
+        $code = $LASTEXITCODE
+    } finally {
+        $ErrorActionPreference = $strictPreference
+    }
+    return $code
+}
+
 if (Test-Path (Join-Path $root "android\key.properties")) {
     Write-Host "Android signing: release keystore (android/key.properties)"
 } else {
@@ -51,20 +81,20 @@ if (Test-Path (Join-Path $root "android\key.properties")) {
 $gradlew = Join-Path $root "android\gradlew.bat"
 if (Test-Path $gradlew) {
     Write-Host "Stopping Gradle daemon..."
-    & $gradlew --stop
-    if ($LASTEXITCODE -ne 0) {
-        Write-Host "gradlew --stop exited $LASTEXITCODE; continuing pack"
+    $stopExit = Invoke-NativeTool -File $gradlew -ToolArgs @("--stop")
+    if ($stopExit -ne 0) {
+        Write-Host "gradlew --stop exited $stopExit; continuing pack"
     }
 }
 
 Write-Host "Building Android APK..."
-& $FlutterPath build apk --release
-if ($LASTEXITCODE -ne 0) { throw "Android APK build failed" }
+$apkExit = Invoke-NativeTool -File $FlutterPath -ToolArgs @("build", "apk", "--release")
+if ($apkExit -ne 0) { throw "Android APK build failed" }
 Copy-Item "build\app\outputs\flutter-apk\app-release.apk" "dist\liusheng-$version.apk" -Force
 
 Write-Host "Building Windows zip..."
-& $FlutterPath build windows --release
-if ($LASTEXITCODE -ne 0) { throw "Windows build failed" }
+$winExit = Invoke-NativeTool -File $FlutterPath -ToolArgs @("build", "windows", "--release")
+if ($winExit -ne 0) { throw "Windows build failed" }
 
 $winDir = "build\windows\x64\runner\Release"
 if (-not (Test-Path $winDir)) {
@@ -79,8 +109,8 @@ $iscc = "D:\PF\Inno Setup 7\ISCC.exe"
 if (-not (Test-Path $iscc)) {
     $iscc = "ISCC.exe"
 }
-& $iscc (Join-Path $PSScriptRoot "liusheng-windows.iss")
-if ($LASTEXITCODE -ne 0) { throw "Inno Setup build failed" }
+$issExit = Invoke-NativeTool -File $iscc -ToolArgs @((Join-Path $PSScriptRoot "liusheng-windows.iss"))
+if ($issExit -ne 0) { throw "Inno Setup build failed" }
 
 Write-Host "Done."
 Write-Host "  Android: dist\liusheng-$version.apk"

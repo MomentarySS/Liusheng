@@ -8,7 +8,9 @@ Format follows [Keep a Changelog](https://keepachangelog.com/zh-CN/), and the pr
 
 ## [Unreleased]
 
-<!-- 后续改动从这里开始记录；本次 Liusheng 升级已归档到 v2.2.1。 -->
+<!-- 后续改动从这里开始记录；本次 Liusheng 升级已归档到 v2.2.2。 -->
+
+## [2.2.2] - 2026-10-05
 
 ### Added
 
@@ -20,6 +22,8 @@ Format follows [Keep a Changelog](https://keepachangelog.com/zh-CN/), and the pr
 - 「仅WiFi下载」统一为「仅 WiFi 下载」：设置 → 播放与收听的开关行与加载中 / 加载失败占位、播客设置面板的只读状态行，以及相关代码注释与测试
 - 「清除封面缓存」确认弹窗补上播客封面（原文只说电台台标），与该操作实际清理的内容一致
 - `DESIGN.md` 的设置分组与排列顺序改为与代码一致的「内容与来源 / 播放与外观 / 数据与应用」，电台分类列在电台管理之后
+- 工程侧统一到 Dart 现行格式风格：`pubspec.yaml` 的 sdk 下界抬到 **3.7**（构建本项目需要 Dart 3.7+），`dart format` 重排 `lib` 与 `test`（137 个文件），并把 `dart format --output=none --set-exit-if-changed lib test` 写进发版门槛（此前只有 `flutter analyze` 与 `flutter test`）。格式化会触发本仓库两条与 formatter 相冲突的 lint：`curly_braces_in_flow_control_structures` 补花括号（16 处），`require_trailing_commas` 在最后一个参数是 switch 表达式或函数字面量时 formatter 会删掉尾逗号，改用 `// ignore:` 标记（14 处）
+- `scripts/git-proxy.ps1` 此前无论推送成功与否都返回 1：`ErrorActionPreference = 'Stop'` 把 git 写在 stderr 的正常进度行（`To https://...`、`Everything up-to-date`）当成终止性错误，脚本走不到末尾的 `exit`。现已把放宽的作用域限在工具调用那一段并透传 git 的真实退出码
 
 ## [2.2.1] - 2026-09-24
 

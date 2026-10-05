@@ -12,7 +12,7 @@ Liusheng 的 Android applicationId 已从旧的 `com.chengbo.chengbo` 变为 `co
 
 备份不包含已下载音频、封面 / Feed 缓存或 Podcast Index 密钥，下载内容需要重新下载。Android 旧 Widget 需要移除后重新添加。播客状态文件会在新程序能够访问旧支持目录时从 `chengbo/podcast_episode_state.json` 迁到 `liusheng/`；Android 的包沙箱隔离时仍请使用备份。Windows 开机启动启用 Liusheng 时会写入 `Liusheng` 项并清理旧的 `Chengbo` 启动项。旧 `chengbo://` 深链仍可被流声接收。
 
-当前版本：`2.2.1+42`（2026-09-24）。本版新增播客单集收藏；统一设置与未听区入口；改善电台筛选栏，并移除三套氛围皮肤。相对 2.1.1：播客详情页与播放器页瘦身（下载开关收成一行入口、标题限行、辅助行收成一行图标、去重复入口、睡眠倒计时收进顶部窄带）；两页共享播放器视觉规格（消除封面规格分叉）；电台页生成式台名卡 + 睡眠定时图标开关 + 播放列表半屏 sheet；**订阅拦截收窄到只剩 RSSHub**（喜马拉雅 / 荔枝恢复可订阅，且拦截不再作用于读取路径）；发现播客搜索**三级兜底**（iTunes → Podcast Index → 本机目录：GetPodcast 精选 + xyzrank 榜单前 1000，约 1250 个中文节目）；拉取失败**回落本机缓存**；修复单集长按菜单尾部被裁、睡眠定时图标不关闭、移动网络下「全部下载」未被拦住、跳过片头/尾面板裁切与首帧崩溃（细项见 [CHANGELOG](CHANGELOG.md)）。相对 2.1.0 为两处修复（`brand.dart` 版本号与 pubspec 不一致、电台迷你条底部 3px 主色条移除，见 [CHANGELOG](CHANGELOG.md)）。相对 2.0.2：mini player 标题行右侧显示播客精确剩余时间；Android 桌面 widget 跟随系统壁纸配色（Material You 动态色）+ 深色系统配色变体；M3 矢量图标替换旧系统拟物图标；新增 Android「待听」桌面 widget（4×2 cell，未听单集列表 + 点击直接播放）；关于页展示品牌口号（细项见 [CHANGELOG](CHANGELOG.md)）。相对 1.5.4：发现播客（iTunes + 中文热榜）、版权库拦截、台标与通知栏封面、Android 缓冲/手势/章节跳转、本机备份、车机播客、未听 inbox、按节目自动下载最新一集、时间戳书签、Windows 托盘、快捷键、开机启动与启动即迷你窗、Android 小组件下一台 / 续播；Android 播客开播切 speech 会话、蓝牙连回续播（默认关）、紧凑列表（默认标准）、正在播放静态图标、首次探测可取消/先听已测到的、关键页面 widget 测试；暂停后保留前台服务，进度与已听状态迁移到独立存储并纳入备份；精选约 409 台。
+当前版本：`2.2.2+43`（2026-10-05）。本版对齐设置页文案与操作：系统代理状态行新增「重新检测」按钮（此前只能整行点击，入口不可见）；「外观」副标题去掉 2.2.1 已下线的「氛围」；「仅 WiFi 下载」统一写法；「清除封面缓存」补上播客封面。工程侧统一到 Dart 现行格式风格（构建需 Dart 3.7+），`dart format` 进入发版门槛。相对 2.2.1：播客单集收藏与设置 / 未听区整理；Windows 侧栏键盘与 hover 交互；播客逐节目通知、不可达电台诊断、待听队列批量加入；电台筛选栏视觉统一，移除三套氛围皮肤。相对 2.1.1：播客详情页与播放器页瘦身（下载开关收成一行入口、标题限行、辅助行收成一行图标、去重复入口、睡眠倒计时收进顶部窄带）；两页共享播放器视觉规格（消除封面规格分叉）；电台页生成式台名卡 + 睡眠定时图标开关 + 播放列表半屏 sheet；**订阅拦截收窄到只剩 RSSHub**（喜马拉雅 / 荔枝恢复可订阅，且拦截不再作用于读取路径）；发现播客搜索**三级兜底**（iTunes → Podcast Index → 本机目录：GetPodcast 精选 + xyzrank 榜单前 1000，约 1250 个中文节目）；拉取失败**回落本机缓存**；修复单集长按菜单尾部被裁、睡眠定时图标不关闭、移动网络下「全部下载」未被拦住、跳过片头/尾面板裁切与首帧崩溃（细项见 [CHANGELOG](CHANGELOG.md)）。相对 2.1.0 为两处修复（`brand.dart` 版本号与 pubspec 不一致、电台迷你条底部 3px 主色条移除，见 [CHANGELOG](CHANGELOG.md)）。相对 2.0.2：mini player 标题行右侧显示播客精确剩余时间；Android 桌面 widget 跟随系统壁纸配色（Material You 动态色）+ 深色系统配色变体；M3 矢量图标替换旧系统拟物图标；新增 Android「待听」桌面 widget（4×2 cell，未听单集列表 + 点击直接播放）；关于页展示品牌口号（细项见 [CHANGELOG](CHANGELOG.md)）。相对 1.5.4：发现播客（iTunes + 中文热榜）、版权库拦截、台标与通知栏封面、Android 缓冲/手势/章节跳转、本机备份、车机播客、未听 inbox、按节目自动下载最新一集、时间戳书签、Windows 托盘、快捷键、开机启动与启动即迷你窗、Android 小组件下一台 / 续播；Android 播客开播切 speech 会话、蓝牙连回续播（默认关）、紧凑列表（默认标准）、正在播放静态图标、首次探测可取消/先听已测到的、关键页面 widget 测试；暂停后保留前台服务，进度与已听状态迁移到独立存储并纳入备份；精选约 409 台。
 
 ## 功能
 
@@ -87,7 +87,7 @@ flutter pub get
 | Android SDK 目录表与 NDK     | 腾讯云 `mirrors.cloud.tencent.com/AndroidSDK` |
 | Windows NuGet                | 华为云 NuGet                                  |
 
-产物在 `dist/`，文件名跟 `pubspec.yaml` 的 `x.y.z` 走（当前为 `liusheng-2.2.1.apk`、`liusheng-windows-2.2.1.zip`、`liusheng-windows-2.2.1.exe`）。改版本后需重新 `.\scripts\pack.ps1`。本地签名配置文件存在时 APK 用正式密钥签名；没有则回退 debug 签名。`minSdk` 23。Windows 双击 `.exe` 安装包安装，安装后从开始菜单启动；安装包支持卸载（控制面板 / 设置 → 应用）。
+产物在 `dist/`，文件名跟 `pubspec.yaml` 的 `x.y.z` 走（当前为 `liusheng-2.2.2.apk`、`liusheng-windows-2.2.2.zip`、`liusheng-windows-2.2.2.exe`）。改版本后需重新 `.\scripts\pack.ps1`。本地签名配置文件存在时 APK 用正式密钥签名；没有则回退 debug 签名。`minSdk` 23。Windows 双击 `.exe` 安装包安装，安装后从开始菜单启动；安装包支持卸载（控制面板 / 设置 → 应用）。
 
 正式构建需要本地签名配置文件；该配置不会进入 Git。请在仓库外妥善备份，丢失后将无法再发「同一个 App」的更新。以前用 debug 签名装过的手机，不能直接覆盖安装，需先卸载（收藏等本机数据会清掉）。
 
@@ -192,7 +192,7 @@ test/                   # widget_test + layer_test
 ## 注意事项
 
 - 部分第三方流会失效，优先改 JSON 或在 App 内手动添加替代源
-- Radio Browser 会动态解析镜像；User-Agent 为 `Liusheng/2.2.1 (Flutter; liusheng radio)`
+- Radio Browser 会动态解析镜像；User-Agent 为 `Liusheng/2.2.2 (Flutter; liusheng radio)`
 - Windows 订阅境外 RSS（如 SoundOn）会走系统代理，并探测本机 Clash 常见端口；手机请用 Clash / NekoBox 的 VPN/TUN，并把流声加入代理名单
 - Android 后台播放需通知权限（Android 13+）；系统要求 `minSdk` 23
 - Windows 需 `just_audio_windows`；中文路径编译已在 CMake 加 `/utf-8`

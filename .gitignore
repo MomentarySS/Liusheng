@@ -73,7 +73,11 @@ windows/runner/resources/test_icon*.ico
 /SOURCES.md
 
 # Internal design and release records (not for public repo)
-/docs/design/
+/docs/design/*-work-order.md
+/docs/design/*-plan.md
+/docs/design/*research*.md
+/docs/design/*-release-tracker.md
+/docs/design/*.html
 
 # Internal tooling (scripts, probes, scrapers; not for public repo)
 /tools/

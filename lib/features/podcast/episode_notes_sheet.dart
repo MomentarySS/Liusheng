@@ -20,12 +20,13 @@ Future<void> showPlaybackNotesSheet({
     context: context,
     showDragHandle: true,
     isScrollControlled: true,
-    builder: (sheetContext) => _PlaybackNotesSheet(
-      title: title,
-      subtitle: subtitle,
-      artworkUrl: artworkUrl,
-      description: description,
-    ),
+    builder:
+        (sheetContext) => _PlaybackNotesSheet(
+          title: title,
+          subtitle: subtitle,
+          artworkUrl: artworkUrl,
+          description: description,
+        ),
   );
 }
 
@@ -71,16 +72,14 @@ class _PlaybackNotesSheet extends StatelessWidget {
                       children: [
                         Text(
                           title,
-                          style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                                fontWeight: FontWeight.w600,
-                              ),
+                          style: Theme.of(context).textTheme.titleMedium
+                              ?.copyWith(fontWeight: FontWeight.w600),
                         ),
                         const SizedBox(height: 4),
                         Text(
                           subtitle,
-                          style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                                color: colorScheme.onSurfaceVariant,
-                              ),
+                          style: Theme.of(context).textTheme.bodySmall
+                              ?.copyWith(color: colorScheme.onSurfaceVariant),
                         ),
                       ],
                     ),
@@ -89,23 +88,23 @@ class _PlaybackNotesSheet extends StatelessWidget {
               ),
               const SizedBox(height: 16),
               Expanded(
-                child: notes.isEmpty
-                    ? Center(
-                        child: Text(
-                          '这期没有简介',
-                          style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                                color: colorScheme.onSurfaceVariant,
-                              ),
+                child:
+                    notes.isEmpty
+                        ? Center(
+                          child: Text(
+                            '这期没有简介',
+                            style: Theme.of(context).textTheme.bodyMedium
+                                ?.copyWith(color: colorScheme.onSurfaceVariant),
+                          ),
+                        )
+                        : SingleChildScrollView(
+                          child: Text(
+                            notes,
+                            style: Theme.of(
+                              context,
+                            ).textTheme.bodyMedium?.copyWith(height: 1.5),
+                          ),
                         ),
-                      )
-                    : SingleChildScrollView(
-                        child: Text(
-                          notes,
-                          style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                                height: 1.5,
-                              ),
-                        ),
-                      ),
               ),
             ],
           ),
@@ -142,9 +141,11 @@ class _EpisodeNotesSheet extends ConsumerWidget {
     final maxHeight = MediaQuery.sizeOf(context).height * 0.78;
     final published = episode.publishedAt;
     final downloaded =
-        ref.watch(podcastDownloadsProvider).statusFor(episode.guid) == EpisodeDownloadStatus.ready;
+        ref.watch(podcastDownloadsProvider).statusFor(episode.guid) ==
+        EpisodeDownloadStatus.ready;
     final meta = [
-      if (published != null) '${published.year}-${published.month}-${published.day}',
+      if (published != null)
+        '${published.year}-${published.month}-${published.day}',
       if (episode.duration != null) _formatDuration(episode.duration!),
       if (downloaded) '已下载',
     ].join(' · ');
@@ -173,16 +174,14 @@ class _EpisodeNotesSheet extends ConsumerWidget {
                       children: [
                         Text(
                           episode.title,
-                          style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                                fontWeight: FontWeight.w600,
-                              ),
+                          style: Theme.of(context).textTheme.titleMedium
+                              ?.copyWith(fontWeight: FontWeight.w600),
                         ),
                         const SizedBox(height: 4),
                         Text(
                           [feed.title, if (meta.isNotEmpty) meta].join(' · '),
-                          style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                                color: colorScheme.onSurfaceVariant,
-                              ),
+                          style: Theme.of(context).textTheme.bodySmall
+                              ?.copyWith(color: colorScheme.onSurfaceVariant),
                         ),
                       ],
                     ),
@@ -191,29 +190,31 @@ class _EpisodeNotesSheet extends ConsumerWidget {
               ),
               const SizedBox(height: 16),
               Expanded(
-                child: notes.isEmpty
-                    ? Center(
-                        child: Text(
-                          '这期没有简介',
-                          style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                                color: colorScheme.onSurfaceVariant,
-                              ),
+                child:
+                    notes.isEmpty
+                        ? Center(
+                          child: Text(
+                            '这期没有简介',
+                            style: Theme.of(context).textTheme.bodyMedium
+                                ?.copyWith(color: colorScheme.onSurfaceVariant),
+                          ),
+                        )
+                        : SingleChildScrollView(
+                          child: Text(
+                            notes,
+                            style: Theme.of(
+                              context,
+                            ).textTheme.bodyMedium?.copyWith(height: 1.5),
+                          ),
                         ),
-                      )
-                    : SingleChildScrollView(
-                        child: Text(
-                          notes,
-                          style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                                height: 1.5,
-                              ),
-                        ),
-                      ),
               ),
               const SizedBox(height: 16),
               FilledButton.icon(
                 onPressed: () async {
                   Navigator.of(context).pop();
-                  await ref.read(playerControllerProvider).play(
+                  await ref
+                      .read(playerControllerProvider)
+                      .play(
                         PlaybackItem.fromPodcastEpisode(
                           podcastTitle: feed.title,
                           episodeTitle: episode.title,

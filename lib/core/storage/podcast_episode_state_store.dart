@@ -89,10 +89,12 @@ class PodcastEpisodeStateStore {
   }) async {
     try {
       final support = await getApplicationSupportDirectory();
-      final root =
-          Directory('${support.path}${Platform.pathSeparator}liusheng');
-      final legacyRoot =
-          Directory('${support.path}${Platform.pathSeparator}chengbo');
+      final root = Directory(
+        '${support.path}${Platform.pathSeparator}liusheng',
+      );
+      final legacyRoot = Directory(
+        '${support.path}${Platform.pathSeparator}chengbo',
+      );
       if (!await root.exists()) {
         await root.create(recursive: true);
       }
@@ -161,8 +163,9 @@ class PodcastEpisodeStateStore {
   }
 
   Future<void> setListenedEpisodeGuids(Set<String> guids) async {
-    _state = _state
-        .copyWith(listenedGuids: {...guids.where((guid) => guid.isNotEmpty)});
+    _state = _state.copyWith(
+      listenedGuids: {...guids.where((guid) => guid.isNotEmpty)},
+    );
     await _persist();
   }
 

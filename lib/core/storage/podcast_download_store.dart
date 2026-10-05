@@ -13,14 +13,15 @@ import 'app_storage.dart';
 /// 用户主动下载的播客单集，存在应用私有目录。直播电台不会走这里。
 class PodcastDownloadStore {
   PodcastDownloadStore(this._storage, this._root, {Dio? dio})
-      : _dio = dio ??
-            SystemHttpProxy.createDio(
-              BaseOptions(
-                connectTimeout: const Duration(seconds: 20),
-                receiveTimeout: const Duration(minutes: 15),
-                headers: {'User-Agent': AppBrand.podcastUserAgent},
-              ),
-            );
+    : _dio =
+          dio ??
+          SystemHttpProxy.createDio(
+            BaseOptions(
+              connectTimeout: const Duration(seconds: 20),
+              receiveTimeout: const Duration(minutes: 15),
+              headers: {'User-Agent': AppBrand.podcastUserAgent},
+            ),
+          );
 
   final AppStorage _storage;
   final Directory _root;
@@ -109,7 +110,12 @@ class PodcastDownloadStore {
       if (await part.exists()) {
         await part.delete();
       }
-      AppLog.e('PodcastDownload', 'download failed', error: error, stackTrace: stackTrace);
+      AppLog.e(
+        'PodcastDownload',
+        'download failed',
+        error: error,
+        stackTrace: stackTrace,
+      );
       rethrow;
     } finally {
       _cancels.remove(episode.guid);
@@ -167,11 +173,12 @@ class PodcastDownloadStore {
     required Set<String> listenedGuids,
     int olderThanDays = 30,
   }) async {
-    final records = (await _storage.getPodcastDownloads())
-        .map(PodcastDownloadRecord.tryFromJson)
-        .where((r) => r != null)
-        .cast<PodcastDownloadRecord>()
-        .toList();
+    final records =
+        (await _storage.getPodcastDownloads())
+            .map(PodcastDownloadRecord.tryFromJson)
+            .where((r) => r != null)
+            .cast<PodcastDownloadRecord>()
+            .toList();
     final toDelete = PodcastDownloadLogic.guidsDueForCleanup(
       records: records,
       listenedGuids: listenedGuids,

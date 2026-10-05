@@ -1,10 +1,7 @@
 import '../models/podcast.dart';
 
 class NewEpisodeHit {
-  const NewEpisodeHit({
-    required this.feed,
-    required this.episode,
-  });
+  const NewEpisodeHit({required this.feed, required this.episode});
 
   final PodcastFeed feed;
   final PodcastEpisode episode;
@@ -15,13 +12,12 @@ abstract final class NewEpisodeLogic {
   static const minInterval = Duration(hours: 6);
   static const maxFeedsPerRun = 12;
 
-  static bool shouldNotifyFeed({required bool globallyEnabled, required bool muted}) =>
-      globallyEnabled && !muted;
+  static bool shouldNotifyFeed({
+    required bool globallyEnabled,
+    required bool muted,
+  }) => globallyEnabled && !muted;
 
-  static bool shouldRefresh({
-    required DateTime now,
-    DateTime? lastCheckAt,
-  }) {
+  static bool shouldRefresh({required DateTime now, DateTime? lastCheckAt}) {
     if (lastCheckAt == null) return true;
     return now.difference(lastCheckAt) >= minInterval;
   }

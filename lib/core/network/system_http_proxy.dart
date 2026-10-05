@@ -31,7 +31,16 @@ abstract final class SystemHttpProxy {
   static String? _cachedLocalHttpProxy;
 
   /// Clash / Clash Verge / v2rayN / NekoBox 常见 HTTP 混合端口。
-  static const localHttpProxyPorts = [7897, 7890, 10808, 6152, 2080, 20171, 7891, 10809];
+  static const localHttpProxyPorts = [
+    7897,
+    7890,
+    10808,
+    6152,
+    2080,
+    20171,
+    7891,
+    10809,
+  ];
 
   static void resetCache() {
     _cachedWindows = null;
@@ -137,9 +146,7 @@ abstract final class SystemHttpProxy {
 
   static bool isLoopback(Uri url) {
     final host = url.host.toLowerCase();
-    return host == 'localhost' ||
-        host == '127.0.0.1' ||
-        host == '::1';
+    return host == 'localhost' || host == '127.0.0.1' || host == '::1';
   }
 
   /// `127.0.0.1:7897` 或 `http=127.0.0.1:7897;https=127.0.0.1:7897`。
@@ -189,16 +196,19 @@ abstract final class SystemHttpProxy {
   }
 
   static bool parseRegDwordEnabled(String stdout) {
-    final match =
-        RegExp(r'ProxyEnable\s+REG_DWORD\s+0x([0-9a-fA-F]+)', caseSensitive: false)
-            .firstMatch(stdout);
+    final match = RegExp(
+      r'ProxyEnable\s+REG_DWORD\s+0x([0-9a-fA-F]+)',
+      caseSensitive: false,
+    ).firstMatch(stdout);
     if (match == null) return false;
     return int.parse(match.group(1)!, radix: 16) != 0;
   }
 
   static String? parseRegSz(String stdout, String name) {
-    final match =
-        RegExp('$name\\s+REG_SZ\\s+(.+)', caseSensitive: false).firstMatch(stdout);
+    final match = RegExp(
+      '$name\\s+REG_SZ\\s+(.+)',
+      caseSensitive: false,
+    ).firstMatch(stdout);
     return match?.group(1)?.trim();
   }
 
@@ -282,9 +292,9 @@ abstract final class SystemHttpProxy {
   }
 
   static bool _wildcardMatch(String host, String pattern) {
-    final escaped = RegExp.escape(pattern)
-        .replaceAll(r'\*', '.*')
-        .replaceAll(r'\?', '.');
+    final escaped = RegExp.escape(
+      pattern,
+    ).replaceAll(r'\*', '.*').replaceAll(r'\?', '.');
     return RegExp('^$escaped\$').hasMatch(host);
   }
 
@@ -296,15 +306,12 @@ abstract final class SystemHttpProxy {
   }
 
   static Future<String> _regQuery(String value) async {
-    final result = await Process.run(
-      'reg',
-      [
-        'query',
-        r'HKCU\Software\Microsoft\Windows\CurrentVersion\Internet Settings',
-        '/v',
-        value,
-      ],
-    );
+    final result = await Process.run('reg', [
+      'query',
+      r'HKCU\Software\Microsoft\Windows\CurrentVersion\Internet Settings',
+      '/v',
+      value,
+    ]);
     return result.stdout.toString();
   }
 }

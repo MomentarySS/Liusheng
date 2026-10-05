@@ -6,18 +6,14 @@ enum DeskHotkeyAction { toggle, skipBack, skipForward, toggleSurface, none }
 
 /// Windows 键盘：空格播停，左右方向键按当前跳秒档快退/快进。
 abstract final class DeskHotkeyLogic {
-  static bool offered({
-    TargetPlatform? platform,
-    bool isWeb = false,
-  }) {
+  static bool offered({TargetPlatform? platform, bool isWeb = false}) {
     if (isWeb) return false;
     return (platform ?? defaultTargetPlatform) == TargetPlatform.windows;
   }
 
   static bool get offeredOnThisPlatform => offered();
 
-  static String subtitle() =>
-      '空格播停；← / → 播客跳秒；侧栏用方向键导航；Ctrl+Shift+S 切换窗口形态';
+  static String subtitle() => '空格播停；← / → 播客跳秒；侧栏用方向键导航；Ctrl+Shift+S 切换窗口形态';
 
   static bool isEditableContext(BuildContext? context) {
     if (context == null) return false;
@@ -66,7 +62,9 @@ abstract final class DeskHotkeyLogic {
     }
     if (!podcastSkipEnabled) return DeskHotkeyAction.none;
     if (key == LogicalKeyboardKey.arrowLeft) return DeskHotkeyAction.skipBack;
-    if (key == LogicalKeyboardKey.arrowRight) return DeskHotkeyAction.skipForward;
+    if (key == LogicalKeyboardKey.arrowRight) {
+      return DeskHotkeyAction.skipForward;
+    }
     return DeskHotkeyAction.none;
   }
 }

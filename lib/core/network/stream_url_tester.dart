@@ -30,19 +30,20 @@ class StationProbeProgress {
 /// 检测直播流是否可访问，并核对正文是播放列表或音频，而不是 JSON/网页。
 class StreamUrlTester {
   StreamUrlTester({Dio? dio})
-      : _dio = dio ??
-            SystemHttpProxy.createDio(
-              BaseOptions(
-                connectTimeout: const Duration(seconds: 12),
-                receiveTimeout: const Duration(seconds: 12),
-                followRedirects: true,
-                validateStatus: (status) => status != null && status < 500,
-                headers: {
-                  'User-Agent': RadioBrowserClient.userAgent,
-                  'Icy-MetaData': '1',
-                },
-              ),
-            );
+    : _dio =
+          dio ??
+          SystemHttpProxy.createDio(
+            BaseOptions(
+              connectTimeout: const Duration(seconds: 12),
+              receiveTimeout: const Duration(seconds: 12),
+              followRedirects: true,
+              validateStatus: (status) => status != null && status < 500,
+              headers: {
+                'User-Agent': RadioBrowserClient.userAgent,
+                'Icy-MetaData': '1',
+              },
+            ),
+          );
 
   /// 启动批量探测：更短超时，避免卡在死链上。
   factory StreamUrlTester.forLaunchProbe() {
@@ -52,9 +53,7 @@ class StreamUrlTester {
         receiveTimeout: const Duration(seconds: 5),
         followRedirects: true,
         validateStatus: (status) => status != null && status < 500,
-        headers: {
-          'User-Agent': RadioBrowserClient.userAgent,
-        },
+        headers: {'User-Agent': RadioBrowserClient.userAgent},
       ),
     );
     final adapter = dio.httpClientAdapter;
@@ -108,7 +107,10 @@ class StreamUrlTester {
     ];
   }
 
-  Future<StreamTestResult> test(String rawUrl, {CancelToken? cancelToken}) async {
+  Future<StreamTestResult> test(
+    String rawUrl, {
+    CancelToken? cancelToken,
+  }) async {
     final formatError = validateFormat(rawUrl);
     if (formatError != null) return formatError;
     final url = rawUrl.trim();
@@ -149,7 +151,8 @@ class StreamUrlTester {
         responseType: ResponseType.stream,
         headers: {
           'User-Agent': RadioBrowserClient.userAgent,
-          if (range) 'Range': 'bytes=0-${StreamContentLogic.previewMaxBytes - 1}',
+          if (range)
+            'Range': 'bytes=0-${StreamContentLogic.previewMaxBytes - 1}',
           if (range) 'Icy-MetaData': '1',
         },
       ),
@@ -158,8 +161,9 @@ class StreamUrlTester {
     final body = response.data;
     var preview = '';
     if (body != null) {
-      preview = await StreamContentLogic.readPreview(body.stream)
-          .timeout(const Duration(seconds: 4));
+      preview = await StreamContentLogic.readPreview(
+        body.stream,
+      ).timeout(const Duration(seconds: 4));
       // 部分源（新城电台 cdn77）对 m3u8 做 gzip 压缩，不解压会被误判为无效播放列表。
       final encoding =
           (response.headers.value('content-encoding') ?? '').toLowerCase();
@@ -201,7 +205,8 @@ class StreamUrlTester {
       int done,
       int total,
       Map<String, bool> urlOk,
-    )? onUrlTested,
+    )?
+    onUrlTested,
   }) async {
     final unique = uniqueStreamUrls(stations);
     final total = unique.length;
@@ -225,7 +230,9 @@ class StreamUrlTester {
           if (!result.ok && result.message == '探测中断') return;
           urlOk[url] = result.ok;
         } on DioException catch (error) {
-          if (CancelToken.isCancel(error) || (cancel?.isCancelled ?? false)) return;
+          if (CancelToken.isCancel(error) || (cancel?.isCancelled ?? false)) {
+            return;
+          }
           urlOk[url] = false;
         } catch (_) {
           if (cancel?.isCancelled ?? false) return;

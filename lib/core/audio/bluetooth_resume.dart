@@ -2,10 +2,7 @@ import 'package:flutter/foundation.dart';
 
 /// 蓝牙耳机连回后续播。默认关；拔出暂停仍走系统 becomingNoisy。
 abstract final class BluetoothResumeLogic {
-  static bool offered({
-    TargetPlatform? platform,
-    bool isWeb = false,
-  }) {
+  static bool offered({TargetPlatform? platform, bool isWeb = false}) {
     if (isWeb) return false;
     return (platform ?? defaultTargetPlatform) == TargetPlatform.android;
   }

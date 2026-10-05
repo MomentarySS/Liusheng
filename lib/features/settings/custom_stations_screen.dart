@@ -21,7 +21,8 @@ class CustomStationsScreen extends ConsumerStatefulWidget {
   final RadioStation? editing;
 
   @override
-  ConsumerState<CustomStationsScreen> createState() => _CustomStationsScreenState();
+  ConsumerState<CustomStationsScreen> createState() =>
+      _CustomStationsScreenState();
 }
 
 class _CustomStationsScreenState extends ConsumerState<CustomStationsScreen> {
@@ -67,13 +68,14 @@ class _CustomStationsScreenState extends ConsumerState<CustomStationsScreen> {
 
   List<String> _categoryOptions() {
     final custom = ref.watch(customCategoriesProvider).value ?? [];
-    final base = StationCategoryResolver.defaultFilterCategories
-        .where(
-          (c) =>
-              c != StationCategoryResolver.all &&
-              !StationCategoryResolver.lockedCategoryNames.contains(c),
-        )
-        .toList();
+    final base =
+        StationCategoryResolver.defaultFilterCategories
+            .where(
+              (c) =>
+                  c != StationCategoryResolver.all &&
+                  !StationCategoryResolver.lockedCategoryNames.contains(c),
+            )
+            .toList();
     return [...base, ...custom.where((c) => !base.contains(c))];
   }
 
@@ -116,15 +118,16 @@ class _CustomStationsScreenState extends ConsumerState<CustomStationsScreen> {
     if (!resolved.ok) {
       if (mounted) {
         setState(() => _testMessage = resolved.message);
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(resolved.message ?? '无法解析播放列表')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(resolved.message ?? '无法解析播放列表')));
       }
       return null;
     }
     if (resolved.resolvedFromPlaylist && mounted) {
       _urlController.text = resolved.streamUrl;
-      if (_nameController.text.trim().isEmpty && (resolved.title ?? '').isNotEmpty) {
+      if (_nameController.text.trim().isEmpty &&
+          (resolved.title ?? '').isNotEmpty) {
         _nameController.text = resolved.title!;
       }
       setState(() {
@@ -144,35 +147,39 @@ class _CustomStationsScreenState extends ConsumerState<CustomStationsScreen> {
       return;
     }
 
-    final extraTags = _tagsController.text
-        .split(RegExp(r'[,，、\s]+'))
-        .map((t) => t.trim())
-        .where((t) => t.isNotEmpty)
-        .toList();
+    final extraTags =
+        _tagsController.text
+            .split(RegExp(r'[,，、\s]+'))
+            .map((t) => t.trim())
+            .where((t) => t.isNotEmpty)
+            .toList();
 
     final notifier = ref.read(customStationsProvider.notifier);
-    final error = _editingId == null
-        ? await notifier.add(
-            name: _nameController.text,
-            streamUrl: resolved.streamUrl,
-            favicon: _faviconController.text,
-            category: _category,
-            extraTags: extraTags,
-          )
-        : await notifier.update(
-            id: _editingId!,
-            name: _nameController.text,
-            streamUrl: resolved.streamUrl,
-            favicon: _faviconController.text,
-            category: _category,
-            extraTags: extraTags,
-          );
+    final error =
+        _editingId == null
+            ? await notifier.add(
+              name: _nameController.text,
+              streamUrl: resolved.streamUrl,
+              favicon: _faviconController.text,
+              category: _category,
+              extraTags: extraTags,
+            )
+            : await notifier.update(
+              id: _editingId!,
+              name: _nameController.text,
+              streamUrl: resolved.streamUrl,
+              favicon: _faviconController.text,
+              category: _category,
+              extraTags: extraTags,
+            );
 
     if (!mounted) return;
     setState(() => _saving = false);
 
     if (error != null) {
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(error)));
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(error)));
       return;
     }
 
@@ -186,7 +193,9 @@ class _CustomStationsScreenState extends ConsumerState<CustomStationsScreen> {
       _testOk = null;
     });
     ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text(widget.editing != null ? '电台已更新' : '电台已添加，可在电台列表中搜索播放')),
+      SnackBar(
+        content: Text(widget.editing != null ? '电台已更新' : '电台已添加，可在电台列表中搜索播放'),
+      ),
     );
     if (widget.editing != null && mounted) {
       unawaited(Navigator.of(context).maybePop());
@@ -196,34 +205,45 @@ class _CustomStationsScreenState extends ConsumerState<CustomStationsScreen> {
   Future<void> _confirmDelete(String id, String name) async {
     final confirmed = await showDialog<bool>(
       context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('删除电台'),
-        content: Text('确定删除「$name」？'),
-        actions: [
-          TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('取消')),
-          FilledButton(onPressed: () => Navigator.pop(context, true), child: const Text('删除')),
-        ],
-      ),
+      builder:
+          (context) => AlertDialog(
+            title: const Text('删除电台'),
+            content: Text('确定删除「$name」？'),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context, false),
+                child: const Text('取消'),
+              ),
+              FilledButton(
+                onPressed: () => Navigator.pop(context, true),
+                child: const Text('删除'),
+              ),
+            ],
+          ),
     );
     if (confirmed != true || !mounted) return;
     await ref.read(customStationsProvider.notifier).remove(id);
     if (!mounted) return;
-    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('已删除「$name」')));
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(SnackBar(content: Text('已删除「$name」')));
   }
 
   Future<void> _exportStations() async {
     final stations = ref.read(customStationsProvider).value ?? [];
     if (stations.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('还没有可导出的手动电台')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('还没有可导出的手动电台')));
       return;
     }
-    await Clipboard.setData(ClipboardData(text: CustomStationsBackup.encode(stations)));
-    if (!mounted) return;
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('已复制 ${stations.length} 个手动电台到剪贴板')),
+    await Clipboard.setData(
+      ClipboardData(text: CustomStationsBackup.encode(stations)),
     );
+    if (!mounted) return;
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(SnackBar(content: Text('已复制 ${stations.length} 个手动电台到剪贴板')));
   }
 
   Future<void> _importStations() async {
@@ -231,15 +251,19 @@ class _CustomStationsScreenState extends ConsumerState<CustomStationsScreen> {
     final parsed = CustomStationsBackup.decode(data?.text ?? '');
     if (parsed == null) {
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('剪贴板里没有可导入的电台 JSON')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('剪贴板里没有可导入的电台 JSON')));
       return;
     }
-    final result = await ref.read(customStationsProvider.notifier).importStations(parsed);
+    final result = await ref
+        .read(customStationsProvider.notifier)
+        .importStations(parsed);
     if (!mounted) return;
     ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('导入完成：新增 ${result.added} 个，跳过 ${result.skipped} 个')),
+      SnackBar(
+        content: Text('导入完成：新增 ${result.added} 个，跳过 ${result.skipped} 个'),
+      ),
     );
   }
 
@@ -287,7 +311,9 @@ class _CustomStationsScreenState extends ConsumerState<CustomStationsScreen> {
         children: [
           Text(
             _editingId == null ? '添加直播流' : '修改直播流',
-            style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w600),
+            style: Theme.of(
+              context,
+            ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w600),
           ),
           const SizedBox(height: 4),
           Text(
@@ -295,8 +321,8 @@ class _CustomStationsScreenState extends ConsumerState<CustomStationsScreen> {
                 ? '填写电台名称和流地址（.m3u8 / .mp3，或 .m3u / .pls 播放列表）。保存后会出现在电台列表最前面。可用右上角导入/导出备份。'
                 : '修改后会同步到电台列表。',
             style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                  color: Theme.of(context).colorScheme.onSurfaceVariant,
-                ),
+              color: Theme.of(context).colorScheme.onSurfaceVariant,
+            ),
           ),
           const SizedBox(height: 16),
           Form(
@@ -312,8 +338,11 @@ class _CustomStationsScreenState extends ConsumerState<CustomStationsScreen> {
                     border: OutlineInputBorder(),
                   ),
                   textInputAction: TextInputAction.next,
-                  validator: (value) =>
-                      value == null || value.trim().isEmpty ? '请输入电台名称' : null,
+                  validator:
+                      (value) =>
+                          value == null || value.trim().isEmpty
+                              ? '请输入电台名称'
+                              : null,
                 ),
                 const SizedBox(height: 12),
                 TextFormField(
@@ -328,8 +357,11 @@ class _CustomStationsScreenState extends ConsumerState<CustomStationsScreen> {
                   validator: (value) {
                     final trimmed = value?.trim() ?? '';
                     if (trimmed.isEmpty) return '请输入流地址';
-                    if (PlaylistImportLogic.looksLikePlaylistText(trimmed)) return null;
-                    if (!trimmed.startsWith('http://') && !trimmed.startsWith('https://')) {
+                    if (PlaylistImportLogic.looksLikePlaylistText(trimmed)) {
+                      return null;
+                    }
+                    if (!trimmed.startsWith('http://') &&
+                        !trimmed.startsWith('https://')) {
                       return '地址需以 http:// 或 https:// 开头';
                     }
                     return null;
@@ -352,9 +384,12 @@ class _CustomStationsScreenState extends ConsumerState<CustomStationsScreen> {
                     labelText: '分类',
                     border: OutlineInputBorder(),
                   ),
-                  items: categories
-                      .map((c) => DropdownMenuItem(value: c, child: Text(c)))
-                      .toList(),
+                  items:
+                      categories
+                          .map(
+                            (c) => DropdownMenuItem(value: c, child: Text(c)),
+                          )
+                          .toList(),
                   onChanged: (value) {
                     if (value != null) setState(() => _category = value);
                   },
@@ -373,20 +408,24 @@ class _CustomStationsScreenState extends ConsumerState<CustomStationsScreen> {
                   Row(
                     children: [
                       Icon(
-                        _testOk == true ? Icons.check_circle_outline : Icons.error_outline,
+                        _testOk == true
+                            ? Icons.check_circle_outline
+                            : Icons.error_outline,
                         size: 18,
-                        color: _testOk == true
-                            ? Theme.of(context).colorScheme.primary
-                            : Theme.of(context).colorScheme.error,
+                        color:
+                            _testOk == true
+                                ? Theme.of(context).colorScheme.primary
+                                : Theme.of(context).colorScheme.error,
                       ),
                       const SizedBox(width: 8),
                       Expanded(
                         child: Text(
                           _testMessage!,
                           style: TextStyle(
-                            color: _testOk == true
-                                ? Theme.of(context).colorScheme.primary
-                                : Theme.of(context).colorScheme.error,
+                            color:
+                                _testOk == true
+                                    ? Theme.of(context).colorScheme.primary
+                                    : Theme.of(context).colorScheme.error,
                           ),
                         ),
                       ),
@@ -398,26 +437,36 @@ class _CustomStationsScreenState extends ConsumerState<CustomStationsScreen> {
                   children: [
                     OutlinedButton.icon(
                       onPressed: _testing ? null : _testUrl,
-                      icon: _testing
-                          ? const SizedBox(
-                              width: 16,
-                              height: 16,
-                              child: CircularProgressIndicator(strokeWidth: 2),
-                            )
-                          : const Icon(Icons.link),
+                      icon:
+                          _testing
+                              ? const SizedBox(
+                                width: 16,
+                                height: 16,
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                ),
+                              )
+                              : const Icon(Icons.link),
                       label: const Text('测试连接'),
                     ),
                     const SizedBox(width: 12),
                     Expanded(
                       child: FilledButton.icon(
                         onPressed: _saving ? null : _save,
-                        icon: _saving
-                            ? const SizedBox(
-                                width: 16,
-                                height: 16,
-                                child: CircularProgressIndicator(strokeWidth: 2),
-                              )
-                            : Icon(_editingId == null ? Icons.add : Icons.save_outlined),
+                        icon:
+                            _saving
+                                ? const SizedBox(
+                                  width: 16,
+                                  height: 16,
+                                  child: CircularProgressIndicator(
+                                    strokeWidth: 2,
+                                  ),
+                                )
+                                : Icon(
+                                  _editingId == null
+                                      ? Icons.add
+                                      : Icons.save_outlined,
+                                ),
                         label: Text(_editingId == null ? '保存电台' : '保存修改'),
                       ),
                     ),
@@ -429,7 +478,9 @@ class _CustomStationsScreenState extends ConsumerState<CustomStationsScreen> {
           const Divider(height: 40),
           Text(
             '已添加的电台',
-            style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w600),
+            style: Theme.of(
+              context,
+            ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w600),
           ),
           const SizedBox(height: 8),
           customStations.when(
@@ -441,50 +492,60 @@ class _CustomStationsScreenState extends ConsumerState<CustomStationsScreen> {
                 );
               }
               return Column(
-                children: stations
-                    .map(
-                      (station) => ListTile(
-                        leading: StationArtwork(
-                          url: station.favicon,
-                          name: station.name,
-                          tags: station.tags,
-                        ),
-                        title: Text(station.name),
-                        subtitle: Text(
-                          station.streamUrl,
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                        onTap: () async {
-                          await ref.read(recentIdsProvider.notifier).add(station.id);
-                          await ref
-                              .read(playerControllerProvider)
-                              .play(PlaybackItem.fromStation(station));
-                        },
-                        trailing: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            IconButton(
-                              tooltip: '编辑',
-                              icon: const Icon(Icons.edit_outlined),
-                              onPressed: () => _startEdit(station),
+                children:
+                    stations
+                        .map(
+                          (station) => ListTile(
+                            leading: StationArtwork(
+                              url: station.favicon,
+                              name: station.name,
+                              tags: station.tags,
                             ),
-                            IconButton(
-                              tooltip: '删除',
-                              icon: const Icon(Icons.delete_outline),
-                              onPressed: () => _confirmDelete(station.id, station.name),
+                            title: Text(station.name),
+                            subtitle: Text(
+                              station.streamUrl,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
                             ),
-                          ],
-                        ),
-                      ),
-                    )
-                    .toList(),
+                            onTap: () async {
+                              await ref
+                                  .read(recentIdsProvider.notifier)
+                                  .add(station.id);
+                              await ref
+                                  .read(playerControllerProvider)
+                                  .play(PlaybackItem.fromStation(station));
+                            },
+                            trailing: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                IconButton(
+                                  tooltip: '编辑',
+                                  icon: const Icon(Icons.edit_outlined),
+                                  onPressed: () => _startEdit(station),
+                                ),
+                                IconButton(
+                                  tooltip: '删除',
+                                  icon: const Icon(Icons.delete_outline),
+                                  onPressed:
+                                      () => _confirmDelete(
+                                        station.id,
+                                        station.name,
+                                      ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        )
+                        .toList(),
               );
             },
-            loading: () => const Center(child: Padding(
-              padding: EdgeInsets.all(24),
-              child: CircularProgressIndicator(),
-            ),),
+            loading:
+                () => const Center(
+                  child: Padding(
+                    padding: EdgeInsets.all(24),
+                    child: CircularProgressIndicator(),
+                  ),
+                ),
             error: (error, _) => ListTile(title: Text('加载失败: $error')),
           ),
         ],

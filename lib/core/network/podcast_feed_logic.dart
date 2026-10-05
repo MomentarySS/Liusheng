@@ -29,7 +29,10 @@ abstract final class PodcastFeedLogic {
       throw PodcastFeedException(page, saveAddress: false);
     }
     if (enforceCatalogPolicy && isDeniedCatalogFeed(url)) {
-      throw const PodcastFeedException(catalogDeniedMessage, saveAddress: false);
+      throw const PodcastFeedException(
+        catalogDeniedMessage,
+        saveAddress: false,
+      );
     }
     return rewrite(url);
   }
@@ -72,15 +75,24 @@ abstract final class PodcastFeedLogic {
       return '$url.xml';
     }
 
-    final firstory = RegExp(r'^/user/([^/]+)', caseSensitive: false).firstMatch(path);
+    final firstory = RegExp(
+      r'^/user/([^/]+)',
+      caseSensitive: false,
+    ).firstMatch(path);
     if (firstory != null &&
-        (host == 'open.firstory.me' || host == 'www.firstory.me' || host == 'firstory.me')) {
+        (host == 'open.firstory.me' ||
+            host == 'www.firstory.me' ||
+            host == 'firstory.me')) {
       return 'https://feed.firstory.me/rss/user/${firstory.group(1)}';
     }
 
     // 喜马拉雅专辑页 → 平台自己的 RSS 出口（实测返回标准 RSS 2.0）。
-    final ximalaya = RegExp(r'^/album/(\d+)/?$', caseSensitive: false).firstMatch(path);
-    if (ximalaya != null && (host == 'www.ximalaya.com' || host == 'ximalaya.com')) {
+    final ximalaya = RegExp(
+      r'^/album/(\d+)/?$',
+      caseSensitive: false,
+    ).firstMatch(path);
+    if (ximalaya != null &&
+        (host == 'www.ximalaya.com' || host == 'ximalaya.com')) {
       return 'https://www.ximalaya.com/album/${ximalaya.group(1)}.xml';
     }
 
@@ -120,7 +132,9 @@ abstract final class PodcastFeedLogic {
         (host.endsWith('.apple.com') && host.contains('podcast'))) {
       return '这是 Apple 播客网页，不是 RSS。请贴 Feed 地址（通常含 feed、rss 或 xml）';
     }
-    if (host == 'open.spotify.com' || host == 'spotify.link' || host.endsWith('.spotify.com')) {
+    if (host == 'open.spotify.com' ||
+        host == 'spotify.link' ||
+        host.endsWith('.spotify.com')) {
       return '这是 Spotify 节目页，不是 RSS。请到原托管站复制 Feed';
     }
     if (host == 'www.xiaoyuzhoufm.com' || host == 'xiaoyuzhoufm.com') {

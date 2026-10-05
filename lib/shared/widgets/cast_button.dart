@@ -22,21 +22,22 @@ class CastButton extends ConsumerWidget {
         final connected = CastController.instance.connected;
         return Padding(
           padding: const EdgeInsets.only(left: 12),
-          child: outlined
-              ? IconButton.outlined(
-                  tooltip: connected ? '断开投屏' : '投到电视',
-                  iconSize: 28,
-                  isSelected: connected,
-                  icon: Icon(connected ? Icons.cast_connected : Icons.cast),
-                  onPressed: () => showCastSheet(context, ref),
-                )
-              : IconButton(
-                  tooltip: connected ? '断开投屏' : '投到电视',
-                  iconSize: 28,
-                  isSelected: connected,
-                  icon: Icon(connected ? Icons.cast_connected : Icons.cast),
-                  onPressed: () => showCastSheet(context, ref),
-                ),
+          child:
+              outlined
+                  ? IconButton.outlined(
+                    tooltip: connected ? '断开投屏' : '投到电视',
+                    iconSize: 28,
+                    isSelected: connected,
+                    icon: Icon(connected ? Icons.cast_connected : Icons.cast),
+                    onPressed: () => showCastSheet(context, ref),
+                  )
+                  : IconButton(
+                    tooltip: connected ? '断开投屏' : '投到电视',
+                    iconSize: 28,
+                    isSelected: connected,
+                    icon: Icon(connected ? Icons.cast_connected : Icons.cast),
+                    onPressed: () => showCastSheet(context, ref),
+                  ),
         );
       },
     );
@@ -48,7 +49,9 @@ Future<void> showCastSheet(BuildContext context, WidgetRef ref) async {
   if (!context.mounted) return;
   if (!ready) {
     ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('投屏不可用。需要 Google Play 服务和同一网络上的 Chromecast')),
+      const SnackBar(
+        content: Text('投屏不可用。需要 Google Play 服务和同一网络上的 Chromecast'),
+      ),
     );
     return;
   }
@@ -86,9 +89,9 @@ class _CastSheetState extends ConsumerState<_CastSheet> {
     final item = ref.read(currentPlaybackProvider);
     if (item == null) {
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('先选一个电台或单集再投屏')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('先选一个电台或单集再投屏')));
       return;
     }
     setState(() => _busy = true);
@@ -98,15 +101,15 @@ class _CastSheetState extends ConsumerState<_CastSheet> {
       await handler?.pause();
       if (!mounted) return;
       Navigator.of(context).pop();
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('已投到 ${device.friendlyName}')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('已投到 ${device.friendlyName}')));
     } catch (_) {
       if (!mounted) return;
       setState(() => _busy = false);
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('投屏失败。请确认电视已开机并和手机在同一网络')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('投屏失败。请确认电视已开机并和手机在同一网络')));
     }
   }
 

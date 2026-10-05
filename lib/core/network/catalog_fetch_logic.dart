@@ -82,7 +82,9 @@ abstract final class RadioBrowserCatalogLogic {
   ];
 
   static bool keepCountry(String? countrycode) {
-    return discoveryCountries.contains((countrycode ?? '').trim().toUpperCase());
+    return discoveryCountries.contains(
+      (countrycode ?? '').trim().toUpperCase(),
+    );
   }
 
   static List<RadioBrowserSearchQuery> catalogQueriesForSelection(
@@ -95,14 +97,20 @@ abstract final class RadioBrowserCatalogLogic {
     );
   }
 
-  static List<RadioBrowserSearchQuery> chinaCatalogQueries({int voteLimit = 80}) {
+  static List<RadioBrowserSearchQuery> chinaCatalogQueries({
+    int voteLimit = 80,
+  }) {
     return [
       RadioBrowserSearchQuery(countrycode: 'CN', limit: voteLimit),
       const RadioBrowserSearchQuery(countrycode: 'CN', tag: 'news', limit: 40),
       const RadioBrowserSearchQuery(countrycode: 'CN', tag: 'music', limit: 40),
       const RadioBrowserSearchQuery(countrycode: 'CN', tag: '新闻', limit: 30),
       const RadioBrowserSearchQuery(countrycode: 'CN', tag: '音乐', limit: 30),
-      const RadioBrowserSearchQuery(countrycode: 'CN', tag: 'traffic', limit: 30),
+      const RadioBrowserSearchQuery(
+        countrycode: 'CN',
+        tag: 'traffic',
+        limit: 30,
+      ),
       const RadioBrowserSearchQuery(countrycode: 'CN', tag: '交通', limit: 30),
       const RadioBrowserSearchQuery(language: 'chinese', limit: 40),
       const RadioBrowserSearchQuery(language: 'mandarin', limit: 40),
@@ -133,13 +141,7 @@ abstract final class CatalogContentPolicy {
     '黄播',
   };
 
-  static const _adultNameNeedles = [
-    '成人',
-    '情色',
-    '色情',
-    '性爱',
-    '黄播',
-  ];
+  static const _adultNameNeedles = ['成人', '情色', '色情', '性爱', '黄播'];
 
   static bool isAdultStation(RadioStation station) {
     if (station.source == StationSource.custom) return false;

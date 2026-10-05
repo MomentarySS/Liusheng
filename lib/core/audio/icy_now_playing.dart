@@ -17,7 +17,10 @@ abstract final class IcyNowPlayingLogic {
     return !path.contains('.m3u8') && !path.contains('.mpd');
   }
 
-  static Map<String, String>? playbackHeaders(String streamUrl, {bool includeIcyMetadata = true}) {
+  static Map<String, String>? playbackHeaders(
+    String streamUrl, {
+    bool includeIcyMetadata = true,
+  }) {
     final headers = <String, String>{};
     if (includeIcyMetadata && supportsIcyRequest(streamUrl)) {
       headers['Icy-MetaData'] = '1';
@@ -33,10 +36,7 @@ abstract final class IcyNowPlayingLogic {
   }
 
   /// 清洗 StreamTitle；与台名相同或空内容时返回 null，由 UI 回退到分类。
-  static String? displayTitle({
-    String? streamTitle,
-    String? stationName,
-  }) {
+  static String? displayTitle({String? streamTitle, String? stationName}) {
     var text = _unwrap(streamTitle);
     if (text == null) return null;
 
@@ -60,7 +60,11 @@ abstract final class IcyNowPlayingLogic {
     String? errorMessage,
     String? icyTitle,
   }) {
-    if (hasError) return (errorMessage == null || errorMessage.isEmpty) ? '播放出错' : errorMessage;
+    if (hasError) {
+      return (errorMessage == null || errorMessage.isEmpty)
+          ? '播放出错'
+          : errorMessage;
+    }
     if (loading) return '正在缓冲…';
     if (isPodcast) return fallbackSubtitle;
     final icy = icyTitle?.trim();

@@ -19,10 +19,11 @@ class _PodcastSpeedSheet extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final current = feedId != null && feedId!.isNotEmpty
-        ? ref.watch(podcastSpeedForFeedProvider(feedId!)).valueOrNull ??
-            ref.watch(podcastSpeedProvider)
-        : ref.watch(podcastSpeedProvider);
+    final current =
+        feedId != null && feedId!.isNotEmpty
+            ? ref.watch(podcastSpeedForFeedProvider(feedId!)).valueOrNull ??
+                ref.watch(podcastSpeedProvider)
+            : ref.watch(podcastSpeedProvider);
     return SafeArea(
       child: Padding(
         padding: const EdgeInsets.fromLTRB(20, 0, 20, 20),
@@ -32,16 +33,16 @@ class _PodcastSpeedSheet extends ConsumerWidget {
           children: [
             Text(
               '播放速度',
-              style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                    fontWeight: FontWeight.w600,
-                  ),
+              style: Theme.of(
+                context,
+              ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w600),
             ),
             const SizedBox(height: 8),
             Text(
               '只对播客生效，下次打开仍会记住。',
               style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                    color: Theme.of(context).colorScheme.onSurfaceVariant,
-                  ),
+                color: Theme.of(context).colorScheme.onSurfaceVariant,
+              ),
             ),
             const SizedBox(height: 16),
             Wrap(

@@ -4,12 +4,15 @@ import '../models/radio_station.dart';
 import '../podcast/podcast_history.dart';
 import 'storage_providers.dart';
 
-final podcastHistoryProvider =
-    StateNotifierProvider<PodcastHistoryNotifier, AsyncValue<List<PodcastHistoryEntry>>>((ref) {
+final podcastHistoryProvider = StateNotifierProvider<
+  PodcastHistoryNotifier,
+  AsyncValue<List<PodcastHistoryEntry>>
+>((ref) {
   return PodcastHistoryNotifier(ref);
 });
 
-class PodcastHistoryNotifier extends StateNotifier<AsyncValue<List<PodcastHistoryEntry>>> {
+class PodcastHistoryNotifier
+    extends StateNotifier<AsyncValue<List<PodcastHistoryEntry>>> {
   PodcastHistoryNotifier(this._ref) : super(const AsyncLoading()) {
     _load();
   }

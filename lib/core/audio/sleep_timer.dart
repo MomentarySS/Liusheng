@@ -16,18 +16,26 @@ abstract final class SleepTimerLogic {
   }
 
   /// 小时 + 分钟；不足 1 分钟返回 `null`。
-  static Duration? durationFromCustom({required int hours, required int minutes}) {
+  static Duration? durationFromCustom({
+    required int hours,
+    required int minutes,
+  }) {
     if (hours < 0 || minutes < 0 || minutes > 59 || hours > 12) return null;
     final total = hours * 60 + minutes;
     if (total < minCustomMinutes) return null;
-    if (total > maxCustomMinutes) return const Duration(minutes: maxCustomMinutes);
+    if (total > maxCustomMinutes) {
+      return const Duration(minutes: maxCustomMinutes);
+    }
     return Duration(minutes: total);
   }
 
   static int clampCustomMinutes(int minutes) =>
       minutes.clamp(minCustomMinutes, maxCustomMinutes);
 
-  static Duration remainingAt({required DateTime endsAt, required DateTime now}) {
+  static Duration remainingAt({
+    required DateTime endsAt,
+    required DateTime now,
+  }) {
     final left = endsAt.difference(now);
     return left.isNegative ? Duration.zero : left;
   }
@@ -65,7 +73,9 @@ abstract final class SleepTimerLogic {
 
   static String? statusLabel(SleepTimerState state, {required DateTime now}) {
     final remaining = state.remainingEpisodes;
-    if (remaining != null && remaining > 0) return remainingEpisodesText(remaining);
+    if (remaining != null && remaining > 0) {
+      return remainingEpisodesText(remaining);
+    }
     if (state.untilEpisodeEnd) return untilEpisodeEndLabel;
     final endsAt = state.endsAt;
     if (endsAt == null) return null;
@@ -115,17 +125,15 @@ abstract final class SleepTimerLogic {
 }
 
 class SleepLastValue {
-  const SleepLastValue._({required this.kind})
-      : minutes = null,
-        count = null;
+  const SleepLastValue._({required this.kind}) : minutes = null, count = null;
 
   const SleepLastValue.minutes(int this.minutes)
-      : kind = SleepLastKind.minutes,
-        count = null;
+    : kind = SleepLastKind.minutes,
+      count = null;
 
   const SleepLastValue.episodes(int this.count)
-      : kind = SleepLastKind.episodes,
-        minutes = null;
+    : kind = SleepLastKind.episodes,
+      minutes = null;
 
   static const untilEnd = SleepLastValue._(kind: SleepLastKind.untilEnd);
 
@@ -142,10 +150,10 @@ class SleepLastValue {
       kind == SleepLastKind.episodes && count == value;
 
   Map<String, dynamic> toJson() => switch (kind) {
-        SleepLastKind.minutes => {'kind': 'minutes', 'minutes': minutes},
-        SleepLastKind.untilEnd => {'kind': 'untilEnd'},
-        SleepLastKind.episodes => {'kind': 'episodes', 'count': count},
-      };
+    SleepLastKind.minutes => {'kind': 'minutes', 'minutes': minutes},
+    SleepLastKind.untilEnd => {'kind': 'untilEnd'},
+    SleepLastKind.episodes => {'kind': 'episodes', 'count': count},
+  };
 }
 
 enum SleepLastKind { minutes, untilEnd, episodes }
@@ -163,6 +171,7 @@ class SleepTimerState {
   final bool untilEpisodeEnd;
   final int? remainingEpisodes;
   final bool stoppedByTimer;
+
   /// When snoozed, the time until which playback was paused.
   final DateTime? snoozedUntil;
 

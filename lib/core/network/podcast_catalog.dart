@@ -36,20 +36,20 @@ class PodcastCatalogEntry {
   bool get isUsable => title.trim().isNotEmpty && rssUrl.trim().isNotEmpty;
 
   Map<String, dynamic> toJson() => {
-        'title': title,
-        'rssUrl': rssUrl,
-        if (author.isNotEmpty) 'author': author,
-        if (cover != null && cover!.isNotEmpty) 'cover': cover,
-        if (tags.isNotEmpty) 'tags': tags,
-      };
+    'title': title,
+    'rssUrl': rssUrl,
+    if (author.isNotEmpty) 'author': author,
+    if (cover != null && cover!.isNotEmpty) 'cover': cover,
+    if (tags.isNotEmpty) 'tags': tags,
+  };
 
   PodcastDiscoveryHit toHit() => PodcastDiscoveryHit(
-        title: title,
-        feedUrl: rssUrl,
-        author: author,
-        artworkUrl: cover,
-        genre: tags.isEmpty ? '' : tags.first,
-      );
+    title: title,
+    feedUrl: rssUrl,
+    author: author,
+    artworkUrl: cover,
+    genre: tags.isEmpty ? '' : tags.first,
+  );
 }
 
 /// 本机播客目录（GetPodcast / getpodcast.xyz）。
@@ -138,7 +138,8 @@ abstract final class PodcastCatalogLogic {
       final map = Map<String, dynamic>.from(item);
       final rss = _rssLink(map['links']);
       final title = (map['name'] as String?)?.trim() ?? '';
-      if (rss == null || title.isEmpty) continue;      final genre = (map['primaryGenreName'] as String?)?.trim() ?? '';
+      if (rss == null || title.isEmpty) continue;
+      final genre = (map['primaryGenreName'] as String?)?.trim() ?? '';
       out.add(
         PodcastCatalogEntry(
           title: title,
@@ -153,7 +154,9 @@ abstract final class PodcastCatalogLogic {
   }
 
   /// 合并多个来源的目录，按 `rssUrl` 去重（先到先得 —— 调用方按优先级传参）。
-  static List<PodcastCatalogEntry> merge(Iterable<Iterable<PodcastCatalogEntry>> sources) {
+  static List<PodcastCatalogEntry> merge(
+    Iterable<Iterable<PodcastCatalogEntry>> sources,
+  ) {
     final out = <PodcastCatalogEntry>[];
     final seen = <String>{};
     for (final source in sources) {
@@ -222,7 +225,9 @@ abstract final class PodcastCatalogLogic {
   }
 
   /// 解析本机缓存；结构不对、版本不符或为空都返回 null（调用方会重新拉）。
-  static ({List<PodcastCatalogEntry> entries, DateTime fetchedAt})? decode(String? raw) {
+  static ({List<PodcastCatalogEntry> entries, DateTime fetchedAt})? decode(
+    String? raw,
+  ) {
     if (raw == null || raw.isEmpty) return null;
     try {
       final decoded = jsonDecode(raw);
@@ -232,15 +237,17 @@ abstract final class PodcastCatalogLogic {
       if (rawEntries is! List) return null;
       final entries = [
         for (final item in rawEntries)
-          if (item is Map) PodcastCatalogEntry.fromJson(Map<String, dynamic>.from(item)),
+          if (item is Map)
+            PodcastCatalogEntry.fromJson(Map<String, dynamic>.from(item)),
       ]..removeWhere((entry) => !entry.isUsable);
       if (entries.isEmpty) return null;
       final ms = decoded['fetchedAtMs'];
       return (
         entries: entries,
-        fetchedAt: ms is int
-            ? DateTime.fromMillisecondsSinceEpoch(ms)
-            : DateTime.fromMillisecondsSinceEpoch(0),
+        fetchedAt:
+            ms is int
+                ? DateTime.fromMillisecondsSinceEpoch(ms)
+                : DateTime.fromMillisecondsSinceEpoch(0),
       );
     } catch (_) {
       return null;

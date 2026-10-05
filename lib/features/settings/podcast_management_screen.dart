@@ -16,10 +16,12 @@ class PodcastManagementScreen extends ConsumerStatefulWidget {
   const PodcastManagementScreen({super.key});
 
   @override
-  ConsumerState<PodcastManagementScreen> createState() => _PodcastManagementScreenState();
+  ConsumerState<PodcastManagementScreen> createState() =>
+      _PodcastManagementScreenState();
 }
 
-class _PodcastManagementScreenState extends ConsumerState<PodcastManagementScreen> {
+class _PodcastManagementScreenState
+    extends ConsumerState<PodcastManagementScreen> {
   bool _adding = false;
 
   Future<void> _showAddFeedDialog() async {
@@ -43,7 +45,9 @@ class _PodcastManagementScreenState extends ConsumerState<PodcastManagementScree
       final detail = await ref
           .read(podcastServiceProvider)
           .fetchFeed(feed, forNewSubscription: true);
-      await ref.read(subscribedFeedsProvider.notifier).addFeed(
+      await ref
+          .read(subscribedFeedsProvider.notifier)
+          .addFeed(
             PodcastFeed(
               id: feed.id,
               title: draft.title.isEmpty ? detail.feed.title : draft.title,
@@ -55,7 +59,11 @@ class _PodcastManagementScreenState extends ConsumerState<PodcastManagementScree
           );
       messenger.hideCurrentSnackBar();
       messenger.showSnackBar(
-        SnackBar(content: Text('已订阅「${draft.title.isEmpty ? detail.feed.title : draft.title}」')),
+        SnackBar(
+          content: Text(
+            '已订阅「${draft.title.isEmpty ? detail.feed.title : draft.title}」',
+          ),
+        ),
       );
     } catch (error) {
       final fallback = _subscribeFallbackMessage(error);
@@ -74,33 +82,37 @@ class _PodcastManagementScreenState extends ConsumerState<PodcastManagementScree
     final parsed = PodcastOpml.decode(data?.text ?? '');
     if (!mounted) return;
     if (parsed == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('剪贴板里没有可导入的 OPML')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('剪贴板里没有可导入的 OPML')));
       return;
     }
     final messenger = ScaffoldMessenger.of(context);
     messenger.showSnackBar(const SnackBar(content: Text('正在导入 OPML…')));
-    final result = await ref.read(subscribedFeedsProvider.notifier).importOpml(parsed);
+    final result = await ref
+        .read(subscribedFeedsProvider.notifier)
+        .importOpml(parsed);
     messenger.hideCurrentSnackBar();
     messenger.showSnackBar(
-      SnackBar(content: Text('导入完成：新增 ${result.added} 个，跳过 ${result.skipped} 个')),
+      SnackBar(
+        content: Text('导入完成：新增 ${result.added} 个，跳过 ${result.skipped} 个'),
+      ),
     );
   }
 
   Future<void> _exportOpml() async {
     final feeds = ref.read(subscribedFeedsProvider).value ?? [];
     if (feeds.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('还没有可导出的订阅')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('还没有可导出的订阅')));
       return;
     }
     await Clipboard.setData(ClipboardData(text: PodcastOpml.encode(feeds)));
     if (!mounted) return;
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('已复制 ${feeds.length} 个订阅的 OPML')),
-    );
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(SnackBar(content: Text('已复制 ${feeds.length} 个订阅的 OPML')));
   }
 
   @override
@@ -118,9 +130,9 @@ class _PodcastManagementScreenState extends ConsumerState<PodcastManagementScree
             child: Text(
               '订阅',
               style: Theme.of(context).textTheme.labelLarge?.copyWith(
-                    color: colorScheme.primary,
-                    fontWeight: FontWeight.w600,
-                  ),
+                color: colorScheme.primary,
+                fontWeight: FontWeight.w600,
+              ),
             ),
           ),
           feedsAsync.when(
@@ -132,23 +144,25 @@ class _PodcastManagementScreenState extends ConsumerState<PodcastManagementScree
                 subtitle: Text('共 $count 个订阅'),
               );
             },
-            loading: () => const ListTile(
-              leading: SizedBox(
-                width: 24,
-                height: 24,
-                child: Padding(
-                  padding: EdgeInsets.all(4.0),
-                  child: CircularProgressIndicator(strokeWidth: 2),
+            loading:
+                () => const ListTile(
+                  leading: SizedBox(
+                    width: 24,
+                    height: 24,
+                    child: Padding(
+                      padding: EdgeInsets.all(4.0),
+                      child: CircularProgressIndicator(strokeWidth: 2),
+                    ),
+                  ),
+                  title: Text('当前订阅'),
+                  subtitle: Text('正在加载…'),
                 ),
-              ),
-              title: Text('当前订阅'),
-              subtitle: Text('正在加载…'),
-            ),
-            error: (_, __) => const ListTile(
-              leading: Icon(Icons.error_outline),
-              title: Text('当前订阅'),
-              subtitle: Text('加载失败'),
-            ),
+            error:
+                (_, __) => const ListTile(
+                  leading: Icon(Icons.error_outline),
+                  title: Text('当前订阅'),
+                  subtitle: Text('加载失败'),
+                ),
           ),
           const Divider(height: 1),
           ListTile(
@@ -172,11 +186,12 @@ class _PodcastManagementScreenState extends ConsumerState<PodcastManagementScree
             title: const Text('发现播客'),
             subtitle: const Text('iTunes 搜索、中文热榜；Podcast Index 在高级里'),
             trailing: const Icon(Icons.chevron_right),
-            onTap: () => Navigator.of(context).push(
-              MaterialPageRoute<void>(
-                builder: (_) => const PodcastDiscoveryScreen(),
-              ),
-            ),
+            onTap:
+                () => Navigator.of(context).push(
+                  MaterialPageRoute<void>(
+                    builder: (_) => const PodcastDiscoveryScreen(),
+                  ),
+                ),
           ),
         ],
       ),

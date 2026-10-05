@@ -4,7 +4,10 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../core/audio/podcast_playback.dart';
 import '../../core/providers/app_providers.dart';
 
-Future<void> showPodcastSkipSheet(BuildContext context, {required String feedId}) {
+Future<void> showPodcastSkipSheet(
+  BuildContext context, {
+  required String feedId,
+}) {
   return showModalBottomSheet<void>(
     context: context,
     showDragHandle: true,
@@ -83,8 +86,8 @@ class _PodcastSkipSheetState extends ConsumerState<_PodcastSkipSheet> {
             Text(
               '设置后，每次播放该播客将自动跳过指定片段',
               style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                    color: colorScheme.onSurfaceVariant,
-                  ),
+                color: colorScheme.onSurfaceVariant,
+              ),
             ),
             if (intro == null || outro == null)
               const Padding(

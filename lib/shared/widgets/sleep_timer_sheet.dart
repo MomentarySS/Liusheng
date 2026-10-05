@@ -16,11 +16,7 @@ Future<void> showSleepTimerSheet(BuildContext context) {
 }
 
 class SleepTimerCountdown extends ConsumerWidget {
-  const SleepTimerCountdown({
-    super.key,
-    this.style,
-    this.compact = false,
-  });
+  const SleepTimerCountdown({super.key, this.style, this.compact = false});
 
   final TextStyle? style;
   final bool compact;
@@ -51,7 +47,9 @@ class SleepTimerCountdown extends ConsumerWidget {
           display = '淡出中 $fadeLabel';
           textColor = Theme.of(context).colorScheme.tertiary;
         } else if (timer.remainingEpisodes != null) {
-          display = SleepTimerLogic.remainingEpisodesText(timer.remainingEpisodes!);
+          display = SleepTimerLogic.remainingEpisodesText(
+            timer.remainingEpisodes!,
+          );
         } else if (timer.untilEpisodeEnd) {
           display = '到$text';
         } else {
@@ -60,8 +58,8 @@ class SleepTimerCountdown extends ConsumerWidget {
 
         return Text(
           display,
-          style: style?.copyWith(color: textColor) ??
-              TextStyle(color: textColor),
+          style:
+              style?.copyWith(color: textColor) ?? TextStyle(color: textColor),
         );
       },
     );
@@ -85,16 +83,17 @@ class SleepTimerStatusBand extends ConsumerWidget {
     final timer = ref.watch(sleepTimerProvider);
     return SizedBox(
       height: height,
-      child: timer.isActive
-          ? Center(
-              child: SleepTimerCountdown(
-                style: context.liushengSkin.countdownStyle(
-                  Theme.of(context).textTheme.labelLarge,
-                  Theme.of(context).colorScheme.primary,
+      child:
+          timer.isActive
+              ? Center(
+                child: SleepTimerCountdown(
+                  style: context.liushengSkin.countdownStyle(
+                    Theme.of(context).textTheme.labelLarge,
+                    Theme.of(context).colorScheme.primary,
+                  ),
                 ),
-              ),
-            )
-          : null,
+              )
+              : null,
     );
   }
 }
@@ -121,22 +120,24 @@ class _SleepTimerSheet extends ConsumerWidget {
               timer.remainingEpisodes != null
                   ? '再听 ${timer.remainingEpisodes} 集后停止'
                   : timer.untilEpisodeEnd
-                      ? '当前单集播完后停止'
-                      : timer.isSnoozed
-                          ? '小睡中，到点后继续播放'
-                          : timer.isActive
-                              ? '到点后停止播放'
-                              : '选择时长，或播完当前单集后停止',
+                  ? '当前单集播完后停止'
+                  : timer.isSnoozed
+                  ? '小睡中，到点后继续播放'
+                  : timer.isActive
+                  ? '到点后停止播放'
+                  : '选择时长，或播完当前单集后停止',
               style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                    color: colorScheme.onSurfaceVariant,
-                  ),
+                color: colorScheme.onSurfaceVariant,
+              ),
             ),
             if (timer.isActive) ...[
               const SizedBox(height: 12),
               Center(
                 child: SleepTimerCountdown(
                   style: context.liushengSkin.countdownStyle(
-                    Theme.of(context).textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.w600),
+                    Theme.of(context).textTheme.headlineSmall?.copyWith(
+                      fontWeight: FontWeight.w600,
+                    ),
                     colorScheme.primary,
                   ),
                 ),
@@ -152,42 +153,49 @@ class _SleepTimerSheet extends ConsumerWidget {
                 for (final minutes in SleepTimerLogic.presetMinutes)
                   ActionChip(
                     label: Text('$minutes 分钟'),
-                    side: last?.matchesMinutes(minutes) == true
-                        ? BorderSide(color: colorScheme.primary)
-                        : null,
+                    side:
+                        last?.matchesMinutes(minutes) == true
+                            ? BorderSide(color: colorScheme.primary)
+                            : null,
                     onPressed: () {
-                      ref.read(sleepTimerProvider.notifier).start(
-                            Duration(minutes: minutes),
-                          );
+                      ref
+                          .read(sleepTimerProvider.notifier)
+                          .start(Duration(minutes: minutes));
                       Navigator.pop(context);
                     },
                   ),
                 ActionChip(
                   avatar: const Icon(Icons.tune, size: 18),
                   label: const Text('自定义'),
-                  side: last?.kind == SleepLastKind.minutes &&
-                          last?.minutes != null &&
-                          !SleepTimerLogic.presetMinutes.contains(last!.minutes)
-                      ? BorderSide(color: colorScheme.primary)
-                      : null,
+                  side:
+                      last?.kind == SleepLastKind.minutes &&
+                              last?.minutes != null &&
+                              !SleepTimerLogic.presetMinutes.contains(
+                                last!.minutes,
+                              )
+                          ? BorderSide(color: colorScheme.primary)
+                          : null,
                   onPressed: () => _pickCustom(context, ref, last),
                 ),
                 ActionChip(
                   avatar: const Icon(Icons.skip_next_outlined, size: 18),
                   label: const Text('本集结束'),
-                  side: last?.isUntilEnd == true
-                      ? BorderSide(color: colorScheme.primary)
-                      : null,
+                  side:
+                      last?.isUntilEnd == true
+                          ? BorderSide(color: colorScheme.primary)
+                          : null,
                   onPressed: () => _startUntilEpisodeEnd(context, ref),
                 ),
                 for (final count in SleepTimerLogic.episodeCountOptions)
                   ActionChip(
                     avatar: const Icon(Icons.queue_music_outlined, size: 18),
                     label: Text('再听 $count 集'),
-                    side: last?.matchesEpisodes(count) == true
-                        ? BorderSide(color: colorScheme.primary)
-                        : null,
-                    onPressed: () => _startRemainingEpisodes(context, ref, count),
+                    side:
+                        last?.matchesEpisodes(count) == true
+                            ? BorderSide(color: colorScheme.primary)
+                            : null,
+                    onPressed:
+                        () => _startRemainingEpisodes(context, ref, count),
                   ),
               ],
             ),
@@ -204,7 +212,9 @@ class _SleepTimerSheet extends ConsumerWidget {
                         Navigator.pop(context);
                       },
                       icon: const Icon(Icons.snooze),
-                      label: const Text('小睡 ${SleepTimerLogic.snoozeMinutes} 分钟'),
+                      label: const Text(
+                        '小睡 ${SleepTimerLogic.snoozeMinutes} 分钟',
+                      ),
                     ),
                   ),
                   const SizedBox(width: 12),
@@ -231,9 +241,9 @@ class _SleepTimerSheet extends ConsumerWidget {
     if (!SleepTimerLogic.canStartUntilEpisodeEnd(
       isPodcast: current?.kind == PlaybackKind.podcast,
     )) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('请先播放一集播客，直播没有「本集结束」')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('请先播放一集播客，直播没有「本集结束」')));
       return;
     }
     ref.read(sleepTimerProvider.notifier).startUntilEpisodeEnd();
@@ -245,9 +255,9 @@ class _SleepTimerSheet extends ConsumerWidget {
     if (!SleepTimerLogic.canStartUntilEpisodeEnd(
       isPodcast: current?.kind == PlaybackKind.podcast,
     )) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('请先播放一集播客，直播没有「再听 N 集」')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('请先播放一集播客，直播没有「再听 N 集」')));
       return;
     }
     ref.read(sleepTimerProvider.notifier).startRemainingEpisodes(count);
@@ -261,9 +271,11 @@ class _SleepTimerSheet extends ConsumerWidget {
   ) async {
     final duration = await showDialog<Duration>(
       context: context,
-      builder: (dialogContext) => _CustomSleepTimerDialog(
-        initialMinutes: last?.kind == SleepLastKind.minutes ? last?.minutes : null,
-      ),
+      builder:
+          (dialogContext) => _CustomSleepTimerDialog(
+            initialMinutes:
+                last?.kind == SleepLastKind.minutes ? last?.minutes : null,
+          ),
     );
     if (duration == null || !context.mounted) return;
     ref.read(sleepTimerProvider.notifier).start(duration);
@@ -277,7 +289,8 @@ class _CustomSleepTimerDialog extends StatefulWidget {
   final int? initialMinutes;
 
   @override
-  State<_CustomSleepTimerDialog> createState() => _CustomSleepTimerDialogState();
+  State<_CustomSleepTimerDialog> createState() =>
+      _CustomSleepTimerDialogState();
 }
 
 class _CustomSleepTimerDialogState extends State<_CustomSleepTimerDialog> {
@@ -374,10 +387,7 @@ class _CustomSleepTimerDialogState extends State<_CustomSleepTimerDialog> {
           onPressed: () => Navigator.pop(context),
           child: const Text('取消'),
         ),
-        FilledButton(
-          onPressed: _submit,
-          child: const Text('开始'),
-        ),
+        FilledButton(onPressed: _submit, child: const Text('开始')),
       ],
     );
   }

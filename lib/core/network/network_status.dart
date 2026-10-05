@@ -32,7 +32,10 @@ abstract final class NetworkStatusLogic {
     return true;
   }
 
-  static String loadFailureMessage(String onlineMessage, {required bool offline}) {
+  static String loadFailureMessage(
+    String onlineMessage, {
+    required bool offline,
+  }) {
     return offline ? listMessage : onlineMessage;
   }
 
@@ -82,15 +85,22 @@ abstract final class NetworkStatusLogic {
 
 class NetworkMonitor {
   NetworkMonitor({Connectivity? connectivity})
-      : _connectivity = connectivity ?? Connectivity();
+    : _connectivity = connectivity ?? Connectivity();
 
   final Connectivity _connectivity;
 
   Future<bool> get isOffline async {
     try {
-      return NetworkStatusLogic.isOffline(await _connectivity.checkConnectivity());
+      return NetworkStatusLogic.isOffline(
+        await _connectivity.checkConnectivity(),
+      );
     } catch (error, stackTrace) {
-      AppLog.e('NetworkMonitor', 'checkConnectivity failed', error: error, stackTrace: stackTrace);
+      AppLog.e(
+        'NetworkMonitor',
+        'checkConnectivity failed',
+        error: error,
+        stackTrace: stackTrace,
+      );
       return true;
     }
   }
@@ -113,6 +123,8 @@ class NetworkMonitor {
 
   Stream<bool> changes() async* {
     yield await isOffline;
-    yield* _connectivity.onConnectivityChanged.map(NetworkStatusLogic.isOffline);
+    yield* _connectivity.onConnectivityChanged.map(
+      NetworkStatusLogic.isOffline,
+    );
   }
 }

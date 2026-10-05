@@ -23,14 +23,16 @@ Future<void> showNowPlayingQueueSheet(BuildContext context) {
     isScrollControlled: true,
     // 半屏起、可上拖到近全屏。expand: false 让 sheet 只占 initialChildSize 的高度
     // —— 之前 Column 里的 Expanded 会把 sheet 撑满整屏（一打开就是全屏）。
-    builder: (sheetContext) => DraggableScrollableSheet(
-      expand: false,
-      initialChildSize: 0.55,
-      minChildSize: 0.32,
-      maxChildSize: 0.95,
-      builder: (context, scrollController) =>
-          _NowPlayingQueueSheet(scrollController: scrollController),
-    ),
+    builder:
+        (sheetContext) => DraggableScrollableSheet(
+          expand: false,
+          initialChildSize: 0.55,
+          minChildSize: 0.32,
+          maxChildSize: 0.95,
+          builder:
+              (context, scrollController) =>
+                  _NowPlayingQueueSheet(scrollController: scrollController),
+        ),
   );
 }
 
@@ -57,13 +59,19 @@ class _NowPlayingQueueSheet extends ConsumerWidget {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          if (queue.items.isNotEmpty)
-            _ManualQueue(queue: queue),
+          if (queue.items.isNotEmpty) _ManualQueue(queue: queue),
           if (current != null)
             Expanded(
-              child: current.kind == PlaybackKind.podcast
-                  ? _PodcastQueue(current: current, scrollController: scrollController)
-                  : _RadioQueue(current: current, scrollController: scrollController),
+              child:
+                  current.kind == PlaybackKind.podcast
+                      ? _PodcastQueue(
+                        current: current,
+                        scrollController: scrollController,
+                      )
+                      : _RadioQueue(
+                        current: current,
+                        scrollController: scrollController,
+                      ),
             ),
         ],
       ),
@@ -89,9 +97,9 @@ class _ManualQueue extends ConsumerWidget {
             children: [
               Text(
                 '播放队列',
-                style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                      fontWeight: FontWeight.w600,
-                    ),
+                style: Theme.of(
+                  context,
+                ).textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w600),
               ),
               const Spacer(),
               TextButton(
@@ -107,13 +115,16 @@ class _ManualQueue extends ConsumerWidget {
           // 26% 与 448 的较小值，并不低于一行的高度。
           height: (56.0 * queue.items.length).clamp(
             56.0,
-            (MediaQuery.sizeOf(context).height * 0.26).clamp(56.0, 448.0).toDouble(),
+            (MediaQuery.sizeOf(context).height * 0.26)
+                .clamp(56.0, 448.0)
+                .toDouble(),
           ),
           child: ReorderableListView.builder(
             shrinkWrap: true,
-            physics: queue.items.length > 8
-                ? const ClampingScrollPhysics()
-                : const NeverScrollableScrollPhysics(),
+            physics:
+                queue.items.length > 8
+                    ? const ClampingScrollPhysics()
+                    : const NeverScrollableScrollPhysics(),
             itemCount: queue.items.length,
             onReorder: (oldIndex, newIndex) {
               ref.read(playQueueProvider.notifier).move(oldIndex, newIndex);
@@ -123,23 +134,32 @@ class _ManualQueue extends ConsumerWidget {
               return ListTile(
                 key: ValueKey('queue-${item.episodeGuid ?? item.id}'),
                 dense: true,
-                leading: Icon(Icons.drag_handle, color: colorScheme.onSurfaceVariant),
+                leading: Icon(
+                  Icons.drag_handle,
+                  color: colorScheme.onSurfaceVariant,
+                ),
                 title: Text(
                   item.title,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                 ),
-                subtitle: item.subtitle.isNotEmpty
-                    ? Text(
-                        item.subtitle,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: Theme.of(context).textTheme.bodySmall,
-                      )
-                    : null,
+                subtitle:
+                    item.subtitle.isNotEmpty
+                        ? Text(
+                          item.subtitle,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: Theme.of(context).textTheme.bodySmall,
+                        )
+                        : null,
                 trailing: IconButton(
-                  icon: Icon(Icons.close, size: 18, color: colorScheme.onSurfaceVariant),
-                  onPressed: () => ref.read(playQueueProvider.notifier).remove(index),
+                  icon: Icon(
+                    Icons.close,
+                    size: 18,
+                    color: colorScheme.onSurfaceVariant,
+                  ),
+                  onPressed:
+                      () => ref.read(playQueueProvider.notifier).remove(index),
                 ),
               );
             },
@@ -168,54 +188,63 @@ class _RadioQueue extends ConsumerWidget {
     );
     return _QueueScaffold(
       title: '播放列表',
-      child: queue.isEmpty
-          ? const AppEmptyState(
-              icon: Icons.radio_outlined,
-              message: '没有可切换的电台',
-            )
-          : _JumpingList(
-              controller: scrollController,
-              currentIndex: queue.indexWhere((station) => station.id == stationId),
-              itemCount: queue.length,
-              itemBuilder: (context, index) {
-                final station = queue[index];
-                final selected = station.id == stationId;
-                return ListTile(
-                  selected: selected,
-                  leading: NowPlayingLeading(
-                    active: selected,
-                    size: 40,
-                    child: StationArtwork(
-                      url: station.favicon,
-                      name: station.name,
-                      tags: station.tags,
+      child:
+          queue.isEmpty
+              ? const AppEmptyState(
+                icon: Icons.radio_outlined,
+                message: '没有可切换的电台',
+              )
+              : _JumpingList(
+                controller: scrollController,
+                currentIndex: queue.indexWhere(
+                  (station) => station.id == stationId,
+                ),
+                itemCount: queue.length,
+                itemBuilder: (context, index) {
+                  final station = queue[index];
+                  final selected = station.id == stationId;
+                  return ListTile(
+                    selected: selected,
+                    leading: NowPlayingLeading(
+                      active: selected,
                       size: 40,
+                      child: StationArtwork(
+                        url: station.favicon,
+                        name: station.name,
+                        tags: station.tags,
+                        size: 40,
+                      ),
                     ),
-                  ),
-                  title: Text(
-                    station.name,
-                    style: selected ? const TextStyle(fontWeight: FontWeight.w600) : null,
-                  ),
-                  subtitle: Text(
-                    [
-                      if (selected) '正在收听',
-                      station.category,
-                    ].join(' · '),
-                  ),
-                  onTap: () async {
-                    Navigator.pop(context);
-                    if (selected) return;
-                    await ref.read(recentIdsProvider.notifier).add(station.id);
-                    if (station.source == StationSource.api) {
-                      unawaited(ref.read(radioBrowserClientProvider).reportClick(station.id));
-                    }
-                    await ref
-                        .read(playerControllerProvider)
-                        .play(PlaybackItem.fromStation(station));
-                  },
-                );
-              },
-            ),
+                    title: Text(
+                      station.name,
+                      style:
+                          selected
+                              ? const TextStyle(fontWeight: FontWeight.w600)
+                              : null,
+                    ),
+                    subtitle: Text(
+                      [if (selected) '正在收听', station.category].join(' · '),
+                    ),
+                    onTap: () async {
+                      Navigator.pop(context);
+                      if (selected) return;
+                      await ref
+                          .read(recentIdsProvider.notifier)
+                          .add(station.id);
+                      if (station.source == StationSource.api) {
+                        unawaited(
+                          ref
+                              .read(radioBrowserClientProvider)
+                              .reportClick(station.id),
+                        );
+                      }
+                      await ref
+                          .read(playerControllerProvider)
+                          .play(PlaybackItem.fromStation(station));
+                    },
+                  );
+                },
+              ),
     );
   }
 }
@@ -244,19 +273,25 @@ class _PodcastQueue extends ConsumerWidget {
       );
     }
 
-    final sort = ref.watch(podcastEpisodeSortProvider).value ?? PodcastEpisodeSort.newestFirst;
+    final sort =
+        ref.watch(podcastEpisodeSortProvider).value ??
+        PodcastEpisodeSort.newestFirst;
     final detailAsync = ref.watch(podcastDetailProvider(feed));
     return _QueueScaffold(
       title: feed.title,
       child: detailAsync.when(
         loading: () => const Center(child: CircularProgressIndicator()),
-        error: (error, _) => AppEmptyState(
-          icon: Icons.cloud_off_outlined,
-          message: '单集列表加载失败',
-          detail: '$error',
-        ),
+        error:
+            (error, _) => AppEmptyState(
+              icon: Icons.cloud_off_outlined,
+              message: '单集列表加载失败',
+              detail: '$error',
+            ),
         data: (detail) {
-          final episodes = PodcastPlaybackLogic.sortedEpisodes(detail.episodes, sort);
+          final episodes = PodcastPlaybackLogic.sortedEpisodes(
+            detail.episodes,
+            sort,
+          );
           if (episodes.isEmpty) {
             return const AppEmptyState(
               icon: Icons.podcasts_outlined,
@@ -266,7 +301,9 @@ class _PodcastQueue extends ConsumerWidget {
           final currentGuid = current.episodeGuid;
           return _JumpingList(
             controller: scrollController,
-            currentIndex: episodes.indexWhere((episode) => episode.guid == currentGuid),
+            currentIndex: episodes.indexWhere(
+              (episode) => episode.guid == currentGuid,
+            ),
             itemCount: episodes.length,
             itemBuilder: (context, index) {
               final episode = episodes[index];
@@ -281,18 +318,24 @@ class _PodcastQueue extends ConsumerWidget {
                 ),
                 title: Text(
                   episode.title,
-                  style: selected ? const TextStyle(fontWeight: FontWeight.w600) : null,
+                  style:
+                      selected
+                          ? const TextStyle(fontWeight: FontWeight.w600)
+                          : null,
                 ),
                 subtitle: Text(
                   [
                     if (selected) '正在收听',
-                    if (episode.duration != null) _formatDuration(episode.duration!),
+                    if (episode.duration != null)
+                      _formatDuration(episode.duration!),
                   ].join(' · '),
                 ),
                 onTap: () async {
                   Navigator.pop(context);
                   if (selected) return;
-                  await ref.read(playerControllerProvider).play(
+                  await ref
+                      .read(playerControllerProvider)
+                      .play(
                         PlaybackItem.fromPodcastEpisode(
                           podcastTitle: detail.feed.title,
                           episodeTitle: episode.title,
@@ -339,9 +382,9 @@ class _QueueScaffold extends StatelessWidget {
               title,
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
-              style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                    fontWeight: FontWeight.w600,
-                  ),
+              style: Theme.of(
+                context,
+              ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w600),
             ),
           ),
           Expanded(child: child),
@@ -385,7 +428,10 @@ class _JumpingListState extends State<_JumpingList> {
   void _jumpToCurrent() {
     if (!_controller.hasClients || widget.currentIndex < 1) return;
     // ListTile height is fixed at 72.0 in this sheet.
-    final offset = (widget.currentIndex * 72.0).clamp(0.0, _controller.position.maxScrollExtent);
+    final offset = (widget.currentIndex * 72.0).clamp(
+      0.0,
+      _controller.position.maxScrollExtent,
+    );
     _controller.jumpTo(offset);
   }
 

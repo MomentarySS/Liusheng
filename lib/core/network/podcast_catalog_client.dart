@@ -13,14 +13,15 @@ import 'system_http_proxy.dart';
 /// 试过 `/data.json`、`/podcasts.json`、`/api/podcasts` 都是 404）。
 class PodcastCatalogClient {
   PodcastCatalogClient({Dio? dio})
-      : _dio = dio ??
-            SystemHttpProxy.createDio(
-              BaseOptions(
-                connectTimeout: const Duration(seconds: 15),
-                receiveTimeout: const Duration(seconds: 25),
-                headers: {'User-Agent': AppBrand.podcastUserAgent},
-              ),
-            );
+    : _dio =
+          dio ??
+          SystemHttpProxy.createDio(
+            BaseOptions(
+              connectTimeout: const Duration(seconds: 15),
+              receiveTimeout: const Duration(seconds: 25),
+              headers: {'User-Agent': AppBrand.podcastUserAgent},
+            ),
+          );
 
   final Dio _dio;
 
@@ -40,7 +41,9 @@ class PodcastCatalogClient {
   ///
   /// **并发拉**，避免串行等十几次；单页失败不影响整体（返回空列表）。这是本机目录
   /// 的覆盖面来源 —— GetPodcast 只精选了两百多个。
-  Future<List<PodcastCatalogEntry>> fetchXyzrankCatalog({int pages = 10}) async {
+  Future<List<PodcastCatalogEntry>> fetchXyzrankCatalog({
+    int pages = 10,
+  }) async {
     final results = await Future.wait([
       for (var page = 0; page < pages; page++) _fetchXyzrankPage(page * 100),
     ]);

@@ -23,16 +23,17 @@ class PlaylistResolveResult {
 /// 把用户粘贴的 M3U/PLS 地址或正文解析成真正的流地址。
 class PlaylistResolver {
   PlaylistResolver({Dio? dio})
-      : _dio = dio ??
-            SystemHttpProxy.createDio(
-              BaseOptions(
-                connectTimeout: const Duration(seconds: 12),
-                receiveTimeout: const Duration(seconds: 12),
-                followRedirects: true,
-                validateStatus: (status) => status != null && status < 500,
-                headers: {'User-Agent': AppBrand.userAgent},
-              ),
-            );
+    : _dio =
+          dio ??
+          SystemHttpProxy.createDio(
+            BaseOptions(
+              connectTimeout: const Duration(seconds: 12),
+              receiveTimeout: const Duration(seconds: 12),
+              followRedirects: true,
+              validateStatus: (status) => status != null && status < 500,
+              headers: {'User-Agent': AppBrand.userAgent},
+            ),
+          );
 
   static const maxBodyBytes = 256 * 1024;
   static const maxDepth = 2;
@@ -42,7 +43,11 @@ class PlaylistResolver {
   Future<PlaylistResolveResult> resolve(String raw) async {
     final trimmed = raw.trim();
     if (trimmed.isEmpty) {
-      return const PlaylistResolveResult(ok: false, streamUrl: '', message: '请输入流地址');
+      return const PlaylistResolveResult(
+        ok: false,
+        streamUrl: '',
+        message: '请输入流地址',
+      );
     }
     if (PlaylistImportLogic.looksLikePlaylistText(trimmed)) {
       return _fromBody(trimmed, original: trimmed, depth: 0);
@@ -60,7 +65,10 @@ class PlaylistResolver {
     return _fetchAndResolve(trimmed, depth: 0);
   }
 
-  Future<PlaylistResolveResult> _fetchAndResolve(String url, {required int depth}) async {
+  Future<PlaylistResolveResult> _fetchAndResolve(
+    String url, {
+    required int depth,
+  }) async {
     if (depth >= maxDepth) {
       return PlaylistResolveResult(
         ok: false,
@@ -78,7 +86,9 @@ class PlaylistResolver {
             receiveTimeout: const Duration(seconds: 12),
           ),
         );
-        final lengthHeader = int.tryParse(response.headers.value('content-length') ?? '');
+        final lengthHeader = int.tryParse(
+          response.headers.value('content-length') ?? '',
+        );
         if (lengthHeader != null && lengthHeader > maxBodyBytes) {
           return PlaylistResolveResult(
             ok: false,
@@ -94,8 +104,7 @@ class PlaylistResolver {
             message: '播放列表过大',
           );
         }
-        if (response.statusCode != null &&
-            response.statusCode! >= 400) {
+        if (response.statusCode != null && response.statusCode! >= 400) {
           return PlaylistResolveResult(
             ok: false,
             streamUrl: url,
@@ -110,7 +119,8 @@ class PlaylistResolver {
         break;
       }
     }
-    final code = lastError is DioException ? lastError.response?.statusCode : null;
+    final code =
+        lastError is DioException ? lastError.response?.statusCode : null;
     return PlaylistResolveResult(
       ok: false,
       streamUrl: url,

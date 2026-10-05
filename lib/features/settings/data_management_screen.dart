@@ -45,22 +45,24 @@ class _DataManagementScreenState extends ConsumerState<DataManagementScreen> {
   }
 
   Future<void> _confirmClearCache() async {
-    final confirmed = await showDialog<bool>(
+    final confirmed =
+        await showDialog<bool>(
           context: context,
-          builder: (context) => AlertDialog(
-            title: const Text('清除封面缓存'),
-            content: const Text('将删除已缓存的电台台标和播客封面图片，不会影响收藏和播放记录。'),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.pop(context, false),
-                child: const Text('取消'),
+          builder:
+              (context) => AlertDialog(
+                title: const Text('清除封面缓存'),
+                content: const Text('将删除已缓存的电台台标和播客封面图片，不会影响收藏和播放记录。'),
+                actions: [
+                  TextButton(
+                    onPressed: () => Navigator.pop(context, false),
+                    child: const Text('取消'),
+                  ),
+                  FilledButton(
+                    onPressed: () => Navigator.pop(context, true),
+                    child: const Text('清除'),
+                  ),
+                ],
               ),
-              FilledButton(
-                onPressed: () => Navigator.pop(context, true),
-                child: const Text('清除'),
-              ),
-            ],
-          ),
         ) ??
         false;
     if (!confirmed || !mounted) return;
@@ -69,27 +71,30 @@ class _DataManagementScreenState extends ConsumerState<DataManagementScreen> {
     await _loadCacheSize();
     if (!mounted) return;
     setState(() => _clearingCache = false);
-    ScaffoldMessenger.of(context)
-        .showSnackBar(const SnackBar(content: Text('封面缓存已清除')));
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(const SnackBar(content: Text('封面缓存已清除')));
   }
 
   Future<void> _confirmClearPodcastDownloads() async {
-    final confirmed = await showDialog<bool>(
+    final confirmed =
+        await showDialog<bool>(
           context: context,
-          builder: (context) => AlertDialog(
-            title: const Text('清除播客下载'),
-            content: const Text('将删除已下载的播客音频。直播电台本来就不会保存。订阅和播放进度不受影响。'),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.pop(context, false),
-                child: const Text('取消'),
+          builder:
+              (context) => AlertDialog(
+                title: const Text('清除播客下载'),
+                content: const Text('将删除已下载的播客音频。直播电台本来就不会保存。订阅和播放进度不受影响。'),
+                actions: [
+                  TextButton(
+                    onPressed: () => Navigator.pop(context, false),
+                    child: const Text('取消'),
+                  ),
+                  FilledButton(
+                    onPressed: () => Navigator.pop(context, true),
+                    child: const Text('清除'),
+                  ),
+                ],
               ),
-              FilledButton(
-                onPressed: () => Navigator.pop(context, true),
-                child: const Text('清除'),
-              ),
-            ],
-          ),
         ) ??
         false;
     if (!confirmed || !mounted) return;
@@ -97,8 +102,9 @@ class _DataManagementScreenState extends ConsumerState<DataManagementScreen> {
     await ref.read(podcastDownloadsProvider.notifier).clearAll();
     if (!mounted) return;
     setState(() => _clearingPodcasts = false);
-    ScaffoldMessenger.of(context)
-        .showSnackBar(const SnackBar(content: Text('播客下载已清除')));
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(const SnackBar(content: Text('播客下载已清除')));
   }
 
   Future<void> _exportBackup() async {
@@ -112,8 +118,10 @@ class _DataManagementScreenState extends ConsumerState<DataManagementScreen> {
         appVersion: AppBrand.version,
       );
       final tempDir = await getTemporaryDirectory();
-      final timestamp =
-          DateTime.now().toIso8601String().replaceAll(RegExp(r'[:.]'), '-');
+      final timestamp = DateTime.now().toIso8601String().replaceAll(
+        RegExp(r'[:.]'),
+        '-',
+      );
       final file = File('${tempDir.path}/liusheng-backup-$timestamp.json');
       await file.writeAsString(json, flush: true);
       if (!mounted) return;
@@ -124,8 +132,9 @@ class _DataManagementScreenState extends ConsumerState<DataManagementScreen> {
       );
     } catch (error) {
       if (!mounted) return;
-      ScaffoldMessenger.of(context)
-          .showSnackBar(SnackBar(content: Text('导出失败: $error')));
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('导出失败: $error')));
     } finally {
       if (mounted) setState(() => _exportingBackup = false);
     }
@@ -148,9 +157,10 @@ class _DataManagementScreenState extends ConsumerState<DataManagementScreen> {
       );
       if (result == null || result.files.isEmpty) return;
       final file = result.files.single;
-      final raw = file.bytes != null
-          ? utf8.decode(file.bytes!)
-          : file.path == null
+      final raw =
+          file.bytes != null
+              ? utf8.decode(file.bytes!)
+              : file.path == null
               ? ''
               : await File(file.path!).readAsString();
       if (!mounted) return;
@@ -158,46 +168,46 @@ class _DataManagementScreenState extends ConsumerState<DataManagementScreen> {
       await _restoreBackupText(raw, source: '备份文件');
     } catch (error) {
       if (!mounted) return;
-      ScaffoldMessenger.of(context)
-          .showSnackBar(SnackBar(content: Text('读取备份文件失败: $error')));
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('读取备份文件失败: $error')));
     } finally {
       if (mounted) setState(() => _restoringBackup = false);
     }
   }
 
-  Future<void> _restoreBackupText(
-    String raw, {
-    required String source,
-  }) async {
+  Future<void> _restoreBackupText(String raw, {required String source}) async {
     final decoded = DeviceBackupLogic.decode(raw);
     if (!decoded.isOk) {
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(decoded.error ?? '$source里没有备份')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(decoded.error ?? '$source里没有备份')));
       return;
     }
     if (!mounted) return;
     final backup = decoded.backup!;
-    final confirmed = await showDialog<bool>(
+    final confirmed =
+        await showDialog<bool>(
           context: context,
-          builder: (context) => AlertDialog(
-            title: const Text('恢复本机备份'),
-            content: Text(
-              '将覆盖本机的收藏、订阅、进度、隐藏台、收听范围和外观偏好（${backup.keyCount} 项）。'
-              '不含已下载音频和 Podcast Index 密钥。恢复后请完全退出再打开。',
-            ),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.pop(context, false),
-                child: const Text('取消'),
+          builder:
+              (context) => AlertDialog(
+                title: const Text('恢复本机备份'),
+                content: Text(
+                  '将覆盖本机的收藏、订阅、进度、隐藏台、收听范围和外观偏好（${backup.keyCount} 项）。'
+                  '不含已下载音频和 Podcast Index 密钥。恢复后请完全退出再打开。',
+                ),
+                actions: [
+                  TextButton(
+                    onPressed: () => Navigator.pop(context, false),
+                    child: const Text('取消'),
+                  ),
+                  FilledButton(
+                    onPressed: () => Navigator.pop(context, true),
+                    child: const Text('恢复'),
+                  ),
+                ],
               ),
-              FilledButton(
-                onPressed: () => Navigator.pop(context, true),
-                child: const Text('恢复'),
-              ),
-            ],
-          ),
         ) ??
         false;
     if (!confirmed || !mounted) return;
@@ -211,8 +221,9 @@ class _DataManagementScreenState extends ConsumerState<DataManagementScreen> {
       );
     } catch (error) {
       if (!mounted) return;
-      ScaffoldMessenger.of(context)
-          .showSnackBar(SnackBar(content: Text('恢复失败: $error')));
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('恢复失败: $error')));
     } finally {
       if (mounted) setState(() => _restoringBackup = false);
     }
@@ -233,9 +244,9 @@ class _DataManagementScreenState extends ConsumerState<DataManagementScreen> {
             child: Text(
               '存储',
               style: Theme.of(context).textTheme.labelLarge?.copyWith(
-                    color: colorScheme.primary,
-                    fontWeight: FontWeight.w600,
-                  ),
+                color: colorScheme.primary,
+                fontWeight: FontWeight.w600,
+              ),
             ),
           ),
           const ListTile(
@@ -251,16 +262,17 @@ class _DataManagementScreenState extends ConsumerState<DataManagementScreen> {
                   ? '正在计算…'
                   : '已占用 ${ArtworkCacheService.formatBytes(_cacheBytes!)}',
             ),
-            trailing: _clearingCache
-                ? const SizedBox(
-                    width: 24,
-                    height: 24,
-                    child: CircularProgressIndicator(strokeWidth: 2),
-                  )
-                : TextButton(
-                    onPressed: _confirmClearCache,
-                    child: const Text('清除'),
-                  ),
+            trailing:
+                _clearingCache
+                    ? const SizedBox(
+                      width: 24,
+                      height: 24,
+                      child: CircularProgressIndicator(strokeWidth: 2),
+                    )
+                    : TextButton(
+                      onPressed: _confirmClearCache,
+                      child: const Text('清除'),
+                    ),
           ),
           ListTile(
             leading: const Icon(Icons.podcasts_outlined),
@@ -270,32 +282,35 @@ class _DataManagementScreenState extends ConsumerState<DataManagementScreen> {
                   ? '还没有下载单集'
                   : '已占用 ${PodcastDownloadLogic.formatBytes(podcastDownloads.totalBytes)} · 点开查看清单',
             ),
-            onTap: () => Navigator.of(context).push(
-              MaterialPageRoute<void>(
-                builder: (_) => const PodcastDownloadsScreen(),
-              ),
-            ),
-            trailing: _clearingPodcasts
-                ? const SizedBox(
-                    width: 24,
-                    height: 24,
-                    child: CircularProgressIndicator(strokeWidth: 2),
-                  )
-                : TextButton(
-                    onPressed: podcastDownloads.records.isEmpty
-                        ? null
-                        : _confirmClearPodcastDownloads,
-                    child: const Text('清除'),
+            onTap:
+                () => Navigator.of(context).push(
+                  MaterialPageRoute<void>(
+                    builder: (_) => const PodcastDownloadsScreen(),
                   ),
+                ),
+            trailing:
+                _clearingPodcasts
+                    ? const SizedBox(
+                      width: 24,
+                      height: 24,
+                      child: CircularProgressIndicator(strokeWidth: 2),
+                    )
+                    : TextButton(
+                      onPressed:
+                          podcastDownloads.records.isEmpty
+                              ? null
+                              : _confirmClearPodcastDownloads,
+                      child: const Text('清除'),
+                    ),
           ),
           Padding(
             padding: const EdgeInsets.fromLTRB(16, 24, 16, 8),
             child: Text(
               '换机',
               style: Theme.of(context).textTheme.labelLarge?.copyWith(
-                    color: colorScheme.primary,
-                    fontWeight: FontWeight.w600,
-                  ),
+                color: colorScheme.primary,
+                fontWeight: FontWeight.w600,
+              ),
             ),
           ),
           ListTile(
@@ -304,43 +319,49 @@ class _DataManagementScreenState extends ConsumerState<DataManagementScreen> {
             subtitle: const Text(
               '可用于 Chengbo → 流声迁移；含收藏、订阅、进度、隐藏台和收听范围，不含直播、下载音频和缓存',
             ),
-            trailing: _exportingBackup
-                ? const SizedBox(
-                    width: 24,
-                    height: 24,
-                    child: CircularProgressIndicator(strokeWidth: 2),
-                  )
-                : TextButton(onPressed: _exportBackup, child: const Text('导出')),
+            trailing:
+                _exportingBackup
+                    ? const SizedBox(
+                      width: 24,
+                      height: 24,
+                      child: CircularProgressIndicator(strokeWidth: 2),
+                    )
+                    : TextButton(
+                      onPressed: _exportBackup,
+                      child: const Text('导出'),
+                    ),
           ),
           ListTile(
             leading: const Icon(Icons.file_download_outlined),
             title: const Text('从剪贴板恢复'),
             subtitle: const Text('覆盖本机数据；旧 Chengbo 备份也可恢复，恢复后请完全退出再打开'),
-            trailing: _restoringBackup
-                ? const SizedBox(
-                    width: 24,
-                    height: 24,
-                    child: CircularProgressIndicator(strokeWidth: 2),
-                  )
-                : TextButton(
-                    onPressed: _restoreBackup,
-                    child: const Text('恢复'),
-                  ),
+            trailing:
+                _restoringBackup
+                    ? const SizedBox(
+                      width: 24,
+                      height: 24,
+                      child: CircularProgressIndicator(strokeWidth: 2),
+                    )
+                    : TextButton(
+                      onPressed: _restoreBackup,
+                      child: const Text('恢复'),
+                    ),
           ),
           ListTile(
             leading: const Icon(Icons.folder_open_outlined),
             title: const Text('从文件恢复'),
             subtitle: const Text('选择导出的 JSON 备份文件；支持流声和旧 Chengbo 备份'),
-            trailing: _restoringBackup
-                ? const SizedBox(
-                    width: 24,
-                    height: 24,
-                    child: CircularProgressIndicator(strokeWidth: 2),
-                  )
-                : TextButton(
-                    onPressed: _restoreBackupFromFile,
-                    child: const Text('选择文件'),
-                  ),
+            trailing:
+                _restoringBackup
+                    ? const SizedBox(
+                      width: 24,
+                      height: 24,
+                      child: CircularProgressIndicator(strokeWidth: 2),
+                    )
+                    : TextButton(
+                      onPressed: _restoreBackupFromFile,
+                      child: const Text('选择文件'),
+                    ),
           ),
         ],
       ),

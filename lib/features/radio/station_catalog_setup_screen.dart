@@ -20,7 +20,8 @@ class StationCatalogSetupScreen extends ConsumerStatefulWidget {
       _StationCatalogSetupScreenState();
 }
 
-class _StationCatalogSetupScreenState extends ConsumerState<StationCatalogSetupScreen> {
+class _StationCatalogSetupScreenState
+    extends ConsumerState<StationCatalogSetupScreen> {
   late Set<String> _themes;
   late Set<String> _provinces;
   late bool _allCurated;
@@ -36,21 +37,23 @@ class _StationCatalogSetupScreenState extends ConsumerState<StationCatalogSetupS
   }
 
   StationCatalogSelection get _selection => StationCatalogSelection(
-        themes: _themes,
-        provinces: _provinces,
-        allCurated: _allCurated,
-      );
+    themes: _themes,
+    provinces: _provinces,
+    allCurated: _allCurated,
+  );
 
   Future<void> _save() async {
     if (_selection.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('请至少选择一种类型或一个省份')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('请至少选择一种类型或一个省份')));
       return;
     }
     setState(() => _saving = true);
     try {
-      await ref.read(stationCatalogSelectionProvider.notifier).applySelection(_selection);
+      await ref
+          .read(stationCatalogSelectionProvider.notifier)
+          .applySelection(_selection);
       if (!mounted) return;
       Navigator.of(context).pop(true);
     } finally {
@@ -107,9 +110,9 @@ class _StationCatalogSetupScreenState extends ConsumerState<StationCatalogSetupS
           padding: const EdgeInsets.fromLTRB(16, 8, 16, 24),
           children: [
             Text(
-            widget.firstLaunch
-                ? '首次使用请先勾选想听的类型或省份，至少选一项。之后可在「设置 → 电台管理」里修改。'
-                : '修改后会重新检测所选范围内的直播源。',
+              widget.firstLaunch
+                  ? '首次使用请先勾选想听的类型或省份，至少选一项。之后可在「设置 → 电台管理」里修改。'
+                  : '修改后会重新检测所选范围内的直播源。',
               style: textTheme.bodyMedium?.copyWith(
                 color: colorScheme.onSurfaceVariant,
               ),
@@ -120,9 +123,10 @@ class _StationCatalogSetupScreenState extends ConsumerState<StationCatalogSetupS
               title: const Text('加载全部精选'),
               subtitle: const Text('约 409 台，首次检测较慢'),
               value: _allCurated,
-              onChanged: _saving
-                  ? null
-                  : (value) => setState(() {
+              onChanged:
+                  _saving
+                      ? null
+                      : (value) => setState(() {
                         _allCurated = value;
                         if (value) {
                           _themes.clear();
@@ -134,9 +138,10 @@ class _StationCatalogSetupScreenState extends ConsumerState<StationCatalogSetupS
               _SectionHeader(
                 title: '类型',
                 trailing: TextButton(
-                  onPressed: _saving
-                      ? null
-                      : () => setState(() {
+                  onPressed:
+                      _saving
+                          ? null
+                          : () => setState(() {
                             _themes = {StationCatalogSelectionLogic.cnrTheme};
                           }),
                   child: const Text('仅央广'),
@@ -148,7 +153,8 @@ class _StationCatalogSetupScreenState extends ConsumerState<StationCatalogSetupS
                     FilterChip(
                       label: Text(theme),
                       selected: _themes.contains(theme),
-                      onSelected: _saving ? null : (v) => _toggleTheme(theme, v),
+                      onSelected:
+                          _saving ? null : (v) => _toggleTheme(theme, v),
                     ),
                 ],
               ),
@@ -170,11 +176,13 @@ class _StationCatalogSetupScreenState extends ConsumerState<StationCatalogSetupS
               ),
               _ChipWrap(
                 children: [
-                  for (final province in StationCatalogSelectionLogic.provinceOptions)
+                  for (final province
+                      in StationCatalogSelectionLogic.provinceOptions)
                     FilterChip(
                       label: Text(province),
                       selected: _provinces.contains(province),
-                      onSelected: _saving ? null : (v) => _toggleProvince(province, v),
+                      onSelected:
+                          _saving ? null : (v) => _toggleProvince(province, v),
                     ),
                 ],
               ),
@@ -182,7 +190,9 @@ class _StationCatalogSetupScreenState extends ConsumerState<StationCatalogSetupS
             const SizedBox(height: 12),
             Text(
               StationCatalogSelectionLogic.detail(_selection),
-              style: textTheme.bodySmall?.copyWith(color: colorScheme.onSurfaceVariant),
+              style: textTheme.bodySmall?.copyWith(
+                color: colorScheme.onSurfaceVariant,
+              ),
             ),
           ],
         ),
@@ -190,13 +200,14 @@ class _StationCatalogSetupScreenState extends ConsumerState<StationCatalogSetupS
           minimum: const EdgeInsets.fromLTRB(16, 8, 16, 16),
           child: FilledButton(
             onPressed: _saving ? null : _save,
-            child: _saving
-                ? const SizedBox(
-                    width: 22,
-                    height: 22,
-                    child: CircularProgressIndicator(strokeWidth: 2),
-                  )
-                : Text(widget.firstLaunch ? '开始检测并进入' : '保存并重新检测'),
+            child:
+                _saving
+                    ? const SizedBox(
+                      width: 22,
+                      height: 22,
+                      child: CircularProgressIndicator(strokeWidth: 2),
+                    )
+                    : Text(widget.firstLaunch ? '开始检测并进入' : '保存并重新检测'),
           ),
         ),
       ),
@@ -219,9 +230,9 @@ class _SectionHeader extends StatelessWidget {
           Expanded(
             child: Text(
               title,
-              style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                    fontWeight: FontWeight.w600,
-                  ),
+              style: Theme.of(
+                context,
+              ).textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w600),
             ),
           ),
           if (trailing != null) trailing!,

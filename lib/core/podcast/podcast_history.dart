@@ -3,8 +3,10 @@ import '../models/radio_station.dart';
 
 /// 播客单集收听历史（本机列表，含断点进度键 episodeGuid）。
 class PodcastHistoryEntry {
-
-  factory PodcastHistoryEntry.fromPlaybackItem(PlaybackItem item, {DateTime? playedAt}) {
+  factory PodcastHistoryEntry.fromPlaybackItem(
+    PlaybackItem item, {
+    DateTime? playedAt,
+  }) {
     return PodcastHistoryEntry(
       episodeGuid: item.episodeGuid ?? item.id,
       feedId: item.feedId ?? '',
@@ -24,9 +26,10 @@ class PodcastHistoryEntry {
       episodeTitle: json['episodeTitle'] as String? ?? '',
       podcastTitle: json['podcastTitle'] as String? ?? '',
       streamUrl: json['streamUrl'] as String? ?? '',
-      artworkUrl: (json['artworkUrl'] as String?)?.trim().isEmpty ?? true
-          ? null
-          : (json['artworkUrl'] as String?)?.trim(),
+      artworkUrl:
+          (json['artworkUrl'] as String?)?.trim().isEmpty ?? true
+              ? null
+              : (json['artworkUrl'] as String?)?.trim(),
       durationMs: json['durationMs'] as int?,
       playedAtMs: json['playedAtMs'] as int? ?? 0,
     );
@@ -52,20 +55,22 @@ class PodcastHistoryEntry {
   final int playedAtMs;
 
   Duration? get duration =>
-      durationMs != null && durationMs! > 0 ? Duration(milliseconds: durationMs!) : null;
+      durationMs != null && durationMs! > 0
+          ? Duration(milliseconds: durationMs!)
+          : null;
 
   DateTime get playedAt => DateTime.fromMillisecondsSinceEpoch(playedAtMs);
 
   Map<String, dynamic> toJson() => {
-        'episodeGuid': episodeGuid,
-        'feedId': feedId,
-        'episodeTitle': episodeTitle,
-        'podcastTitle': podcastTitle,
-        'streamUrl': streamUrl,
-        if (artworkUrl != null) 'artworkUrl': artworkUrl,
-        if (durationMs != null) 'durationMs': durationMs,
-        'playedAtMs': playedAtMs,
-      };
+    'episodeGuid': episodeGuid,
+    'feedId': feedId,
+    'episodeTitle': episodeTitle,
+    'podcastTitle': podcastTitle,
+    'streamUrl': streamUrl,
+    if (artworkUrl != null) 'artworkUrl': artworkUrl,
+    if (durationMs != null) 'durationMs': durationMs,
+    'playedAtMs': playedAtMs,
+  };
 
   PlaybackItem toPlaybackItem() {
     return PlaybackItem.fromPodcastEpisode(
@@ -92,7 +97,10 @@ abstract final class PodcastHistoryLogic {
     final guid = item.episodeGuid ?? item.id;
     if (guid.isEmpty || item.streamUrl.isEmpty) return current;
 
-    final entry = PodcastHistoryEntry.fromPlaybackItem(item, playedAt: playedAt);
+    final entry = PodcastHistoryEntry.fromPlaybackItem(
+      item,
+      playedAt: playedAt,
+    );
     final next = [
       entry,
       for (final existing in current)
@@ -121,7 +129,10 @@ abstract final class PodcastHistoryLogic {
   }) {
     if (isCurrent) return '正在收听';
     if (finished) return '已听完';
-    if (progress != null && progress > Duration.zero && duration != null && duration > Duration.zero) {
+    if (progress != null &&
+        progress > Duration.zero &&
+        duration != null &&
+        duration > Duration.zero) {
       return '听到 ${_formatDuration(progress)} / ${_formatDuration(duration)}';
     }
     if (progress != null && progress > Duration.zero) {
@@ -137,7 +148,10 @@ abstract final class PodcastHistoryLogic {
     required Duration? duration,
   }) {
     if (listened) return false;
-    return !PodcastPlaybackLogic.isFinished(progress: progress, duration: duration);
+    return !PodcastPlaybackLogic.isFinished(
+      progress: progress,
+      duration: duration,
+    );
   }
 
   static PodcastHistoryEntry? continueListening({

@@ -30,15 +30,17 @@ import 'storage_providers.dart';
 
 export 'storage_providers.dart';
 
-final networkMonitorProvider =
-    Provider<NetworkMonitor>((ref) => NetworkMonitor());
+final networkMonitorProvider = Provider<NetworkMonitor>(
+  (ref) => NetworkMonitor(),
+);
 
 final isOfflineProvider = StreamProvider<bool>((ref) {
   return ref.watch(networkMonitorProvider).changes();
 });
 
-final podcastDownloadStoreProvider =
-    FutureProvider<PodcastDownloadStore>((ref) async {
+final podcastDownloadStoreProvider = FutureProvider<PodcastDownloadStore>((
+  ref,
+) async {
   final storage = await ref.watch(appStorageProvider.future);
   return PodcastDownloadStore.create(storage);
 });
@@ -47,11 +49,12 @@ final audioHandlerProvider = FutureProvider<RadioAudioHandler>((ref) async {
   final storage = await ref.watch(appStorageProvider.future);
   final downloads = await ref.watch(podcastDownloadStoreProvider.future);
   final handler = await AudioService.init(
-    builder: () => RadioAudioHandler(
-      storage,
-      network: ref.read(networkMonitorProvider),
-      downloads: downloads,
-    ),
+    builder:
+        () => RadioAudioHandler(
+          storage,
+          network: ref.read(networkMonitorProvider),
+          downloads: downloads,
+        ),
     config: const AudioServiceConfig(
       androidNotificationChannelId: 'com.liusheng.playback',
       androidNotificationChannelName: AppBrand.displayName,
@@ -91,11 +94,9 @@ final audioHandlerProvider = FutureProvider<RadioAudioHandler>((ref) async {
     if (pendingStatsMs >= 1000) {
       final seconds = pendingStatsMs ~/ 1000;
       pendingStatsMs -= seconds * 1000;
-      ref.read(listeningStatsProvider.notifier).recordTick(
-            item: item,
-            kind: item.kind,
-            seconds: seconds,
-          );
+      ref
+          .read(listeningStatsProvider.notifier)
+          .recordTick(item: item, kind: item.kind, seconds: seconds);
     }
   };
   // 启动时自动清理已听完的旧下载
@@ -131,8 +132,8 @@ final currentPlaybackProvider = StateProvider<PlaybackItem?>((ref) => null);
 
 final sleepTimerProvider =
     StateNotifierProvider<SleepTimerNotifier, SleepTimerState>((ref) {
-  return SleepTimerNotifier(ref);
-});
+      return SleepTimerNotifier(ref);
+    });
 
 class SleepTimerNotifier extends StateNotifier<SleepTimerState> {
   SleepTimerNotifier(this._ref) : super(const SleepTimerState());
@@ -301,13 +302,14 @@ class SleepTimerNotifier extends StateNotifier<SleepTimerState> {
   }
 }
 
-final playerControllerProvider =
-    Provider<PlayerController>(PlayerController.new);
+final playerControllerProvider = Provider<PlayerController>(
+  PlayerController.new,
+);
 
 final lastSleepValueProvider =
     StateNotifierProvider<LastSleepValueNotifier, SleepLastValue?>((ref) {
-  return LastSleepValueNotifier(ref);
-});
+      return LastSleepValueNotifier(ref);
+    });
 
 class LastSleepValueNotifier extends StateNotifier<SleepLastValue?> {
   LastSleepValueNotifier(this._ref) : super(null) {
@@ -331,12 +333,12 @@ class LastSleepValueNotifier extends StateNotifier<SleepLastValue?> {
 
 final podcastSkipStepProvider =
     StateNotifierProvider<PodcastSkipStepNotifier, int>((ref) {
-  return PodcastSkipStepNotifier(ref);
-});
+      return PodcastSkipStepNotifier(ref);
+    });
 
 class PodcastSkipStepNotifier extends StateNotifier<int> {
   PodcastSkipStepNotifier(this._ref)
-      : super(PodcastPlaybackLogic.defaultSkipStepSeconds) {
+    : super(PodcastPlaybackLogic.defaultSkipStepSeconds) {
     _load();
   }
 
@@ -367,8 +369,8 @@ class PodcastSkipStepNotifier extends StateNotifier<int> {
 
 final podcastSpeedProvider =
     StateNotifierProvider<PodcastSpeedNotifier, double>((ref) {
-  return PodcastSpeedNotifier(ref);
-});
+      return PodcastSpeedNotifier(ref);
+    });
 
 class PodcastSpeedNotifier extends StateNotifier<double> {
   PodcastSpeedNotifier(this._ref) : super(PodcastPlaybackLogic.defaultSpeed) {
@@ -388,16 +390,18 @@ class PodcastSpeedNotifier extends StateNotifier<double> {
 }
 
 /// 逐节目记忆倍速，feedId → 倍速。
-final podcastSpeedForFeedProvider =
-    FutureProvider.family<double, String>((ref, feedId) async {
+final podcastSpeedForFeedProvider = FutureProvider.family<double, String>((
+  ref,
+  feedId,
+) async {
   final storage = await ref.watch(appStorageProvider.future);
   return storage.getPodcastSpeedForFeed(feedId);
 });
 
 final playQueueProvider =
     StateNotifierProvider<PlayQueueNotifier, AsyncValue<PlayQueue>>((ref) {
-  return PlayQueueNotifier(ref);
-});
+      return PlayQueueNotifier(ref);
+    });
 
 class PlayQueueNotifier extends StateNotifier<AsyncValue<PlayQueue>> {
   PlayQueueNotifier(this._ref) : super(const AsyncLoading()) {
@@ -472,13 +476,13 @@ class PlayQueueNotifier extends StateNotifier<AsyncValue<PlayQueue>> {
 
 final autoCleanupDownloadsProvider =
     StateNotifierProvider<AutoCleanupNotifier, AsyncValue<bool>>((ref) {
-  return AutoCleanupNotifier(ref);
-});
+      return AutoCleanupNotifier(ref);
+    });
 
 final autoCleanupDaysProvider =
     StateNotifierProvider<AutoCleanupDaysNotifier, AsyncValue<int>>((ref) {
-  return AutoCleanupDaysNotifier(ref);
-});
+      return AutoCleanupDaysNotifier(ref);
+    });
 
 class AutoCleanupNotifier extends StateNotifier<AsyncValue<bool>> {
   AutoCleanupNotifier(this._ref) : super(const AsyncLoading()) {
@@ -633,9 +637,10 @@ class PlayerController {
     await storage.setPodcastSpeed(snapped);
     _ref.read(podcastSpeedProvider.notifier).apply(snapped);
     final current = _ref.read(currentPlaybackProvider);
-    final targetFeed = (feedId != null && feedId.isNotEmpty)
-        ? feedId
-        : (current?.kind == PlaybackKind.podcast ? current?.feedId : null);
+    final targetFeed =
+        (feedId != null && feedId.isNotEmpty)
+            ? feedId
+            : (current?.kind == PlaybackKind.podcast ? current?.feedId : null);
     if (targetFeed != null && targetFeed.isNotEmpty) {
       await storage.setPodcastSpeedForFeed(targetFeed, snapped);
       _ref.invalidate(podcastSpeedForFeedProvider(targetFeed));
@@ -652,10 +657,11 @@ class PlayerController {
 }
 
 final rememberLastListeningProvider =
-    StateNotifierProvider<RememberLastListeningNotifier, AsyncValue<bool>>(
-        (ref) {
-  return RememberLastListeningNotifier(ref);
-});
+    StateNotifierProvider<RememberLastListeningNotifier, AsyncValue<bool>>((
+      ref,
+    ) {
+      return RememberLastListeningNotifier(ref);
+    });
 
 class RememberLastListeningNotifier extends StateNotifier<AsyncValue<bool>> {
   RememberLastListeningNotifier(this._ref) : super(const AsyncLoading()) {
@@ -678,8 +684,8 @@ class RememberLastListeningNotifier extends StateNotifier<AsyncValue<bool>> {
 
 final deskCompactProvider =
     StateNotifierProvider<DeskCompactNotifier, AsyncValue<bool>>((ref) {
-  return DeskCompactNotifier(ref);
-});
+      return DeskCompactNotifier(ref);
+    });
 
 class DeskCompactNotifier extends StateNotifier<AsyncValue<bool>> {
   DeskCompactNotifier(this._ref) : super(const AsyncLoading()) {
@@ -691,25 +697,27 @@ class DeskCompactNotifier extends StateNotifier<AsyncValue<bool>> {
   Future<void> _load() async {
     final storage = await _ref.read(appStorageProvider.future);
     final saved = storage.getDeskWindowMode();
-    final enabled = saved == null
-        ? await storage.getDeskCompactEnabled()
-        : DeskWindowModeLogic.parse(saved) == DeskWindowMode.miniBar;
+    final enabled =
+        saved == null
+            ? await storage.getDeskCompactEnabled()
+            : DeskWindowModeLogic.parse(saved) == DeskWindowMode.miniBar;
     state = AsyncData(enabled);
   }
 
   Future<void> setEnabled(bool enabled) async {
     state = AsyncData(enabled);
-    await _ref.read(deskWindowModeProvider.notifier).setMode(
-          enabled ? DeskWindowMode.miniBar : DeskWindowMode.main,
-        );
+    await _ref
+        .read(deskWindowModeProvider.notifier)
+        .setMode(enabled ? DeskWindowMode.miniBar : DeskWindowMode.main);
   }
 }
 
 final deskWindowModeProvider =
-    StateNotifierProvider<DeskWindowModeNotifier, AsyncValue<DeskWindowMode>>(
-        (ref) {
-  return DeskWindowModeNotifier(ref);
-});
+    StateNotifierProvider<DeskWindowModeNotifier, AsyncValue<DeskWindowMode>>((
+      ref,
+    ) {
+      return DeskWindowModeNotifier(ref);
+    });
 
 class DeskWindowModeNotifier extends StateNotifier<AsyncValue<DeskWindowMode>> {
   DeskWindowModeNotifier(this._ref) : super(const AsyncLoading()) {
@@ -721,11 +729,12 @@ class DeskWindowModeNotifier extends StateNotifier<AsyncValue<DeskWindowMode>> {
   Future<void> _load() async {
     final storage = await _ref.read(appStorageProvider.future);
     final saved = storage.getDeskWindowMode();
-    final storedMode = saved == null
-        ? ((await storage.getDeskCompactEnabled())
-            ? DeskWindowMode.miniBar
-            : DeskWindowMode.main)
-        : DeskWindowModeLogic.parse(saved);
+    final storedMode =
+        saved == null
+            ? ((await storage.getDeskCompactEnabled())
+                ? DeskWindowMode.miniBar
+                : DeskWindowMode.main)
+            : DeskWindowModeLogic.parse(saved);
     final resolved = DeskWindowModeLogic.resolveOnLaunch(
       mode: storedMode,
       launchCompact: await storage.getDeskLaunchCompactEnabled(),
@@ -735,11 +744,12 @@ class DeskWindowModeNotifier extends StateNotifier<AsyncValue<DeskWindowMode>> {
     await DeskWindow.apply(mode: resolved);
     if (resolved == DeskWindowMode.sidebar) {
       final stored = storage.getDeskSidebarPosition();
-      final position = stored == null
-          ? await DeskSidebarWindowController.defaultPosition()
-          : await DeskSidebarWindowController.clampToWorkArea(
-              Offset(stored[0], stored[1]),
-            );
+      final position =
+          stored == null
+              ? await DeskSidebarWindowController.defaultPosition()
+              : await DeskSidebarWindowController.clampToWorkArea(
+                Offset(stored[0], stored[1]),
+              );
       if (position != null) await windowManager.setPosition(position);
     }
   }
@@ -751,11 +761,12 @@ class DeskWindowModeNotifier extends StateNotifier<AsyncValue<DeskWindowMode>> {
     await DeskWindow.apply(mode: mode);
     if (mode == DeskWindowMode.sidebar) {
       final stored = storage.getDeskSidebarPosition();
-      final position = stored == null
-          ? await DeskSidebarWindowController.defaultPosition()
-          : await DeskSidebarWindowController.clampToWorkArea(
-              Offset(stored[0], stored[1]),
-            );
+      final position =
+          stored == null
+              ? await DeskSidebarWindowController.defaultPosition()
+              : await DeskSidebarWindowController.clampToWorkArea(
+                Offset(stored[0], stored[1]),
+              );
       if (position != null) await windowManager.setPosition(position);
     }
   }
@@ -763,8 +774,8 @@ class DeskWindowModeNotifier extends StateNotifier<AsyncValue<DeskWindowMode>> {
 
 final deskLaunchAtStartupProvider =
     StateNotifierProvider<DeskLaunchAtStartupNotifier, AsyncValue<bool>>((ref) {
-  return DeskLaunchAtStartupNotifier(ref);
-});
+      return DeskLaunchAtStartupNotifier(ref);
+    });
 
 class DeskLaunchAtStartupNotifier extends StateNotifier<AsyncValue<bool>> {
   DeskLaunchAtStartupNotifier(this._ref) : super(const AsyncLoading()) {
@@ -790,8 +801,8 @@ class DeskLaunchAtStartupNotifier extends StateNotifier<AsyncValue<bool>> {
 
 final deskLaunchCompactProvider =
     StateNotifierProvider<DeskLaunchCompactNotifier, AsyncValue<bool>>((ref) {
-  return DeskLaunchCompactNotifier(ref);
-});
+      return DeskLaunchCompactNotifier(ref);
+    });
 
 class DeskLaunchCompactNotifier extends StateNotifier<AsyncValue<bool>> {
   DeskLaunchCompactNotifier(this._ref) : super(const AsyncLoading()) {
@@ -817,8 +828,8 @@ class DeskLaunchCompactNotifier extends StateNotifier<AsyncValue<bool>> {
 
 final shakeExtendSleepProvider =
     StateNotifierProvider<ShakeExtendSleepNotifier, AsyncValue<bool>>((ref) {
-  return ShakeExtendSleepNotifier(ref);
-});
+      return ShakeExtendSleepNotifier(ref);
+    });
 
 class ShakeExtendSleepNotifier extends StateNotifier<AsyncValue<bool>> {
   ShakeExtendSleepNotifier(this._ref) : super(const AsyncLoading()) {
@@ -841,8 +852,8 @@ class ShakeExtendSleepNotifier extends StateNotifier<AsyncValue<bool>> {
 
 final bluetoothResumeProvider =
     StateNotifierProvider<BluetoothResumeNotifier, AsyncValue<bool>>((ref) {
-  return BluetoothResumeNotifier(ref);
-});
+      return BluetoothResumeNotifier(ref);
+    });
 
 class BluetoothResumeNotifier extends StateNotifier<AsyncValue<bool>> {
   BluetoothResumeNotifier(this._ref) : super(const AsyncLoading()) {
@@ -866,8 +877,8 @@ class BluetoothResumeNotifier extends StateNotifier<AsyncValue<bool>> {
 
 final listDensityCompactProvider =
     StateNotifierProvider<ListDensityCompactNotifier, AsyncValue<bool>>((ref) {
-  return ListDensityCompactNotifier(ref);
-});
+      return ListDensityCompactNotifier(ref);
+    });
 
 class ListDensityCompactNotifier extends StateNotifier<AsyncValue<bool>> {
   ListDensityCompactNotifier(this._ref) : super(const AsyncLoading()) {
@@ -889,10 +900,11 @@ class ListDensityCompactNotifier extends StateNotifier<AsyncValue<bool>> {
 }
 
 final newEpisodeNotificationsProvider =
-    StateNotifierProvider<NewEpisodeNotificationsNotifier, AsyncValue<bool>>(
-        (ref) {
-  return NewEpisodeNotificationsNotifier(ref);
-});
+    StateNotifierProvider<NewEpisodeNotificationsNotifier, AsyncValue<bool>>((
+      ref,
+    ) {
+      return NewEpisodeNotificationsNotifier(ref);
+    });
 
 class NewEpisodeNotificationsNotifier extends StateNotifier<AsyncValue<bool>> {
   NewEpisodeNotificationsNotifier(this._ref) : super(const AsyncLoading()) {
@@ -913,8 +925,9 @@ class NewEpisodeNotificationsNotifier extends StateNotifier<AsyncValue<bool>> {
   }
 }
 
-final themeModeProvider =
-    StateNotifierProvider<ThemeModeNotifier, ThemeMode>((ref) {
+final themeModeProvider = StateNotifierProvider<ThemeModeNotifier, ThemeMode>((
+  ref,
+) {
   return ThemeModeNotifier(ref);
 });
 
@@ -940,8 +953,8 @@ class ThemeModeNotifier extends StateNotifier<ThemeMode> {
 
 final dynamicColorProvider =
     StateNotifierProvider<DynamicColorNotifier, AsyncValue<bool>>((ref) {
-  return DynamicColorNotifier(ref);
-});
+      return DynamicColorNotifier(ref);
+    });
 
 class DynamicColorNotifier extends StateNotifier<AsyncValue<bool>> {
   DynamicColorNotifier(this._ref) : super(const AsyncLoading()) {
@@ -964,8 +977,8 @@ class DynamicColorNotifier extends StateNotifier<AsyncValue<bool>> {
 
 final castEnabledProvider =
     StateNotifierProvider<CastEnabledNotifier, AsyncValue<bool>>((ref) {
-  return CastEnabledNotifier(ref);
-});
+      return CastEnabledNotifier(ref);
+    });
 
 class CastEnabledNotifier extends StateNotifier<AsyncValue<bool>> {
   CastEnabledNotifier(this._ref) : super(const AsyncLoading()) {
@@ -987,7 +1000,9 @@ class CastEnabledNotifier extends StateNotifier<AsyncValue<bool>> {
 }
 
 final listenedEpisodeGuidsProvider = StateNotifierProvider<
-    ListenedEpisodeGuidsNotifier, AsyncValue<Set<String>>>((ref) {
+  ListenedEpisodeGuidsNotifier,
+  AsyncValue<Set<String>>
+>((ref) {
   return ListenedEpisodeGuidsNotifier(ref);
 });
 
@@ -1007,8 +1022,10 @@ class ListenedEpisodeGuidsNotifier
   Future<void> markAsPlayed(String episodeGuid) async {
     if (episodeGuid.isEmpty) return;
     final current = state.value ?? <String>{};
-    final next =
-        PodcastListenedLogic.markAsPlayed(current, episodeGuid: episodeGuid);
+    final next = PodcastListenedLogic.markAsPlayed(
+      current,
+      episodeGuid: episodeGuid,
+    );
     if (identical(next, current)) return;
     state = AsyncData(next);
     final storage = await _ref.read(appStorageProvider.future);
@@ -1018,8 +1035,10 @@ class ListenedEpisodeGuidsNotifier
   Future<void> markAsNotPlayed(String episodeGuid) async {
     if (episodeGuid.isEmpty) return;
     final current = state.value ?? <String>{};
-    final next =
-        PodcastListenedLogic.markAsNotPlayed(current, episodeGuid: episodeGuid);
+    final next = PodcastListenedLogic.markAsNotPlayed(
+      current,
+      episodeGuid: episodeGuid,
+    );
     if (identical(next, current)) return;
     state = AsyncData(next);
     final storage = await _ref.read(appStorageProvider.future);
@@ -1029,8 +1048,8 @@ class ListenedEpisodeGuidsNotifier
 
 final hideListenedEpisodesProvider =
     StateNotifierProvider<HideListenedNotifier, AsyncValue<bool>>((ref) {
-  return HideListenedNotifier(ref);
-});
+      return HideListenedNotifier(ref);
+    });
 
 class HideListenedNotifier extends StateNotifier<AsyncValue<bool>> {
   HideListenedNotifier(this._ref) : super(const AsyncLoading()) {
@@ -1056,8 +1075,9 @@ final listenedEpisodeGuidsSetProvider = Provider<Set<String>>((ref) {
 });
 
 final favoritePodcastEpisodesProvider = StateNotifierProvider<
-    FavoritePodcastEpisodesNotifier,
-    AsyncValue<Map<String, FavoritePodcastEpisode>>>((ref) {
+  FavoritePodcastEpisodesNotifier,
+  AsyncValue<Map<String, FavoritePodcastEpisode>>
+>((ref) {
   return FavoritePodcastEpisodesNotifier(ref);
 });
 
@@ -1077,8 +1097,9 @@ class FavoritePodcastEpisodesNotifier
 
   Future<void> put(FavoritePodcastEpisode episode) async {
     await _loaded;
-    final next =
-        Map<String, FavoritePodcastEpisode>.from(state.value ?? const {});
+    final next = Map<String, FavoritePodcastEpisode>.from(
+      state.value ?? const {},
+    );
     next[episode.guid] = episode;
     state = AsyncData(next);
     final storage = await _ref.read(appStorageProvider.future);
@@ -1087,8 +1108,9 @@ class FavoritePodcastEpisodesNotifier
 
   Future<void> remove(String guid) async {
     await _loaded;
-    final next =
-        Map<String, FavoritePodcastEpisode>.from(state.value ?? const {});
+    final next = Map<String, FavoritePodcastEpisode>.from(
+      state.value ?? const {},
+    );
     next.remove(guid);
     state = AsyncData(next);
     final storage = await _ref.read(appStorageProvider.future);
@@ -1097,7 +1119,9 @@ class FavoritePodcastEpisodesNotifier
 }
 
 final favoriteEpisodeGuidsProvider = StateNotifierProvider<
-    FavoriteEpisodeGuidsNotifier, AsyncValue<Set<String>>>((ref) {
+  FavoriteEpisodeGuidsNotifier,
+  AsyncValue<Set<String>>
+>((ref) {
   return FavoriteEpisodeGuidsNotifier(ref);
 });
 
@@ -1122,9 +1146,10 @@ class FavoriteEpisodeGuidsNotifier
     if (episodeGuid.isEmpty) return;
     final current = state.value ?? <String>{};
     final removing = current.contains(episodeGuid);
-    final next = removing
-        ? PodcastStarredLogic.unstar(current, episodeGuid: episodeGuid)
-        : PodcastStarredLogic.star(current, episodeGuid: episodeGuid);
+    final next =
+        removing
+            ? PodcastStarredLogic.unstar(current, episodeGuid: episodeGuid)
+            : PodcastStarredLogic.star(current, episodeGuid: episodeGuid);
     state = AsyncData(next);
     final storage = await _ref.read(appStorageProvider.future);
     await storage.setFavoriteEpisodeGuids(next);
@@ -1133,7 +1158,9 @@ class FavoriteEpisodeGuidsNotifier
           .read(favoritePodcastEpisodesProvider.notifier)
           .remove(episodeGuid);
     } else if (feed != null && episode != null) {
-      await _ref.read(favoritePodcastEpisodesProvider.notifier).put(
+      await _ref
+          .read(favoritePodcastEpisodesProvider.notifier)
+          .put(
             FavoritePodcastEpisode.fromEpisode(feed: feed, episode: episode),
           );
     }

@@ -14,6 +14,7 @@ abstract final class PlaybackLogic {
   static const setUrlTimeout = Duration(seconds: 15);
   static const playTimeout = Duration(seconds: 15);
   static const firstBufferTimeout = Duration(seconds: 18);
+
   /// just_audio_windows 换源太快会把 Media Foundation 打崩。
   static const windowsStopSettle = Duration(milliseconds: 300);
   static const windowsIdleWait = Duration(milliseconds: 500);
@@ -24,14 +25,17 @@ abstract final class PlaybackLogic {
   static const androidBufferForPlayback = Duration(milliseconds: 2500);
   static const androidBufferForPlaybackAfterRebuffer = Duration(seconds: 6);
 
-  static AudioLoadConfiguration? audioLoadConfigurationFor(TargetPlatform platform) {
+  static AudioLoadConfiguration? audioLoadConfigurationFor(
+    TargetPlatform platform,
+  ) {
     if (platform != TargetPlatform.android) return null;
     return const AudioLoadConfiguration(
       androidLoadControl: AndroidLoadControl(
         minBufferDuration: androidMinBuffer,
         maxBufferDuration: androidMaxBuffer,
         bufferForPlaybackDuration: androidBufferForPlayback,
-        bufferForPlaybackAfterRebufferDuration: androidBufferForPlaybackAfterRebuffer,
+        bufferForPlaybackAfterRebufferDuration:
+            androidBufferForPlaybackAfterRebuffer,
       ),
     );
   }
@@ -78,7 +82,8 @@ abstract final class PlaybackLogic {
   }
 
   static bool stillOpening(ProcessingState state) {
-    return state == ProcessingState.loading || state == ProcessingState.buffering;
+    return state == ProcessingState.loading ||
+        state == ProcessingState.buffering;
   }
 
   /// 换台/重试/auto-play 前确认用户没有在中途按过暂停。

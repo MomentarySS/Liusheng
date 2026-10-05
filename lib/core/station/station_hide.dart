@@ -36,7 +36,9 @@ abstract final class StationHideLogic {
   }
 
   static bool isCurrentRadio(PlaybackItem? current, String stationId) {
-    if (current == null || current.kind != PlaybackKind.radio || stationId.isEmpty) {
+    if (current == null ||
+        current.kind != PlaybackKind.radio ||
+        stationId.isEmpty) {
       return false;
     }
     return current.stationId == stationId || current.id == stationId;

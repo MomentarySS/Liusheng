@@ -8,7 +8,12 @@ abstract final class AppLog {
     }
   }
 
-  static void e(String tag, String message, {Object? error, StackTrace? stackTrace}) {
+  static void e(
+    String tag,
+    String message, {
+    Object? error,
+    StackTrace? stackTrace,
+  }) {
     if (kDebugMode) {
       debugPrint('[$tag] ERROR: $message');
       if (error != null) debugPrint('[$tag] error: $error');

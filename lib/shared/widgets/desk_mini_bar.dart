@@ -37,30 +37,38 @@ class DeskMiniBar extends ConsumerWidget {
           builder: (context, snapshot) {
             final state = snapshot.data;
             final playing = state?.playing ?? false;
-            final loading = current == null
-                ? false
-                : PlaybackLogic.shouldShowBufferingUi(
-                    processingState:
-                        state?.processingState ?? AudioProcessingState.idle,
-                    playing: playing,
-                    kind: current.kind,
-                  );
-            final hasError = state?.processingState == AudioProcessingState.error;
+            final loading =
+                current == null
+                    ? false
+                    : PlaybackLogic.shouldShowBufferingUi(
+                      processingState:
+                          state?.processingState ?? AudioProcessingState.idle,
+                      playing: playing,
+                      kind: current.kind,
+                    );
+            final hasError =
+                state?.processingState == AudioProcessingState.error;
             final isPodcast = current?.kind == PlaybackKind.podcast;
-            final tags = current == null
-                ? const <String>[]
-                : (isPodcast ? const ['播客'] : [current.subtitle]);
+            final tags =
+                current == null
+                    ? const <String>[]
+                    : (isPodcast ? const ['播客'] : [current.subtitle]);
             final stationId = current?.stationId ?? current?.id;
-            final favorited = stationId != null &&
+            final favorited =
+                stationId != null &&
                 current?.kind == PlaybackKind.radio &&
-                (ref.watch(favoriteIdsProvider).value?.contains(stationId) ?? false);
-            final canSkipRadio = current != null &&
+                (ref.watch(favoriteIdsProvider).value?.contains(stationId) ??
+                    false);
+            final canSkipRadio =
+                current != null &&
                 current.kind == PlaybackKind.radio &&
                 StationSkipLogic.neighbor(
                       StationSkipLogic.queue(
                         currentId: stationId ?? '',
-                        filtered: ref.watch(filteredStationsProvider).value ?? [],
-                        favorites: ref.watch(favoriteStationsProvider).value ?? [],
+                        filtered:
+                            ref.watch(filteredStationsProvider).value ?? [],
+                        favorites:
+                            ref.watch(favoriteStationsProvider).value ?? [],
                         visible: ref.watch(visibleStationsProvider).value ?? [],
                       ),
                       stationId ?? '',
@@ -88,7 +96,9 @@ class DeskMiniBar extends ConsumerWidget {
                       child: DecoratedBox(
                         decoration: BoxDecoration(
                           color: colorScheme.surface,
-                          borderRadius: BorderRadius.circular(DeskCompactLogic.barHeight / 2),
+                          borderRadius: BorderRadius.circular(
+                            DeskCompactLogic.barHeight / 2,
+                          ),
                           boxShadow: [
                             BoxShadow(
                               color: colorScheme.shadow.withValues(alpha: 0.22),
@@ -102,91 +112,138 @@ class DeskMiniBar extends ConsumerWidget {
                           child: Row(
                             children: [
                               Expanded(
-                                child: current == null
-                                    ? Text(
-                                        '未在播放',
-                                        maxLines: 1,
-                                        overflow: TextOverflow.ellipsis,
-                                        style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                                              color: colorScheme.onSurfaceVariant,
-                                            ),
-                                      )
-                                    : Column(
-                                        mainAxisAlignment: MainAxisAlignment.center,
-                                        crossAxisAlignment: CrossAxisAlignment.start,
-                                        children: [
-                                          Text(
-                                            current.title,
-                                            maxLines: 1,
-                                            overflow: TextOverflow.ellipsis,
-                                            style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                                                  fontWeight: FontWeight.w600,
-                                                ),
+                                child:
+                                    current == null
+                                        ? Text(
+                                          '未在播放',
+                                          maxLines: 1,
+                                          overflow: TextOverflow.ellipsis,
+                                          style: Theme.of(
+                                            context,
+                                          ).textTheme.titleSmall?.copyWith(
+                                            color: colorScheme.onSurfaceVariant,
                                           ),
-                                          Row(
-                                            children: [
-                                              if (sleepActive) ...[
-                                                Icon(Icons.bedtime, size: 12, color: colorScheme.primary),
-                                                const SizedBox(width: 4),
-                                                SleepTimerCountdown(
-                                                  compact: true,
-                                                  style: context.liushengSkin.countdownStyle(
-                                                    Theme.of(context).textTheme.labelSmall,
-                                                    colorScheme.primary,
+                                        )
+                                        : Column(
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.center,
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
+                                          children: [
+                                            Text(
+                                              current.title,
+                                              maxLines: 1,
+                                              overflow: TextOverflow.ellipsis,
+                                              style: Theme.of(
+                                                context,
+                                              ).textTheme.titleSmall?.copyWith(
+                                                fontWeight: FontWeight.w600,
+                                              ),
+                                            ),
+                                            Row(
+                                              children: [
+                                                if (sleepActive) ...[
+                                                  Icon(
+                                                    Icons.bedtime,
+                                                    size: 12,
+                                                    color: colorScheme.primary,
+                                                  ),
+                                                  const SizedBox(width: 4),
+                                                  SleepTimerCountdown(
+                                                    compact: true,
+                                                    style: context.liushengSkin
+                                                        .countdownStyle(
+                                                          Theme.of(context)
+                                                              .textTheme
+                                                              .labelSmall,
+                                                          colorScheme.primary,
+                                                        ),
+                                                  ),
+                                                  const SizedBox(width: 6),
+                                                ],
+                                                Expanded(
+                                                  child: _DeskStatusLine(
+                                                    handler: handler,
+                                                    current: current,
+                                                    hasError: hasError,
+                                                    loading: loading,
+                                                    errorMessage:
+                                                        state?.errorMessage,
+                                                    style: Theme.of(
+                                                      context,
+                                                    ).textTheme.bodySmall?.copyWith(
+                                                      color:
+                                                          hasError
+                                                              ? colorScheme
+                                                                  .error
+                                                              : colorScheme
+                                                                  .onSurfaceVariant,
+                                                    ),
                                                   ),
                                                 ),
-                                                const SizedBox(width: 6),
                                               ],
-                                              Expanded(
-                                                child: _DeskStatusLine(
-                                                  handler: handler,
-                                                  current: current,
-                                                  hasError: hasError,
-                                                  loading: loading,
-                                                  errorMessage: state?.errorMessage,
-                                                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                                                        color: hasError
-                                                            ? colorScheme.error
-                                                            : colorScheme.onSurfaceVariant,
-                                                      ),
-                                                ),
-                                              ),
-                                            ],
-                                          ),
-                                        ],
-                                      ),
+                                            ),
+                                          ],
+                                        ),
                               ),
                               if (current?.kind == PlaybackKind.radio)
                                 IconButton(
                                   tooltip: favorited ? '取消收藏' : '收藏',
                                   visualDensity: VisualDensity.compact,
                                   icon: Icon(
-                                    favorited ? Icons.favorite : Icons.favorite_border,
-                                    color: favorited ? colorScheme.primary : colorScheme.onSurfaceVariant,
+                                    favorited
+                                        ? Icons.favorite
+                                        : Icons.favorite_border,
+                                    color:
+                                        favorited
+                                            ? colorScheme.primary
+                                            : colorScheme.onSurfaceVariant,
                                   ),
-                                  onPressed: stationId == null
-                                      ? null
-                                      : () => ref.read(favoriteIdsProvider.notifier).toggle(stationId),
+                                  onPressed:
+                                      stationId == null
+                                          ? null
+                                          : () => ref
+                                              .read(
+                                                favoriteIdsProvider.notifier,
+                                              )
+                                              .toggle(stationId),
                                 ),
                               IconButton(
-                                tooltip: isPodcast ? '后退 $skipSeconds 秒，长按改档' : '上一台',
+                                tooltip:
+                                    isPodcast
+                                        ? '后退 $skipSeconds 秒，长按改档'
+                                        : '上一台',
                                 visualDensity: VisualDensity.compact,
                                 icon: Icon(
-                                  isPodcast ? Icons.replay : Icons.skip_previous_rounded,
+                                  isPodcast
+                                      ? Icons.replay
+                                      : Icons.skip_previous_rounded,
                                   color: colorScheme.onSurface,
                                 ),
-                                onPressed: current == null
-                                    ? null
-                                    : () {
-                                        if (isPodcast) {
-                                          ref.read(playerControllerProvider).skipPodcast(-1);
-                                        } else if (canSkipRadio) {
-                                          ref.read(stationSkipProvider).skip(-1);
-                                        }
-                                      },
-                                onLongPress: isPodcast
-                                    ? () => ref.read(podcastSkipStepProvider.notifier).cycle()
-                                    : null,
+                                onPressed:
+                                    current == null
+                                        ? null
+                                        : () {
+                                          if (isPodcast) {
+                                            ref
+                                                .read(playerControllerProvider)
+                                                .skipPodcast(-1);
+                                          } else if (canSkipRadio) {
+                                            ref
+                                                .read(stationSkipProvider)
+                                                .skip(-1);
+                                          }
+                                        },
+                                onLongPress:
+                                    isPodcast
+                                        ? () =>
+                                            ref
+                                                .read(
+                                                  podcastSkipStepProvider
+                                                      .notifier,
+                                                )
+                                                .cycle()
+                                        : null,
                               ),
                               if (loading)
                                 const SizedBox(
@@ -194,7 +251,9 @@ class DeskMiniBar extends ConsumerWidget {
                                   height: DeskCompactLogic.playSize,
                                   child: Padding(
                                     padding: EdgeInsets.all(14),
-                                    child: CircularProgressIndicator(strokeWidth: 2.4),
+                                    child: CircularProgressIndicator(
+                                      strokeWidth: 2.4,
+                                    ),
                                   ),
                                 )
                               else
@@ -209,41 +268,73 @@ class DeskMiniBar extends ConsumerWidget {
                                     ),
                                     shape: const CircleBorder(),
                                   ),
-                                  icon: PlaybackStateIcon(playing: playing, size: 28),
-                                  onPressed: current == null
-                                      ? null
-                                      : () => ref.read(playerControllerProvider).togglePlayPause(),
+                                  icon: PlaybackStateIcon(
+                                    playing: playing,
+                                    size: 28,
+                                  ),
+                                  onPressed:
+                                      current == null
+                                          ? null
+                                          : () =>
+                                              ref
+                                                  .read(
+                                                    playerControllerProvider,
+                                                  )
+                                                  .togglePlayPause(),
                                 ),
                               IconButton(
-                                tooltip: isPodcast ? '前进 $skipSeconds 秒，长按改档' : '下一台',
+                                tooltip:
+                                    isPodcast
+                                        ? '前进 $skipSeconds 秒，长按改档'
+                                        : '下一台',
                                 visualDensity: VisualDensity.compact,
                                 icon: Icon(
-                                  isPodcast ? Icons.forward : Icons.skip_next_rounded,
+                                  isPodcast
+                                      ? Icons.forward
+                                      : Icons.skip_next_rounded,
                                   color: colorScheme.onSurface,
                                 ),
-                                onPressed: current == null
-                                    ? null
-                                    : () {
-                                        if (isPodcast) {
-                                          ref.read(playerControllerProvider).skipPodcast(1);
-                                        } else if (canSkipRadio) {
-                                          ref.read(stationSkipProvider).skip(1);
-                                        }
-                                      },
-                                onLongPress: isPodcast
-                                    ? () => ref.read(podcastSkipStepProvider.notifier).cycle()
-                                    : null,
+                                onPressed:
+                                    current == null
+                                        ? null
+                                        : () {
+                                          if (isPodcast) {
+                                            ref
+                                                .read(playerControllerProvider)
+                                                .skipPodcast(1);
+                                          } else if (canSkipRadio) {
+                                            ref
+                                                .read(stationSkipProvider)
+                                                .skip(1);
+                                          }
+                                        },
+                                onLongPress:
+                                    isPodcast
+                                        ? () =>
+                                            ref
+                                                .read(
+                                                  podcastSkipStepProvider
+                                                      .notifier,
+                                                )
+                                                .cycle()
+                                        : null,
                               ),
                               IconButton(
                                 tooltip: '切换到侧栏',
                                 visualDensity: VisualDensity.compact,
-                                icon: Icon(Icons.view_sidebar_outlined, color: colorScheme.onSurfaceVariant),
+                                icon: Icon(
+                                  Icons.view_sidebar_outlined,
+                                  color: colorScheme.onSurfaceVariant,
+                                ),
                                 onPressed: onSidebar,
                               ),
                               IconButton(
                                 tooltip: '回到完整窗口',
                                 visualDensity: VisualDensity.compact,
-                                icon: Icon(Icons.close_rounded, color: colorScheme.onSurfaceVariant),
+                                icon: Icon(
+                                  Icons.close_rounded,
+                                  color: colorScheme.onSurfaceVariant,
+                                ),
                                 onPressed: onExit,
                               ),
                             ],
@@ -263,10 +354,15 @@ class DeskMiniBar extends ConsumerWidget {
                         child: DecoratedBox(
                           decoration: BoxDecoration(
                             shape: BoxShape.circle,
-                            border: Border.all(color: colorScheme.outlineVariant, width: 2),
+                            border: Border.all(
+                              color: colorScheme.outlineVariant,
+                              width: 2,
+                            ),
                             boxShadow: [
                               BoxShadow(
-                                color: colorScheme.shadow.withValues(alpha: 0.18),
+                                color: colorScheme.shadow.withValues(
+                                  alpha: 0.18,
+                                ),
                                 blurRadius: 12,
                                 offset: const Offset(0, 4),
                               ),
@@ -341,10 +437,7 @@ class _DeskStatusLine extends StatelessWidget {
           loading: false,
           icyTitle: snapshot.data,
         );
-        return OverflowMarquee(
-          text: text,
-          style: style,
-        );
+        return OverflowMarquee(text: text, style: style);
       },
     );
   }

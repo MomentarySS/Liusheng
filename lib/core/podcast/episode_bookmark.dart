@@ -25,9 +25,10 @@ class EpisodeBookmark {
       episodeTitle: json['episodeTitle'] as String? ?? '',
       podcastTitle: json['podcastTitle'] as String? ?? '',
       streamUrl: json['streamUrl'] as String? ?? '',
-      artworkUrl: (json['artworkUrl'] as String?)?.trim().isEmpty ?? true
-          ? null
-          : (json['artworkUrl'] as String?)?.trim(),
+      artworkUrl:
+          (json['artworkUrl'] as String?)?.trim().isEmpty ?? true
+              ? null
+              : (json['artworkUrl'] as String?)?.trim(),
       note: json['note'] as String? ?? '',
     );
   }
@@ -43,20 +44,21 @@ class EpisodeBookmark {
   final String? artworkUrl;
   final String note;
 
-  Duration get position => Duration(milliseconds: positionMs < 0 ? 0 : positionMs);
+  Duration get position =>
+      Duration(milliseconds: positionMs < 0 ? 0 : positionMs);
 
   Map<String, dynamic> toJson() => {
-        'id': id,
-        'episodeGuid': episodeGuid,
-        'positionMs': positionMs,
-        'createdAtMs': createdAtMs,
-        'feedId': feedId,
-        'episodeTitle': episodeTitle,
-        'podcastTitle': podcastTitle,
-        'streamUrl': streamUrl,
-        if (artworkUrl != null) 'artworkUrl': artworkUrl,
-        if (note.isNotEmpty) 'note': note,
-      };
+    'id': id,
+    'episodeGuid': episodeGuid,
+    'positionMs': positionMs,
+    'createdAtMs': createdAtMs,
+    'feedId': feedId,
+    'episodeTitle': episodeTitle,
+    'podcastTitle': podcastTitle,
+    'streamUrl': streamUrl,
+    if (artworkUrl != null) 'artworkUrl': artworkUrl,
+    if (note.isNotEmpty) 'note': note,
+  };
 
   PlaybackItem toPlaybackItem() {
     return PlaybackItem.fromPodcastEpisode(
@@ -98,7 +100,10 @@ abstract final class EpisodeBookmarkLogic {
     return '$minutes:$seconds';
   }
 
-  static List<EpisodeBookmark> forEpisode(List<EpisodeBookmark> all, String episodeGuid) {
+  static List<EpisodeBookmark> forEpisode(
+    List<EpisodeBookmark> all,
+    String episodeGuid,
+  ) {
     final items = [
       for (final item in all)
         if (item.episodeGuid == episodeGuid) item,
@@ -115,9 +120,13 @@ abstract final class EpisodeBookmarkLogic {
     final guid = incoming.episodeGuid.trim();
     if (guid.isEmpty) return current;
     final positionMs = snapPositionMs(incoming.positionMs);
-    final id = incoming.id.isEmpty ? idFor(episodeGuid: guid, positionMs: positionMs) : incoming.id;
+    final id =
+        incoming.id.isEmpty
+            ? idFor(episodeGuid: guid, positionMs: positionMs)
+            : incoming.id;
     final existing = current.where((item) => item.id == id).firstOrNull;
-    final createdAtMs = existing?.createdAtMs ??
+    final createdAtMs =
+        existing?.createdAtMs ??
         (incoming.createdAtMs > 0
             ? incoming.createdAtMs
             : (now ?? DateTime.now()).millisecondsSinceEpoch);
@@ -148,7 +157,10 @@ abstract final class EpisodeBookmarkLogic {
     required String id,
   }) {
     if (id.isEmpty) return current;
-    return [for (final item in current) if (item.id != id) item];
+    return [
+      for (final item in current)
+        if (item.id != id) item,
+    ];
   }
 
   static List<EpisodeBookmark> pruneFeed({
@@ -156,6 +168,9 @@ abstract final class EpisodeBookmarkLogic {
     required String feedId,
   }) {
     if (feedId.isEmpty) return current;
-    return [for (final item in current) if (item.feedId != feedId) item];
+    return [
+      for (final item in current)
+        if (item.feedId != feedId) item,
+    ];
   }
 }

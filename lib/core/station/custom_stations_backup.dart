@@ -17,9 +17,9 @@ class CustomStationsImportResult {
 /// 手动电台 JSON 备份：剪贴板导入导出。
 abstract final class CustomStationsBackup {
   static String encode(List<RadioStation> stations) {
-    return const JsonEncoder.withIndent('  ').convert(
-      stations.map((s) => s.toJson()).toList(),
-    );
+    return const JsonEncoder.withIndent(
+      '  ',
+    ).convert(stations.map((s) => s.toJson()).toList());
   }
 
   static List<RadioStation>? decode(String raw) {
@@ -28,20 +28,28 @@ abstract final class CustomStationsBackup {
     try {
       final decoded = jsonDecode(trimmed);
       if (decoded is! List) return null;
-      final stations = decoded
-          .whereType<Map<String, dynamic>>()
-          .map((item) => RadioStation.fromJson(Map<String, dynamic>.from(item)))
-          .where((s) => s.name.trim().isNotEmpty && s.streamUrl.trim().isNotEmpty)
-          .map(
-            (s) => s.copyWith(
-              source: StationSource.custom,
-              tags: {
-                '自定义',
-                ...s.tags.where((t) => t.trim().isNotEmpty),
-              }.toList(),
-            ),
-          )
-          .toList();
+      final stations =
+          decoded
+              .whereType<Map<String, dynamic>>()
+              .map(
+                (item) =>
+                    RadioStation.fromJson(Map<String, dynamic>.from(item)),
+              )
+              .where(
+                (s) =>
+                    s.name.trim().isNotEmpty && s.streamUrl.trim().isNotEmpty,
+              )
+              .map(
+                (s) => s.copyWith(
+                  source: StationSource.custom,
+                  tags:
+                      {
+                        '自定义',
+                        ...s.tags.where((t) => t.trim().isNotEmpty),
+                      }.toList(),
+                ),
+              )
+              .toList();
       return stations.isEmpty ? null : stations;
     } catch (_) {
       return null;
@@ -73,6 +81,10 @@ abstract final class CustomStationsBackup {
       );
       added++;
     }
-    return CustomStationsImportResult(stations: merged, added: added, skipped: skipped);
+    return CustomStationsImportResult(
+      stations: merged,
+      added: added,
+      skipped: skipped,
+    );
   }
 }

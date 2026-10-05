@@ -99,7 +99,9 @@ abstract final class DeskWidgetLogic {
     List<InboxItem> items, {
     int max = maxEpisodes,
   }) {
-    final rows = items.take(max).map(
+    final rows = items
+        .take(max)
+        .map(
           (item) => {
             'title': item.episode.title,
             'subtitle': item.feed.title,

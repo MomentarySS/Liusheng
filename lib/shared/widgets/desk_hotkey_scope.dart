@@ -45,8 +45,11 @@ class _DeskHotkeyScopeState extends ConsumerState<DeskHotkeyScope> {
     final action = DeskHotkeyLogic.actionForKey(
       key: event.logicalKey,
       editableFocused: DeskHotkeyLogic.isEditableContext(focusContext),
-      activateControlFocused: DeskHotkeyLogic.isActivateControlContext(focusContext),
-      podcastSkipEnabled: !sidebarNavigation &&
+      activateControlFocused: DeskHotkeyLogic.isActivateControlContext(
+        focusContext,
+      ),
+      podcastSkipEnabled:
+          !sidebarNavigation &&
           ref.read(currentPlaybackProvider)?.kind == PlaybackKind.podcast,
       sidebarKeyboardNavigation: sidebarNavigation,
       repeat: event is KeyRepeatEvent,
@@ -61,11 +64,16 @@ class _DeskHotkeyScopeState extends ConsumerState<DeskHotkeyScope> {
       case DeskHotkeyAction.skipForward:
         unawaited(ref.read(playerControllerProvider).skipPodcast(1));
       case DeskHotkeyAction.toggleSurface:
-        final mode = ref.read(deskWindowModeProvider).value ?? DeskWindowMode.main;
+        final mode =
+            ref.read(deskWindowModeProvider).value ?? DeskWindowMode.main;
         unawaited(
-          ref.read(deskWindowModeProvider.notifier).setMode(
-            mode == DeskWindowMode.miniBar ? DeskWindowMode.sidebar : DeskWindowMode.miniBar,
-          ),
+          ref
+              .read(deskWindowModeProvider.notifier)
+              .setMode(
+                mode == DeskWindowMode.miniBar
+                    ? DeskWindowMode.sidebar
+                    : DeskWindowMode.miniBar,
+              ),
         );
       case DeskHotkeyAction.none:
         return false;

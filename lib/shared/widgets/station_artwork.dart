@@ -111,10 +111,11 @@ class StationArtwork extends StatelessWidget {
   static String monogram({String? name}) {
     final value = name?.trim();
     if (value == null || value.isEmpty) return 'FM';
-    final stripped = value
-        .replaceAll(RegExp(r'FM[\d.]+', caseSensitive: false), '')
-        .replaceAll(RegExp(r'AM\d+', caseSensitive: false), '')
-        .trim();
+    final stripped =
+        value
+            .replaceAll(RegExp(r'FM[\d.]+', caseSensitive: false), '')
+            .replaceAll(RegExp(r'AM\d+', caseSensitive: false), '')
+            .trim();
     if (stripped.isEmpty) return value.characters.take(2).toString();
     return stripped.characters.take(2).toString();
   }
@@ -128,14 +129,19 @@ class StationArtwork extends StatelessWidget {
     if (tags.contains('新闻')) return Icons.newspaper_rounded;
     if (tags.contains('交通')) return Icons.directions_car_filled_rounded;
     if (tags.contains('财经')) return Icons.trending_up_rounded;
-    if (tags.contains('播客') || fallback == Icons.podcasts) return Icons.podcasts_rounded;
+    if (tags.contains('播客') || fallback == Icons.podcasts) {
+      return Icons.podcasts_rounded;
+    }
     return fallback;
   }
 
   List<Color> _gradientColors() => gradientColors(name: name, tags: tags);
 
   /// 用于播放器背景取色（与封面占位渐变一致）。
-  static List<Color> gradientColors({String? name, List<String> tags = const []}) {
+  static List<Color> gradientColors({
+    String? name,
+    List<String> tags = const [],
+  }) {
     if (tags.contains('央广')) {
       return const [Color(0xFFB71C1C), Color(0xFFE53935)];
     }

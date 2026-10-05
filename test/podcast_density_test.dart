@@ -38,7 +38,8 @@ const _feed = PodcastFeed(
 );
 
 /// 3 行以上的标题：用来验证 `maxLines: 2` 真的生效。
-const _longTitle = '菲尔茨双星闪耀：从陈景润到王虹，天才难逃的百年宿命（上集）'
+const _longTitle =
+    '菲尔茨双星闪耀：从陈景润到王虹，天才难逃的百年宿命（上集）'
     '——以及那些被时代埋没的同行者，和他们在深夜演算纸上留下的最后一行批注';
 
 const _episodes = [
@@ -183,9 +184,12 @@ void main() {
   test('iTunes 拿到非 JSON 正文时给出能照做的错，而不是类型错误', () async {
     // 裸连（不开代理）实测就是这个形态：请求被网络拦下，返回 HTML/空内容。
     // 旧代码会抛 `type 'String' is not a subtype of type 'Map<String, dynamic>?'`。
-    final dio = Dio()
-      ..httpClientAdapter =
-          _PlainBodyAdapter('<html>blocked</html>', 'text/html');
+    final dio =
+        Dio()
+          ..httpClientAdapter = _PlainBodyAdapter(
+            '<html>blocked</html>',
+            'text/html',
+          );
     final client = ItunesPodcastClient(dio: dio);
     await expectLater(
       client.search(query: '新闻', hideExplicit: true),
@@ -200,11 +204,12 @@ void main() {
   });
 
   test('iTunes 拿到 JSON 正文时正常解析', () async {
-    final dio = Dio()
-      ..httpClientAdapter = _PlainBodyAdapter(
-        '{"results":[{"collectionName":"故事FM","feedUrl":"https://example.com/f.xml"}]}',
-        'application/json',
-      );
+    final dio =
+        Dio()
+          ..httpClientAdapter = _PlainBodyAdapter(
+            '{"results":[{"collectionName":"故事FM","feedUrl":"https://example.com/f.xml"}]}',
+            'application/json',
+          );
     final client = ItunesPodcastClient(dio: dio);
     final hits = await client.search(query: '故事', hideExplicit: true);
     expect(hits.map((hit) => hit.title), ['故事FM']);
@@ -234,10 +239,10 @@ void main() {
     expect(await callsFor(const {}), 0, reason: '没有目录缓存时也去拉了');
 
     // 用过搜索、缓存已过期 → 后台拉一次，保持新鲜。
-    final stale = PodcastCatalogLogic.encode(
-      const [PodcastCatalogEntry(title: '岩中花述', rssUrl: 'https://a/1.xml')],
-      DateTime(2020, 1, 1),
-    );
+    final stale = PodcastCatalogLogic.encode(const [
+      PodcastCatalogEntry(title: '岩中花述', rssUrl: 'https://a/1.xml'),
+      // ignore: require_trailing_commas
+    ], DateTime(2020, 1, 1));
     expect(
       await callsFor({PodcastCatalogLogic.storageKey: stale}),
       1,
@@ -433,8 +438,9 @@ void main() {
         _app(
           stubDetail: false,
           extra: [
-            podcastServiceProvider
-                .overrideWith((ref) => _FailingPodcastService()),
+            podcastServiceProvider.overrideWith(
+              (ref) => _FailingPodcastService(),
+            ),
           ],
         ),
       );
@@ -452,8 +458,9 @@ void main() {
         _app(
           stubDetail: false,
           extra: [
-            podcastServiceProvider
-                .overrideWith((ref) => _FailingPodcastService()),
+            podcastServiceProvider.overrideWith(
+              (ref) => _FailingPodcastService(),
+            ),
           ],
         ),
       );
@@ -616,10 +623,11 @@ void main() {
 
     test('两页都用同一条顶部窄带放倒计时（电台页底部那份已删）', () {
       final radio = _readSource('lib/shared/widgets/radio_now_playing.dart');
-      for (final entry in {
-        'podcast_now_playing.dart': nowPlaying,
-        'radio_now_playing.dart': radio,
-      }.entries) {
+      for (final entry
+          in {
+            'podcast_now_playing.dart': nowPlaying,
+            'radio_now_playing.dart': radio,
+          }.entries) {
         final source = entry.value;
         expect(
           source.contains('SleepTimerStatusBand()'),
@@ -633,9 +641,10 @@ void main() {
         );
         // 窄带必须排在视觉锚点之前（顶部栏与封面之间），不能跑到下面去。
         final band = source.indexOf('SleepTimerStatusBand()');
-        final anchor = source.contains('_Cover(')
-            ? source.indexOf('_Cover(')
-            : source.indexOf('_StationCard(');
+        final anchor =
+            source.contains('_Cover(')
+                ? source.indexOf('_Cover(')
+                : source.indexOf('_StationCard(');
         expect(anchor, greaterThan(-1), reason: '${entry.key} 找不到视觉锚点');
         expect(band, lessThan(anchor), reason: '${entry.key} 的窄带不在锚点之前');
       }

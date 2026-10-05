@@ -30,31 +30,32 @@ Future<void> showPodcastSettingsSheet(
     // 裁掉**且滚不到；所以放开上限，并用 SingleChildScrollView 兜住（注意别
     // 在这里放 Expanded/Flexible —— 有 flex 子项时 Column 会撑满全屏）。
     isScrollControlled: true,
-    builder: (sheetContext) => SafeArea(
-      child: SingleChildScrollView(
-        padding: const EdgeInsets.fromLTRB(0, 0, 0, 16),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            Padding(
-              padding: const EdgeInsets.fromLTRB(16, 0, 16, 4),
-              child: Text(
-                '节目设置',
-                style: Theme.of(sheetContext).textTheme.titleMedium,
-              ),
+    builder:
+        (sheetContext) => SafeArea(
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.fromLTRB(0, 0, 0, 16),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(16, 0, 16, 4),
+                  child: Text(
+                    '节目设置',
+                    style: Theme.of(sheetContext).textTheme.titleMedium,
+                  ),
+                ),
+                _sectionLabel(sheetContext, '下载'),
+                _DownloadAllSwitch(feed: feed, episodes: episodes),
+                _DownloadLatestSwitch(feed: feed, episodes: episodes),
+                _DownloadRecentTile(feed: feed, episodes: episodes),
+                const _WifiOnlyStatusTile(),
+                _sectionLabel(sheetContext, '播放'),
+                _SkipIntroOutroTile(feed: feed),
+              ],
             ),
-            _sectionLabel(sheetContext, '下载'),
-            _DownloadAllSwitch(feed: feed, episodes: episodes),
-            _DownloadLatestSwitch(feed: feed, episodes: episodes),
-            _DownloadRecentTile(feed: feed, episodes: episodes),
-            const _WifiOnlyStatusTile(),
-            _sectionLabel(sheetContext, '播放'),
-            _SkipIntroOutroTile(feed: feed),
-          ],
+          ),
         ),
-      ),
-    ),
   );
 }
 
@@ -66,9 +67,9 @@ Widget _sectionLabel(BuildContext context, String label) {
     child: Text(
       label,
       style: Theme.of(context).textTheme.labelLarge?.copyWith(
-            color: colorScheme.primary,
-            fontWeight: FontWeight.w600,
-          ),
+        color: colorScheme.primary,
+        fontWeight: FontWeight.w600,
+      ),
     ),
   );
 }
@@ -83,21 +84,23 @@ class _DownloadAllSwitch extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final enabled =
         ref.watch(podcastDownloadAllFeedsProvider).value?.contains(feed.id) ??
-            false;
+        false;
     final downloads = ref.watch(podcastDownloadsProvider);
-    final ready = episodes
-        .where(
-          (item) =>
-              downloads.statusFor(item.guid) == EpisodeDownloadStatus.ready,
-        )
-        .length;
-    final downloading = episodes
-        .where(
-          (item) =>
-              downloads.statusFor(item.guid) ==
-              EpisodeDownloadStatus.downloading,
-        )
-        .length;
+    final ready =
+        episodes
+            .where(
+              (item) =>
+                  downloads.statusFor(item.guid) == EpisodeDownloadStatus.ready,
+            )
+            .length;
+    final downloading =
+        episodes
+            .where(
+              (item) =>
+                  downloads.statusFor(item.guid) ==
+                  EpisodeDownloadStatus.downloading,
+            )
+            .length;
     int feedBytes = 0;
     for (final episode in episodes) {
       final record = downloads.records[episode.guid];
@@ -129,9 +132,9 @@ class _DownloadAllSwitch extends ConsumerWidget {
               .read(podcastDownloadsProvider.notifier)
               .downloadAll(feed, episodes);
         } else {
-          await ref.read(podcastDownloadsProvider.notifier).cancelForGuids(
-                episodes.map((item) => item.guid),
-              );
+          await ref
+              .read(podcastDownloadsProvider.notifier)
+              .cancelForGuids(episodes.map((item) => item.guid));
         }
       },
     );
@@ -146,7 +149,8 @@ class _DownloadLatestSwitch extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final enabled = ref
+    final enabled =
+        ref
             .watch(podcastDownloadLatestFeedsProvider)
             .value
             ?.contains(feed.id) ??
@@ -214,14 +218,14 @@ class _DownloadRecentTile extends ConsumerWidget {
           );
           if (!context.mounted) return;
           if (pending.isEmpty) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text('最近 $count 集都已下载')),
-            );
+            ScaffoldMessenger.of(
+              context,
+            ).showSnackBar(SnackBar(content: Text('最近 $count 集都已下载')));
             return;
           }
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('开始下载最近 ${pending.length} 集')),
-          );
+          ScaffoldMessenger.of(
+            context,
+          ).showSnackBar(SnackBar(content: Text('开始下载最近 ${pending.length} 集')));
           unawaited(
             ref
                 .read(podcastDownloadsProvider.notifier)
@@ -257,8 +261,8 @@ class _WifiOnlyStatusTile extends ConsumerWidget {
         // 「没开」的同一个坑。
         wifiOnly.hasValue ? (on ? '开' : '关') : '…',
         style: Theme.of(context).textTheme.titleMedium?.copyWith(
-              color: on ? colorScheme.primary : colorScheme.onSurfaceVariant,
-            ),
+          color: on ? colorScheme.primary : colorScheme.onSurfaceVariant,
+        ),
       ),
     );
   }
@@ -280,9 +284,10 @@ class _SkipIntroOutroTile extends ConsumerWidget {
     final skip = skipAsync.value;
     final intro = skip?.intro ?? 0;
     final outro = skip?.outro ?? 0;
-    final subtitle = skipAsync.isLoading
-        ? '读取中…'
-        : (intro == 0 && outro == 0)
+    final subtitle =
+        skipAsync.isLoading
+            ? '读取中…'
+            : (intro == 0 && outro == 0)
             ? '未设置'
             : '片头 ${PodcastPlaybackLogic.skipDurationLabel(intro)}'
                 ' · 片尾 ${PodcastPlaybackLogic.skipDurationLabel(outro)}';

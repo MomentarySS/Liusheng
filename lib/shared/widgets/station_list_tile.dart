@@ -27,18 +27,16 @@ Future<void> hideStationWithUndo(
       content: Text('已隐藏 ${station.name}'),
       action: SnackBarAction(
         label: '撤销',
-        onPressed: () => ref.read(hiddenStationIdsProvider.notifier).unhide(station.id),
+        onPressed:
+            () =>
+                ref.read(hiddenStationIdsProvider.notifier).unhide(station.id),
       ),
     ),
   );
 }
 
 class StationListTile extends ConsumerWidget {
-  const StationListTile({
-    super.key,
-    required this.station,
-    this.onTap,
-  });
+  const StationListTile({super.key, required this.station, this.onTap});
 
   final RadioStation station;
   final VoidCallback? onTap;
@@ -48,7 +46,8 @@ class StationListTile extends ConsumerWidget {
     final overrides = ref.watch(stationCategoryOverridesProvider).value ?? {};
     final effectiveCategory = effectiveStationCategory(station, overrides);
     final current = ref.watch(currentPlaybackProvider);
-    final isCurrent = current?.kind == PlaybackKind.radio &&
+    final isCurrent =
+        current?.kind == PlaybackKind.radio &&
         (current?.stationId == station.id || current?.id == station.id);
 
     void openMenu() => _showStationMenu(context, ref, station);
@@ -69,7 +68,8 @@ class StationListTile extends ConsumerWidget {
         ),
         title: Text(
           station.name,
-          style: isCurrent ? const TextStyle(fontWeight: FontWeight.w600) : null,
+          style:
+              isCurrent ? const TextStyle(fontWeight: FontWeight.w600) : null,
         ),
         subtitle: Text(
           [
@@ -79,13 +79,18 @@ class StationListTile extends ConsumerWidget {
             if (station.bitrate != null) '${station.bitrate} kbps',
           ].whereType<String>().where((part) => part.isNotEmpty).join(' · '),
         ),
-        onTap: onTap ??
+        onTap:
+            onTap ??
             () async {
               await ref.read(recentIdsProvider.notifier).add(station.id);
               if (station.source == StationSource.api) {
-                unawaited(ref.read(radioBrowserClientProvider).reportClick(station.id));
+                unawaited(
+                  ref.read(radioBrowserClientProvider).reportClick(station.id),
+                );
               }
-              await ref.read(playerControllerProvider).play(PlaybackItem.fromStation(station));
+              await ref
+                  .read(playerControllerProvider)
+                  .play(PlaybackItem.fromStation(station));
             },
         onLongPress: openMenu,
       ),
@@ -97,7 +102,8 @@ class StationListTile extends ConsumerWidget {
       confirmDismiss: (direction) async {
         final action = ListSwipeLogic.stationAction(direction);
         if (action == StationSwipeAction.favorite) {
-          final favoriteIds = ref.read(favoriteIdsProvider).value ?? const <String>[];
+          final favoriteIds =
+              ref.read(favoriteIdsProvider).value ?? const <String>[];
           final isFavorite = favoriteIds.contains(station.id);
           unawaited(ref.read(favoriteIdsProvider.notifier).toggle(station.id));
           if (context.mounted) {
@@ -117,25 +123,36 @@ class StationListTile extends ConsumerWidget {
         alignment: Alignment.centerLeft,
         padding: const EdgeInsets.only(left: 20),
         color: Theme.of(context).colorScheme.primaryContainer,
-        child: Icon(Icons.favorite, color: Theme.of(context).colorScheme.onPrimaryContainer),
+        child: Icon(
+          Icons.favorite,
+          color: Theme.of(context).colorScheme.onPrimaryContainer,
+        ),
       ),
       secondaryBackground: Container(
         alignment: Alignment.centerRight,
         padding: const EdgeInsets.only(right: 20),
         color: Theme.of(context).colorScheme.errorContainer,
-        child: Icon(Icons.visibility_off_outlined, color: Theme.of(context).colorScheme.onErrorContainer),
+        child: Icon(
+          Icons.visibility_off_outlined,
+          color: Theme.of(context).colorScheme.onErrorContainer,
+        ),
       ),
       child: tile,
     );
   }
 
-  void _showStationMenu(BuildContext context, WidgetRef ref, RadioStation station) {
+  void _showStationMenu(
+    BuildContext context,
+    WidgetRef ref,
+    RadioStation station,
+  ) {
     showModalBottomSheet<void>(
       context: context,
       showDragHandle: true,
       builder: (sheetContext) {
         final colorScheme = Theme.of(context).colorScheme;
-        final favoriteIds = ref.read(favoriteIdsProvider).value ?? const <String>[];
+        final favoriteIds =
+            ref.read(favoriteIdsProvider).value ?? const <String>[];
         final isFavorite = favoriteIds.contains(station.id);
         return SafeArea(
           child: Padding(
@@ -150,43 +167,57 @@ class StationListTile extends ConsumerWidget {
                 ),
                 const SizedBox(height: 12),
                 ListTile(
-                  leading: Icon(isFavorite ? Icons.favorite : Icons.favorite_border, color: colorScheme.primary),
+                  leading: Icon(
+                    isFavorite ? Icons.favorite : Icons.favorite_border,
+                    color: colorScheme.primary,
+                  ),
                   title: Text(isFavorite ? '取消收藏' : '收藏'),
                   onTap: () {
                     Navigator.pop(sheetContext);
-                    unawaited(ref.read(favoriteIdsProvider.notifier).toggle(station.id));
+                    unawaited(
+                      ref.read(favoriteIdsProvider.notifier).toggle(station.id),
+                    );
                     ScaffoldMessenger.of(context).showSnackBar(
                       SnackBar(content: Text(isFavorite ? '已取消收藏' : '已收藏')),
                     );
                   },
                 ),
                 ListTile(
-                  leading: Icon(Icons.play_arrow_rounded, color: colorScheme.primary),
+                  leading: Icon(
+                    Icons.play_arrow_rounded,
+                    color: colorScheme.primary,
+                  ),
                   title: const Text('播放'),
                   onTap: () {
                     Navigator.pop(sheetContext);
                     unawaited(
-                      ref.read(playerControllerProvider).play(
-                            PlaybackItem.fromStation(station),
-                          ),
+                      ref
+                          .read(playerControllerProvider)
+                          .play(PlaybackItem.fromStation(station)),
                     );
                   },
                 ),
                 ListTile(
-                  leading: Icon(Icons.link, color: colorScheme.onSurfaceVariant),
+                  leading: Icon(
+                    Icons.link,
+                    color: colorScheme.onSurfaceVariant,
+                  ),
                   title: const Text('复制地址'),
                   onTap: () {
                     Navigator.pop(sheetContext);
                     Clipboard.setData(ClipboardData(text: station.streamUrl));
                     if (context.mounted) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text('已复制电台地址')),
-                      );
+                      ScaffoldMessenger.of(
+                        context,
+                      ).showSnackBar(const SnackBar(content: Text('已复制电台地址')));
                     }
                   },
                 ),
                 ListTile(
-                  leading: Icon(Icons.share, color: colorScheme.onSurfaceVariant),
+                  leading: Icon(
+                    Icons.share,
+                    color: colorScheme.onSurfaceVariant,
+                  ),
                   title: const Text('分享'),
                   onTap: () {
                     Navigator.pop(sheetContext);

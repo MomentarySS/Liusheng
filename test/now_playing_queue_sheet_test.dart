@@ -32,10 +32,16 @@ const _stations = [
 Widget _harness() {
   return ProviderScope(
     overrides: [
-      currentPlaybackProvider.overrideWith((ref) => PlaybackItem.fromStation(_stations.first)),
+      currentPlaybackProvider.overrideWith(
+        (ref) => PlaybackItem.fromStation(_stations.first),
+      ),
       visibleStationsProvider.overrideWith((ref) => const AsyncData(_stations)),
-      filteredStationsProvider.overrideWith((ref) => const AsyncData(_stations)),
-      favoriteStationsProvider.overrideWith((ref) => const AsyncData(_stations)),
+      filteredStationsProvider.overrideWith(
+        (ref) => const AsyncData(_stations),
+      ),
+      favoriteStationsProvider.overrideWith(
+        (ref) => const AsyncData(_stations),
+      ),
     ],
     child: const MaterialApp(home: _Launcher()),
   );
@@ -49,10 +55,11 @@ class _Launcher extends StatelessWidget {
     return Scaffold(
       body: Center(
         child: Builder(
-          builder: (context) => TextButton(
-            onPressed: () => showNowPlayingQueueSheet(context),
-            child: const Text('open'),
-          ),
+          builder:
+              (context) => TextButton(
+                onPressed: () => showNowPlayingQueueSheet(context),
+                child: const Text('open'),
+              ),
         ),
       ),
     );
@@ -74,7 +81,8 @@ void main() {
 
     // 守卫「一打开就是全屏」这个回归：半屏 sheet 的标题不会贴到屏幕顶部。
     // 全屏时标题 dy ≈ 0；半屏（initialChildSize 0.55）时 dy ≈ 屏幕高的 0.47。
-    final screenHeight = tester.view.physicalSize.height / tester.view.devicePixelRatio;
+    final screenHeight =
+        tester.view.physicalSize.height / tester.view.devicePixelRatio;
     expect(
       tester.getTopLeft(find.text('播放列表')).dy,
       greaterThan(screenHeight * 0.3),

@@ -11,19 +11,23 @@ Future<void> showStationCategoryPicker(
   RadioStation station,
 ) async {
   if (StationCategoryResolver.isLocked(station)) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('央广和地方台分类为系统默认，不可修改')),
-    );
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(const SnackBar(content: Text('央广和地方台分类为系统默认，不可修改')));
     return;
   }
 
   final filters = ref.read(stationFilterCategoriesProvider);
   final overrides = ref.read(stationCategoryOverridesProvider).value ?? {};
   final current = effectiveStationCategory(station, overrides);
-  final options = filters
-      .where((item) => item != StationCategoryResolver.all)
-      .where((item) => !StationCategoryResolver.lockedCategoryNames.contains(item))
-      .toList();
+  final options =
+      filters
+          .where((item) => item != StationCategoryResolver.all)
+          .where(
+            (item) =>
+                !StationCategoryResolver.lockedCategoryNames.contains(item),
+          )
+          .toList();
 
   if (!context.mounted) return;
 
@@ -50,10 +54,9 @@ Future<void> showStationCategoryPicker(
                 title: Text(category),
                 onChanged: (value) async {
                   if (value == null) return;
-                  await ref.read(stationCategoryOverridesProvider.notifier).setOverride(
-                        station,
-                        value,
-                      );
+                  await ref
+                      .read(stationCategoryOverridesProvider.notifier)
+                      .setOverride(station, value);
                   if (sheetContext.mounted) Navigator.pop(sheetContext);
                 },
               ),
@@ -61,7 +64,9 @@ Future<void> showStationCategoryPicker(
             if (overrides.containsKey(station.id))
               TextButton(
                 onPressed: () async {
-                  await ref.read(stationCategoryOverridesProvider.notifier).clearOverride(station.id);
+                  await ref
+                      .read(stationCategoryOverridesProvider.notifier)
+                      .clearOverride(station.id);
                   if (sheetContext.mounted) Navigator.pop(sheetContext);
                 },
                 child: const Text('恢复自动分类'),

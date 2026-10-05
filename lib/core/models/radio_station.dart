@@ -1,23 +1,34 @@
 /// 电台数据模型，兼容本地精选列表与 Radio Browser API 响应。
 class RadioStation {
-
   factory RadioStation.fromJson(Map<String, dynamic> json) {
     return RadioStation(
       id: json['id'] as String? ?? json['stationuuid'] as String? ?? '',
       name: json['name'] as String? ?? '未知电台',
-      streamUrl: json['url'] as String? ??
+      streamUrl:
+          json['url'] as String? ??
           json['url_resolved'] as String? ??
           json['urlResolved'] as String? ??
           '',
       favicon: json['favicon'] as String?,
       tags: _parseTags(json['tags']),
-      category: json['category'] as String? ?? _inferCategory(_parseTags(json['tags'])),
-      bitrate: json['bitrate'] is int ? json['bitrate'] as int : int.tryParse('${json['bitrate']}'),
+      category:
+          json['category'] as String? ??
+          _inferCategory(_parseTags(json['tags'])),
+      bitrate:
+          json['bitrate'] is int
+              ? json['bitrate'] as int
+              : int.tryParse('${json['bitrate']}'),
       codec: json['codec'] as String?,
       homepage: json['homepage'] as String?,
       source: parseSource(json['source'], tags: _parseTags(json['tags'])),
-      votes: json['votes'] is int ? json['votes'] as int : int.tryParse('${json['votes']}') ?? 0,
-      lastCheckOk: json['lastcheckok'] == 1 || json['lastCheckOk'] == true || json['lastcheckok'] == null,
+      votes:
+          json['votes'] is int
+              ? json['votes'] as int
+              : int.tryParse('${json['votes']}') ?? 0,
+      lastCheckOk:
+          json['lastcheckok'] == 1 ||
+          json['lastCheckOk'] == true ||
+          json['lastcheckok'] == null,
     );
   }
 
@@ -29,17 +40,24 @@ class RadioStation {
     return RadioStation(
       id: json['stationuuid'] as String? ?? '',
       name: json['name'] as String? ?? '未知电台',
-      streamUrl: (json['url_resolved'] as String?)?.isNotEmpty == true
-          ? json['url_resolved'] as String
-          : json['url'] as String? ?? '',
+      streamUrl:
+          (json['url_resolved'] as String?)?.isNotEmpty == true
+              ? json['url_resolved'] as String
+              : json['url'] as String? ?? '',
       favicon: json['favicon'] as String?,
       tags: tags,
       category: _inferCategory(tags),
-      bitrate: json['bitrate'] is int ? json['bitrate'] as int : int.tryParse('${json['bitrate']}'),
+      bitrate:
+          json['bitrate'] is int
+              ? json['bitrate'] as int
+              : int.tryParse('${json['bitrate']}'),
       codec: json['codec'] as String?,
       homepage: json['homepage'] as String?,
       source: StationSource.api,
-      votes: json['votes'] is int ? json['votes'] as int : int.tryParse('${json['votes']}') ?? 0,
+      votes:
+          json['votes'] is int
+              ? json['votes'] as int
+              : int.tryParse('${json['votes']}') ?? 0,
       lastCheckOk: json['lastcheckok'] == 1 || json['lastcheckok'] == true,
     );
   }
@@ -72,19 +90,19 @@ class RadioStation {
   final bool lastCheckOk;
 
   Map<String, dynamic> toJson() => {
-        'id': id,
-        'name': name,
-        'url': streamUrl,
-        'favicon': favicon,
-        'tags': tags.join(','),
-        'category': category,
-        'bitrate': bitrate,
-        'codec': codec,
-        'homepage': homepage,
-        'source': source.name,
-        'votes': votes,
-        'lastCheckOk': lastCheckOk,
-      };
+    'id': id,
+    'name': name,
+    'url': streamUrl,
+    'favicon': favicon,
+    'tags': tags.join(','),
+    'category': category,
+    'bitrate': bitrate,
+    'codec': codec,
+    'homepage': homepage,
+    'source': source.name,
+    'votes': votes,
+    'lastCheckOk': lastCheckOk,
+  };
 
   RadioStation copyWith({
     String? id,
@@ -119,7 +137,12 @@ class RadioStation {
   static List<String> _parseTags(dynamic raw) {
     if (raw == null) return [];
     if (raw is List) return raw.map((e) => e.toString()).toList();
-    return raw.toString().split(',').map((e) => e.trim()).where((e) => e.isNotEmpty).toList();
+    return raw
+        .toString()
+        .split(',')
+        .map((e) => e.trim())
+        .where((e) => e.isNotEmpty)
+        .toList();
   }
 
   /// Radio Browser 的 TW/HK/MO 台名经常不含「台湾/香港」，补标签给境外开关用。
@@ -149,7 +172,10 @@ class RadioStation {
     return '综合';
   }
 
-  static StationSource parseSource(dynamic raw, {List<String> tags = const []}) {
+  static StationSource parseSource(
+    dynamic raw, {
+    List<String> tags = const [],
+  }) {
     switch (raw?.toString()) {
       case 'api':
         return StationSource.api;
@@ -186,7 +212,6 @@ enum PlaybackKind { radio, podcast }
 
 /// 当前播放项（直播或播客单集）。
 class PlaybackItem {
-
   factory PlaybackItem.fromStation(RadioStation station) {
     return PlaybackItem(
       id: station.id,
@@ -244,12 +269,16 @@ class PlaybackItem {
       title: json['title'] as String? ?? '',
       streamUrl: json['streamUrl'] as String? ?? '',
       artworkUrl: json['artworkUrl'] as String?,
-      kind: PlaybackKind.values.where((v) => v.name == json['kind']).firstOrNull ??
+      kind:
+          PlaybackKind.values
+              .where((v) => v.name == json['kind'])
+              .firstOrNull ??
           PlaybackKind.radio,
       subtitle: json['subtitle'] as String? ?? '',
-      duration: json['durationMs'] != null
-          ? Duration(milliseconds: json['durationMs'] as int)
-          : null,
+      duration:
+          json['durationMs'] != null
+              ? Duration(milliseconds: json['durationMs'] as int)
+              : null,
       stationId: json['stationId'] as String?,
       episodeGuid: json['episodeGuid'] as String?,
       feedId: json['feedId'] as String?,
@@ -268,22 +297,23 @@ class PlaybackItem {
   final String? episodeGuid;
   final String? feedId;
   final String? description;
+
   /// 电台：分类名；播客：节目名；also used for gradient tag input.
   final List<String> tags;
 
   Map<String, dynamic> toJson() => {
-        'id': id,
-        'title': title,
-        'subtitle': subtitle,
-        'streamUrl': streamUrl,
-        'artworkUrl': artworkUrl,
-        'kind': kind.name,
-        'durationMs': duration?.inMilliseconds,
-        'stationId': stationId,
-        'episodeGuid': episodeGuid,
-        'feedId': feedId,
-        'tags': tags,
-      };
+    'id': id,
+    'title': title,
+    'subtitle': subtitle,
+    'streamUrl': streamUrl,
+    'artworkUrl': artworkUrl,
+    'kind': kind.name,
+    'durationMs': duration?.inMilliseconds,
+    'stationId': stationId,
+    'episodeGuid': episodeGuid,
+    'feedId': feedId,
+    'tags': tags,
+  };
 
   static PlaybackItem? tryFromJson(Map<String, dynamic>? json) {
     if (json == null) return null;
@@ -310,7 +340,10 @@ class PlaybackItem {
       stationId: json['stationId'] as String?,
       episodeGuid: json['episodeGuid'] as String?,
       feedId: json['feedId'] as String?,
-      tags: rawTags is List ? rawTags.map((e) => e.toString()).toList() : const [],
+      tags:
+          rawTags is List
+              ? rawTags.map((e) => e.toString()).toList()
+              : const [],
     );
   }
 

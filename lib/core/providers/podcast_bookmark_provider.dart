@@ -3,12 +3,15 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../podcast/episode_bookmark.dart';
 import 'app_providers.dart';
 
-final podcastBookmarksProvider =
-    StateNotifierProvider<PodcastBookmarksNotifier, AsyncValue<List<EpisodeBookmark>>>((ref) {
+final podcastBookmarksProvider = StateNotifierProvider<
+  PodcastBookmarksNotifier,
+  AsyncValue<List<EpisodeBookmark>>
+>((ref) {
   return PodcastBookmarksNotifier(ref);
 });
 
-class PodcastBookmarksNotifier extends StateNotifier<AsyncValue<List<EpisodeBookmark>>> {
+class PodcastBookmarksNotifier
+    extends StateNotifier<AsyncValue<List<EpisodeBookmark>>> {
   PodcastBookmarksNotifier(this._ref) : super(const AsyncLoading()) {
     _load();
   }
@@ -30,7 +33,9 @@ class PodcastBookmarksNotifier extends StateNotifier<AsyncValue<List<EpisodeBook
   }
 
   Future<void> add(EpisodeBookmark bookmark) async {
-    await _persist(EpisodeBookmarkLogic.upsert(current: _items, incoming: bookmark));
+    await _persist(
+      EpisodeBookmarkLogic.upsert(current: _items, incoming: bookmark),
+    );
   }
 
   Future<void> remove(String id) async {
@@ -38,7 +43,9 @@ class PodcastBookmarksNotifier extends StateNotifier<AsyncValue<List<EpisodeBook
   }
 
   Future<void> pruneFeed(String feedId) async {
-    await _persist(EpisodeBookmarkLogic.pruneFeed(current: _items, feedId: feedId));
+    await _persist(
+      EpisodeBookmarkLogic.pruneFeed(current: _items, feedId: feedId),
+    );
   }
 
   Future<void> jumpTo(EpisodeBookmark bookmark) async {

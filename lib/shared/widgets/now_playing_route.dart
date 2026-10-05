@@ -20,7 +20,8 @@ class NowPlayingPageRoute extends PageRoute<void> {
   String? get barrierLabel => '关闭正在播放';
 
   @override
-  Duration get transitionDuration => const Duration(milliseconds: NowPlayingHero.flightMs);
+  Duration get transitionDuration =>
+      const Duration(milliseconds: NowPlayingHero.flightMs);
 
   @override
   Duration get reverseTransitionDuration => const Duration(milliseconds: 280);
@@ -44,7 +45,10 @@ class NowPlayingPageRoute extends PageRoute<void> {
     Animation<double> secondaryAnimation,
     Widget child,
   ) {
-    final curved = CurvedAnimation(parent: animation, curve: Curves.easeOutCubic);
+    final curved = CurvedAnimation(
+      parent: animation,
+      curve: Curves.easeOutCubic,
+    );
     return FadeTransition(
       opacity: curved,
       child: SlideTransition(

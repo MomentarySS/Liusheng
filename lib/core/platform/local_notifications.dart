@@ -17,13 +17,14 @@ Future<FlutterLocalNotificationsPlugin?> ensureLocalNotifications() async {
     await plugin.initialize(
       InitializationSettings(
         android: const AndroidInitializationSettings('@mipmap/ic_launcher'),
-        windows: Platform.isWindows
-            ? const WindowsInitializationSettings(
-                appName: AppBrand.displayName,
-                appUserModelId: 'com.liusheng.liusheng',
-                guid: '8f3c1e2a-4b6d-4c8e-9f01-23456789abcd',
-              )
-            : null,
+        windows:
+            Platform.isWindows
+                ? const WindowsInitializationSettings(
+                  appName: AppBrand.displayName,
+                  appUserModelId: 'com.liusheng.liusheng',
+                  guid: '8f3c1e2a-4b6d-4c8e-9f01-23456789abcd',
+                )
+                : null,
       ),
     );
     _plugin = plugin;

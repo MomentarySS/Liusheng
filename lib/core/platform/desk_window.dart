@@ -54,9 +54,10 @@ abstract final class DeskWindow {
         await windowManager.setAlwaysOnTop(true);
         await windowManager.setResizable(false);
         await windowManager.setMaximizable(false);
-        final size = mode == DeskWindowMode.miniBar
-            ? DeskCompactLogic.compactSize
-            : DeskCompactLogic.sidebarSize;
+        final size =
+            mode == DeskWindowMode.miniBar
+                ? DeskCompactLogic.compactSize
+                : DeskCompactLogic.sidebarSize;
         await windowManager.setMinimumSize(size);
         await windowManager.setMaximumSize(size);
         await windowManager.setSize(size);

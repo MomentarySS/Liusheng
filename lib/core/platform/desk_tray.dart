@@ -27,10 +27,7 @@ abstract final class DeskTrayLogic {
     return mode == selected ? '✓ $label' : label;
   }
 
-  static bool offered({
-    TargetPlatform? platform,
-    bool isWeb = false,
-  }) {
+  static bool offered({TargetPlatform? platform, bool isWeb = false}) {
     if (isWeb) return false;
     return (platform ?? defaultTargetPlatform) == TargetPlatform.windows;
   }

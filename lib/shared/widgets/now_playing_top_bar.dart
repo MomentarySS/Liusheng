@@ -21,7 +21,9 @@ class NowPlayingTopBar extends StatelessWidget {
           ),
         ),
         const Spacer(),
-        CastSessionLogic.offered ? const CastButton(outlined: false) : const SizedBox(width: 40),
+        CastSessionLogic.offered
+            ? const CastButton(outlined: false)
+            : const SizedBox(width: 40),
       ],
     );
   }

@@ -2,7 +2,6 @@ import '../models/radio_station.dart';
 
 /// 单日收听时长（播客 / 电台分开，秒）。
 class DailyStats {
-
   factory DailyStats.fromJson(Map<String, dynamic> json) {
     return DailyStats(
       podcastSeconds: (json['p'] as num?)?.toInt() ?? 0,
@@ -19,8 +18,14 @@ class DailyStats {
   DailyStats add({required PlaybackKind kind, required int seconds}) {
     if (seconds <= 0) return this;
     return kind == PlaybackKind.podcast
-        ? DailyStats(podcastSeconds: podcastSeconds + seconds, radioSeconds: radioSeconds)
-        : DailyStats(podcastSeconds: podcastSeconds, radioSeconds: radioSeconds + seconds);
+        ? DailyStats(
+          podcastSeconds: podcastSeconds + seconds,
+          radioSeconds: radioSeconds,
+        )
+        : DailyStats(
+          podcastSeconds: podcastSeconds,
+          radioSeconds: radioSeconds + seconds,
+        );
   }
 
   Map<String, dynamic> toJson() => {'p': podcastSeconds, 'r': radioSeconds};
@@ -28,43 +33,56 @@ class DailyStats {
 
 /// 单个节目 / 电台的累计收听时长。
 class SourceStats {
-
   factory SourceStats.fromJson(Map<String, dynamic> json) {
-    final kind = PlaybackKind.values.where((v) => v.name == json['k']).firstOrNull;
+    final kind =
+        PlaybackKind.values.where((v) => v.name == json['k']).firstOrNull;
     return SourceStats(
       title: json['t'] as String? ?? '',
       kind: kind ?? PlaybackKind.radio,
       seconds: (json['s'] as num?)?.toInt() ?? 0,
     );
   }
-  const SourceStats({required this.title, required this.kind, required this.seconds});
+  const SourceStats({
+    required this.title,
+    required this.kind,
+    required this.seconds,
+  });
 
   final String title;
   final PlaybackKind kind;
   final int seconds;
 
   SourceStats add(int seconds) =>
-      seconds <= 0 ? this : SourceStats(title: title, kind: kind, seconds: this.seconds + seconds);
+      seconds <= 0
+          ? this
+          : SourceStats(
+            title: title,
+            kind: kind,
+            seconds: this.seconds + seconds,
+          );
 
   Map<String, dynamic> toJson() => {'t': title, 'k': kind.name, 's': seconds};
 }
 
 /// 收听时长统计：按日、按节目、总时长。纯本机，不外传。
 class ListeningStats {
-
   factory ListeningStats.fromJson(Map<String, dynamic> json) {
     final byDay = <String, DailyStats>{};
     final dayRaw = json['byDay'];
     if (dayRaw is Map) {
       dayRaw.forEach((key, value) {
-        if (value is Map<String, dynamic>) byDay[key.toString()] = DailyStats.fromJson(value);
+        if (value is Map<String, dynamic>) {
+          byDay[key.toString()] = DailyStats.fromJson(value);
+        }
       });
     }
     final bySource = <String, SourceStats>{};
     final srcRaw = json['bySource'];
     if (srcRaw is Map) {
       srcRaw.forEach((key, value) {
-        if (value is Map<String, dynamic>) bySource[key.toString()] = SourceStats.fromJson(value);
+        if (value is Map<String, dynamic>) {
+          bySource[key.toString()] = SourceStats.fromJson(value);
+        }
       });
     }
     return ListeningStats(
@@ -96,11 +114,15 @@ class ListeningStats {
     return ListeningStats(
       byDay: {
         ...byDay,
-        dayKey: (byDay[dayKey] ?? const DailyStats()).add(kind: kind, seconds: seconds),
+        dayKey: (byDay[dayKey] ?? const DailyStats()).add(
+          kind: kind,
+          seconds: seconds,
+        ),
       },
       bySource: {
         ...bySource,
-        id: (bySource[id] ?? SourceStats(title: title, kind: kind, seconds: 0)).add(seconds),
+        id: (bySource[id] ?? SourceStats(title: title, kind: kind, seconds: 0))
+            .add(seconds),
       },
       totalSeconds: totalSeconds + seconds,
     );
@@ -116,10 +138,10 @@ class ListeningStats {
   }
 
   Map<String, dynamic> toJson() => {
-        'byDay': {for (final e in byDay.entries) e.key: e.value.toJson()},
-        'bySource': {for (final e in bySource.entries) e.key: e.value.toJson()},
-        'total': totalSeconds,
-      };
+    'byDay': {for (final e in byDay.entries) e.key: e.value.toJson()},
+    'bySource': {for (final e in bySource.entries) e.key: e.value.toJson()},
+    'total': totalSeconds,
+  };
 }
 
 abstract final class ListeningStatsLogic {
@@ -131,7 +153,9 @@ abstract final class ListeningStatsLogic {
 
   /// 最近 n 天（含今天）的日期键，旧到新。
   static List<String> recentDayKeys(DateTime now, int n) {
-    return [for (var i = n - 1; i >= 0; i--) dayKey(now.subtract(Duration(days: i)))];
+    return [
+      for (var i = n - 1; i >= 0; i--) dayKey(now.subtract(Duration(days: i))),
+    ];
   }
 
   /// 本周（最近 7 天）总秒数。
@@ -152,13 +176,18 @@ abstract final class ListeningStatsLogic {
     ListeningStats stats, {
     int limit = 5,
   }) {
-    final entries = stats.bySource.entries.toList()
-      ..sort((a, b) => b.value.seconds.compareTo(a.value.seconds));
+    final entries =
+        stats.bySource.entries.toList()
+          ..sort((a, b) => b.value.seconds.compareTo(a.value.seconds));
     return entries.take(limit).toList();
   }
 
   /// 裁剪到上限并按日只保留最近若干天（防止 SharedPreferences 无限膨胀）。
-  static ListeningStats compact(ListeningStats stats, {required DateTime now, int keepDays = 365}) {
+  static ListeningStats compact(
+    ListeningStats stats, {
+    required DateTime now,
+    int keepDays = 365,
+  }) {
     final cutoff = now.subtract(Duration(days: keepDays));
     final byDay = <String, DailyStats>{};
     stats.byDay.forEach((key, value) {

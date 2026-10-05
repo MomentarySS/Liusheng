@@ -26,7 +26,9 @@ class _CategoryScreenState extends ConsumerState<CategoryScreen> {
     if (value.isEmpty) return;
     ref.read(customCategoriesProvider.notifier).add(value);
     _controller.clear();
-    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('已添加分类「$value」')));
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(SnackBar(content: Text('已添加分类「$value」')));
   }
 
   @override
@@ -44,8 +46,8 @@ class _CategoryScreenState extends ConsumerState<CategoryScreen> {
             child: Text(
               '这里可增删自定义分类；央广、地方台为系统默认分类，不可修改',
               style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                    color: colorScheme.onSurfaceVariant,
-                  ),
+                color: colorScheme.onSurfaceVariant,
+              ),
             ),
           ),
           Padding(
@@ -53,9 +55,9 @@ class _CategoryScreenState extends ConsumerState<CategoryScreen> {
             child: Text(
               '系统默认（不可删除）',
               style: Theme.of(context).textTheme.labelLarge?.copyWith(
-                    color: colorScheme.primary,
-                    fontWeight: FontWeight.w600,
-                  ),
+                color: colorScheme.primary,
+                fontWeight: FontWeight.w600,
+              ),
             ),
           ),
           Padding(
@@ -67,35 +69,35 @@ class _CategoryScreenState extends ConsumerState<CategoryScreen> {
             child: Text(
               '自定义分类',
               style: Theme.of(context).textTheme.labelLarge?.copyWith(
-                    color: colorScheme.primary,
-                    fontWeight: FontWeight.w600,
-                  ),
+                color: colorScheme.primary,
+                fontWeight: FontWeight.w600,
+              ),
             ),
           ),
           customCategories.when(
             data: (categories) {
               if (categories.isEmpty) {
-                return const ListTile(
-                  dense: true,
-                  title: Text('暂无自定义分类'),
-                );
+                return const ListTile(dense: true, title: Text('暂无自定义分类'));
               }
               return Column(
-                children: categories
-                    .map(
-                      (name) => ListTile(
-                        dense: true,
-                        leading: const Icon(Icons.label_outline),
-                        title: Text(name),
-                        trailing: IconButton(
-                          tooltip: '删除分类',
-                          icon: const Icon(Icons.delete_outline),
-                          onPressed: () =>
-                              ref.read(customCategoriesProvider.notifier).remove(name),
-                        ),
-                      ),
-                    )
-                    .toList(),
+                children:
+                    categories
+                        .map(
+                          (name) => ListTile(
+                            dense: true,
+                            leading: const Icon(Icons.label_outline),
+                            title: Text(name),
+                            trailing: IconButton(
+                              tooltip: '删除分类',
+                              icon: const Icon(Icons.delete_outline),
+                              onPressed:
+                                  () => ref
+                                      .read(customCategoriesProvider.notifier)
+                                      .remove(name),
+                            ),
+                          ),
+                        )
+                        .toList(),
               );
             },
             loading: () => const LinearProgressIndicator(),

@@ -7,9 +7,11 @@ abstract final class StationDetailLogic {
   static List<(String, String)> rows(RadioStation station, {String? category}) {
     final items = <(String, String)>[
       ('分类', category ?? station.category),
-      if (stationSourceLabel(station) != null) ('来源', stationSourceLabel(station)!.replaceFirst('来源：', '')),
+      if (stationSourceLabel(station) != null)
+        ('来源', stationSourceLabel(station)!.replaceFirst('来源：', '')),
       if (station.bitrate != null) ('码率', '${station.bitrate} kbps'),
-      if (station.codec != null && station.codec!.trim().isNotEmpty) ('编码', station.codec!.trim()),
+      if (station.codec != null && station.codec!.trim().isNotEmpty)
+        ('编码', station.codec!.trim()),
       if (station.votes > 0) ('投票', '${station.votes}'),
       if (station.homepage != null && station.homepage!.trim().isNotEmpty)
         ('官网', station.homepage!.trim()),

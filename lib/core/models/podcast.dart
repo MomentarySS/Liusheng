@@ -4,7 +4,6 @@ export '../audio/podcast_chapters.dart' show PodcastChapter;
 
 /// 播客与 RSS 单集模型。
 class PodcastFeed {
-
   factory PodcastFeed.fromJson(Map<String, dynamic> json) {
     return PodcastFeed(
       id: json['id'] as String,
@@ -64,10 +63,7 @@ class PodcastEpisode {
 }
 
 class PodcastDetail {
-  const PodcastDetail({
-    required this.feed,
-    required this.episodes,
-  });
+  const PodcastDetail({required this.feed, required this.episodes});
 
   final PodcastFeed feed;
   final List<PodcastEpisode> episodes;

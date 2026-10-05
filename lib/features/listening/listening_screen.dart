@@ -43,26 +43,17 @@ class ListeningScreen extends StatelessWidget {
             padding: const EdgeInsets.fromLTRB(20, 12, 20, 4),
             child: Text(
               '收听',
-              style: Theme.of(context)
-                  .textTheme
-                  .titleLarge
-                  ?.copyWith(fontWeight: FontWeight.w700),
+              style: Theme.of(
+                context,
+              ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w700),
             ),
           ),
           const TabBar(
-            tabs: [
-              Tab(text: '收藏'),
-              Tab(text: '最近'),
-              Tab(text: '统计'),
-            ],
+            tabs: [Tab(text: '收藏'), Tab(text: '最近'), Tab(text: '统计')],
           ),
           const Expanded(
             child: TabBarView(
-              children: [
-                _FavoritesTab(),
-                _RecentTab(),
-                ListeningStatsView(),
-              ],
+              children: [_FavoritesTab(), _RecentTab(), ListeningStatsView()],
             ),
           ),
         ],
@@ -104,14 +95,15 @@ class _FavoritesTabState extends ConsumerState<_FavoritesTab> {
               ),
             ],
             selected: {_selected},
-            onSelectionChanged: (selection) =>
-                setState(() => _selected = selection.first),
+            onSelectionChanged:
+                (selection) => setState(() => _selected = selection.first),
           ),
         ),
         Expanded(
-          child: _selected == _FavoriteKind.radio
-              ? const _RadioFavoritesTab()
-              : const _PodcastFavoritesTab(),
+          child:
+              _selected == _FavoriteKind.radio
+                  ? const _RadioFavoritesTab()
+                  : const _PodcastFavoritesTab(),
         ),
       ],
     );
@@ -128,17 +120,20 @@ class _RadioFavoritesTab extends ConsumerWidget {
       final progress = ref.watch(stationProbeProgressProvider);
       return StationProbeStatus(
         progress: progress,
-        onCancel: progress.probing
-            ? () => ref.read(stationsProvider.notifier).cancelProbe()
-            : null,
+        onCancel:
+            progress.probing
+                ? () => ref.read(stationsProvider.notifier).cancelProbe()
+                : null,
       );
     }
     if (stationsAsync.hasError) {
       final offline = ref.watch(isOfflineProvider).value ?? false;
       return AppEmptyState(
         icon: offline ? Icons.wifi_off : Icons.error_outline,
-        message:
-            NetworkStatusLogic.loadFailureMessage('电台列表加载失败', offline: offline),
+        message: NetworkStatusLogic.loadFailureMessage(
+          '电台列表加载失败',
+          offline: offline,
+        ),
         detail: NetworkStatusLogic.loadFailureDetail(
           stationsAsync.error!,
           offline: offline,
@@ -159,8 +154,9 @@ class _RadioFavoritesTab extends ConsumerWidget {
           );
         }
         return ListView(
-          padding:
-              const EdgeInsets.only(bottom: LiushengTheme.listBottomPadding),
+          padding: const EdgeInsets.only(
+            bottom: LiushengTheme.listBottomPadding,
+          ),
           children: [
             for (final station in stations) StationListTile(station: station),
           ],
@@ -231,14 +227,14 @@ class _PodcastFavoritesTab extends ConsumerWidget {
                 );
               }
             }
-            final sorted = episodes.values.toList()
-              ..sort(
-                (a, b) =>
-                    (b.publishedAt ?? DateTime.fromMillisecondsSinceEpoch(0))
-                        .compareTo(
-                  a.publishedAt ?? DateTime.fromMillisecondsSinceEpoch(0),
-                ),
-              );
+            final sorted =
+                episodes.values.toList()..sort(
+                  (a, b) => (b.publishedAt ??
+                          DateTime.fromMillisecondsSinceEpoch(0))
+                      .compareTo(
+                        a.publishedAt ?? DateTime.fromMillisecondsSinceEpoch(0),
+                      ),
+                );
             if (sorted.isEmpty) {
               return const AppEmptyState(
                 icon: Icons.podcasts_outlined,
@@ -248,7 +244,8 @@ class _PodcastFavoritesTab extends ConsumerWidget {
             }
             return ListView(
               padding: const EdgeInsets.only(
-                  bottom: LiushengTheme.listBottomPadding,),
+                bottom: LiushengTheme.listBottomPadding,
+              ),
               children: [
                 for (final item in sorted) _PodcastFavoriteTile(item: item),
               ],
@@ -270,11 +267,14 @@ class _PodcastFavoriteTile extends ConsumerWidget {
     final current = ref.watch(currentPlaybackProvider);
     final progress = ref.watch(podcastProgressProvider(item.guid));
     final episode = item.toEpisode();
-    final isCurrent =
-        NowPlayingIndicatorLogic.isCurrentEpisode(current, item.guid);
-    final progressText = progress != null && progress > Duration.zero
-        ? '已播放 ${_formatFavoriteDuration(progress)}'
-        : null;
+    final isCurrent = NowPlayingIndicatorLogic.isCurrentEpisode(
+      current,
+      item.guid,
+    );
+    final progressText =
+        progress != null && progress > Duration.zero
+            ? '已播放 ${_formatFavoriteDuration(progress)}'
+            : null;
     final subtitle = [
       item.feedTitle,
       if (item.publishedAt != null)
@@ -300,20 +300,25 @@ class _PodcastFavoriteTile extends ConsumerWidget {
       trailing: IconButton(
         tooltip: '取消收藏',
         icon: Icon(Icons.star, color: Theme.of(context).colorScheme.primary),
-        onPressed: () =>
-            ref.read(favoriteEpisodeGuidsProvider.notifier).toggle(item.guid),
+        onPressed:
+            () => ref
+                .read(favoriteEpisodeGuidsProvider.notifier)
+                .toggle(item.guid),
       ),
-      onTap: () => ref.read(playerControllerProvider).play(
-            PlaybackItem.fromPodcastEpisode(
-              podcastTitle: item.feedTitle,
-              episodeTitle: item.title,
-              audioUrl: item.audioUrl,
-              episodeGuid: item.guid,
-              artworkUrl: item.artworkUrl,
-              duration: episode.duration,
-              feedId: item.feedId,
-            ),
-          ),
+      onTap:
+          () => ref
+              .read(playerControllerProvider)
+              .play(
+                PlaybackItem.fromPodcastEpisode(
+                  podcastTitle: item.feedTitle,
+                  episodeTitle: item.title,
+                  audioUrl: item.audioUrl,
+                  episodeGuid: item.guid,
+                  artworkUrl: item.artworkUrl,
+                  duration: episode.duration,
+                  feedId: item.feedId,
+                ),
+              ),
     );
   }
 }
@@ -340,10 +345,13 @@ Future<void> _exportListeningData(BuildContext context, WidgetRef ref) async {
 
   try {
     final tempDir = await getTemporaryDirectory();
-    final timestamp =
-        DateTime.now().toIso8601String().replaceAll(RegExp(r'[:.]'), '-');
-    final file =
-        File('${tempDir.path}/liusheng-listening-export-$timestamp.json');
+    final timestamp = DateTime.now().toIso8601String().replaceAll(
+      RegExp(r'[:.]'),
+      '-',
+    );
+    final file = File(
+      '${tempDir.path}/liusheng-listening-export-$timestamp.json',
+    );
     await file.writeAsString(json, flush: true);
 
     if (context.mounted) {
@@ -355,9 +363,9 @@ Future<void> _exportListeningData(BuildContext context, WidgetRef ref) async {
     }
   } catch (e) {
     if (context.mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('导出失败: $e')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('导出失败: $e')));
     }
   }
 }
@@ -426,17 +434,19 @@ class _RecentTab extends ConsumerWidget {
         _SectionHeader(
           title: '电台',
           icon: Icons.radio_outlined,
-          trailing: (recent.value?.isNotEmpty ?? false)
-              ? TextButton(
-                  onPressed: () => _clearRadioRecent(context, ref),
-                  child: const Text('清除'),
-                )
-              : null,
+          trailing:
+              (recent.value?.isNotEmpty ?? false)
+                  ? TextButton(
+                    onPressed: () => _clearRadioRecent(context, ref),
+                    child: const Text('清除'),
+                  )
+                  : null,
         ),
         recent.when(
-          loading: () => StationProbeStatus(
-            progress: ref.watch(stationProbeProgressProvider),
-          ),
+          loading:
+              () => StationProbeStatus(
+                progress: ref.watch(stationProbeProgressProvider),
+              ),
           error: (error, _) => ListTile(title: Text('加载历史失败: $error')),
           data: (stations) {
             if (stations.isEmpty) {
@@ -459,57 +469,61 @@ class _RecentTab extends ConsumerWidget {
   }
 
   Future<void> _clearPodcastHistory(BuildContext context, WidgetRef ref) async {
-    final confirmed = await showDialog<bool>(
+    final confirmed =
+        await showDialog<bool>(
           context: context,
-          builder: (context) => AlertDialog(
-            title: const Text('清除收听历史'),
-            content: const Text('将清空播客收听记录列表，不会删除订阅，也不会清除单集播放进度。'),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.pop(context, false),
-                child: const Text('取消'),
+          builder:
+              (context) => AlertDialog(
+                title: const Text('清除收听历史'),
+                content: const Text('将清空播客收听记录列表，不会删除订阅，也不会清除单集播放进度。'),
+                actions: [
+                  TextButton(
+                    onPressed: () => Navigator.pop(context, false),
+                    child: const Text('取消'),
+                  ),
+                  FilledButton(
+                    onPressed: () => Navigator.pop(context, true),
+                    child: const Text('清除'),
+                  ),
+                ],
               ),
-              FilledButton(
-                onPressed: () => Navigator.pop(context, true),
-                child: const Text('清除'),
-              ),
-            ],
-          ),
         ) ??
         false;
     if (!confirmed || !context.mounted) return;
     await ref.read(podcastHistoryProvider.notifier).clear();
     if (!context.mounted) return;
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('播客收听历史已清除')),
-    );
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(const SnackBar(content: Text('播客收听历史已清除')));
   }
 
   Future<void> _clearRadioRecent(BuildContext context, WidgetRef ref) async {
-    final confirmed = await showDialog<bool>(
+    final confirmed =
+        await showDialog<bool>(
           context: context,
-          builder: (context) => AlertDialog(
-            title: const Text('清除最近播放'),
-            content: const Text('将清空电台的最近播放记录，不影响收藏和正在播放。'),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.pop(context, false),
-                child: const Text('取消'),
+          builder:
+              (context) => AlertDialog(
+                title: const Text('清除最近播放'),
+                content: const Text('将清空电台的最近播放记录，不影响收藏和正在播放。'),
+                actions: [
+                  TextButton(
+                    onPressed: () => Navigator.pop(context, false),
+                    child: const Text('取消'),
+                  ),
+                  FilledButton(
+                    onPressed: () => Navigator.pop(context, true),
+                    child: const Text('清除'),
+                  ),
+                ],
               ),
-              FilledButton(
-                onPressed: () => Navigator.pop(context, true),
-                child: const Text('清除'),
-              ),
-            ],
-          ),
         ) ??
         false;
     if (!confirmed || !context.mounted) return;
     await ref.read(recentIdsProvider.notifier).clear();
     if (!context.mounted) return;
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('最近播放已清除')),
-    );
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(const SnackBar(content: Text('最近播放已清除')));
   }
 }
 

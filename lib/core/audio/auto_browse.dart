@@ -35,7 +35,8 @@ abstract final class AutoBrowseLogic {
 
   static String stationMediaId(String stationId) => '$stationPrefix$stationId';
 
-  static String episodeMediaId(String episodeGuid) => '$episodePrefix$episodeGuid';
+  static String episodeMediaId(String episodeGuid) =>
+      '$episodePrefix$episodeGuid';
 
   static String? stationIdFromMediaId(String mediaId) {
     if (!mediaId.startsWith(stationPrefix)) return null;
@@ -70,50 +71,39 @@ abstract final class AutoBrowseLogic {
     return items;
   }
 
-  static List<MediaItem> children(String parentMediaId, AutoBrowseCatalog catalog) {
+  static List<MediaItem> children(
+    String parentMediaId,
+    AutoBrowseCatalog catalog,
+  ) {
     switch (parentMediaId) {
       case rootId:
       case '':
         return [
-          const MediaItem(
-            id: favoritesId,
-            title: '收藏',
-            playable: false,
-          ),
-          const MediaItem(
-            id: recentsId,
-            title: '最近播放',
-            playable: false,
-          ),
-          const MediaItem(
-            id: stationsId,
-            title: '电台',
-            playable: false,
-          ),
+          const MediaItem(id: favoritesId, title: '收藏', playable: false),
+          const MediaItem(id: recentsId, title: '最近播放', playable: false),
+          const MediaItem(id: stationsId, title: '电台', playable: false),
           if (catalog.continueListening != null)
-            const MediaItem(
-              id: continueId,
-              title: '继续收听',
-              playable: false,
-            ),
+            const MediaItem(id: continueId, title: '继续收听', playable: false),
           if (catalog.downloads.isNotEmpty)
-            const MediaItem(
-              id: downloadsId,
-              title: '已下载',
-              playable: false,
-            ),
+            const MediaItem(id: downloadsId, title: '已下载', playable: false),
         ];
       case favoritesId:
         return catalog.favorites.map(stationMediaItem).toList();
       case recentsId:
         return catalog.recents.map(stationMediaItem).toList();
       case stationsId:
-        return catalog.stations.take(maxStations).map(stationMediaItem).toList();
+        return catalog.stations
+            .take(maxStations)
+            .map(stationMediaItem)
+            .toList();
       case continueId:
         final item = catalog.continueListening;
         return item == null ? const [] : [episodeMediaItem(item)];
       case downloadsId:
-        return catalog.downloads.take(maxStations).map(episodeMediaItem).toList();
+        return catalog.downloads
+            .take(maxStations)
+            .map(episodeMediaItem)
+            .toList();
       default:
         return const [];
     }
@@ -144,7 +134,8 @@ abstract final class AutoBrowseLogic {
   }
 
   /// 兼容旧测试名。
-  static MediaItem mediaItemFor(RadioStation station) => stationMediaItem(station);
+  static MediaItem mediaItemFor(RadioStation station) =>
+      stationMediaItem(station);
 
   static PlaybackItem? playbackItemFor({
     required String mediaId,
@@ -157,7 +148,11 @@ abstract final class AutoBrowseLogic {
     }
     final stationId = stationIdFromMediaId(mediaId);
     if (stationId != null) {
-      for (final station in [...catalog.favorites, ...catalog.recents, ...catalog.stations]) {
+      for (final station in [
+        ...catalog.favorites,
+        ...catalog.recents,
+        ...catalog.stations,
+      ]) {
         if (station.id == stationId) return PlaybackItem.fromStation(station);
       }
       return null;

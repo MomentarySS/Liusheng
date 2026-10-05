@@ -45,7 +45,8 @@ class LiushengApp extends ConsumerWidget {
             ThemeMode.light => light,
             ThemeMode.dark => dark,
             ThemeMode.system =>
-              WidgetsBinding.instance.platformDispatcher.platformBrightness == Brightness.dark
+              WidgetsBinding.instance.platformDispatcher.platformBrightness ==
+                      Brightness.dark
                   ? dark
                   : light,
           },
@@ -54,7 +55,10 @@ class LiushengApp extends ConsumerWidget {
           child: MaterialApp(
             title: AppBrand.displayName,
             debugShowCheckedModeBanner: false,
-            color: DeskCompactLogic.offeredOnThisPlatform ? const Color(0x00000000) : null,
+            color:
+                DeskCompactLogic.offeredOnThisPlatform
+                    ? const Color(0x00000000)
+                    : null,
             themeMode: effectiveMode,
             theme: light,
             darkTheme: dark,
@@ -62,7 +66,10 @@ class LiushengApp extends ConsumerWidget {
               final theme = Theme.of(context);
               return DeskHotkeyScope(
                 child: AnnotatedRegion<SystemUiOverlayStyle>(
-                  value: LiushengTheme.overlayFor(theme.brightness, theme.colorScheme.surface),
+                  value: LiushengTheme.overlayFor(
+                    theme.brightness,
+                    theme.colorScheme.surface,
+                  ),
                   child: child ?? const SizedBox.shrink(),
                 ),
               );

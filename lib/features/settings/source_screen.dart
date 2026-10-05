@@ -39,15 +39,17 @@ class _SourceSettingsScreenState extends ConsumerState<SourceSettingsScreen> {
     if (!mounted) return;
     final offline = ref.read(isOfflineProvider).value ?? false;
     final count = ref.read(visibleStationsProvider).value?.length ?? 0;
-    final message = offline
-        ? NetworkStatusLogic.skipProbeHint
-        : result.cancelled
+    final message =
+        offline
+            ? NetworkStatusLogic.skipProbeHint
+            : result.cancelled
             ? '已停止检测，当前 $count 个可用'
             : result.probed
-                ? '检测完成，当前 $count 个可用'
-                : '列表已更新，主页仍只显示能播的源';
-    ScaffoldMessenger.of(context)
-        .showSnackBar(SnackBar(content: Text(message)));
+            ? '检测完成，当前 $count 个可用'
+            : '列表已更新，主页仍只显示能播的源';
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(SnackBar(content: Text(message)));
   }
 
   @override
@@ -73,47 +75,55 @@ class _SourceSettingsScreenState extends ConsumerState<SourceSettingsScreen> {
             child: Text(
               '主页只显示能播的源。首次使用请先选择想听的类型或省份；也可在下方修改。不想听或听不了的台可点隐藏。',
               style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                    color: colorScheme.onSurfaceVariant,
-                  ),
+                color: colorScheme.onSurfaceVariant,
+              ),
             ),
           ),
           stationCatalogSelection.when(
-            data: (selection) => ListTile(
-              leading: const Icon(Icons.map_outlined),
-              title: const Text('收听范围'),
-              subtitle: Text(
-                '${StationCatalogSelectionLogic.summary(selection)} · ${StationCatalogSelectionLogic.detail(selection)}',
-              ),
-              trailing: const Icon(Icons.chevron_right),
-              onTap: reloadingStations
-                  ? null
-                  : () => Navigator.of(context).push(
-                        MaterialPageRoute<void>(
-                          builder: (_) =>
-                              StationCatalogSetupScreen(initial: selection),
-                        ),
-                      ),
-            ),
-            loading: () => const ListTile(
-              leading: Icon(Icons.map_outlined),
-              title: Text('收听范围'),
-              trailing: SizedBox(
-                width: 24,
-                height: 24,
-                child: CircularProgressIndicator(strokeWidth: 2),
-              ),
-            ),
-            error: (_, __) => const ListTile(
-              leading: Icon(Icons.map_outlined),
-              title: Text('收听范围'),
-              subtitle: Text('读取失败'),
-            ),
+            data:
+                (selection) => ListTile(
+                  leading: const Icon(Icons.map_outlined),
+                  title: const Text('收听范围'),
+                  subtitle: Text(
+                    '${StationCatalogSelectionLogic.summary(selection)} · ${StationCatalogSelectionLogic.detail(selection)}',
+                  ),
+                  trailing: const Icon(Icons.chevron_right),
+                  onTap:
+                      reloadingStations
+                          ? null
+                          : () => Navigator.of(context).push(
+                            MaterialPageRoute<void>(
+                              builder:
+                                  (_) => StationCatalogSetupScreen(
+                                    initial: selection,
+                                  ),
+                            ),
+                          ),
+                ),
+            loading:
+                () => const ListTile(
+                  leading: Icon(Icons.map_outlined),
+                  title: Text('收听范围'),
+                  trailing: SizedBox(
+                    width: 24,
+                    height: 24,
+                    child: CircularProgressIndicator(strokeWidth: 2),
+                  ),
+                ),
+            error:
+                (_, __) => const ListTile(
+                  leading: Icon(Icons.map_outlined),
+                  title: Text('收听范围'),
+                  subtitle: Text('读取失败'),
+                ),
           ),
           ListTile(
             leading: const Icon(Icons.vpn_lock_outlined),
             title: const Text('网络代理'),
             subtitle: Text(
-              ref.watch(_proxyStatusProvider).when(
+              ref
+                  .watch(_proxyStatusProvider)
+                  .when(
                     data: (text) => text,
                     loading: () => '正在检测本机代理…',
                     error: (_, __) => '未能检测代理',
@@ -136,21 +146,25 @@ class _SourceSettingsScreenState extends ConsumerState<SourceSettingsScreen> {
                       : '正在检测 ${probeProgress.done} / ${probeProgress.total}')
                   : '测试全部直播源，核对正文是否为播放列表或音频；不能播的从主页隐藏。已隐藏的台不会被加回来',
             ),
-            trailing: testingSources
-                ? TextButton(
-                    onPressed: () =>
-                        ref.read(stationsProvider.notifier).cancelProbe(),
-                    child: const Text(StationProbeLogic.cancelLabel),
-                  )
-                : TextButton(
-                    onPressed: reloadingStations
-                        ? null
-                        : () => _reloadSources(forceProbe: true),
-                    child: const Text('检测'),
-                  ),
-            onTap: reloadingStations
-                ? null
-                : () => _reloadSources(forceProbe: true),
+            trailing:
+                testingSources
+                    ? TextButton(
+                      onPressed:
+                          () =>
+                              ref.read(stationsProvider.notifier).cancelProbe(),
+                      child: const Text(StationProbeLogic.cancelLabel),
+                    )
+                    : TextButton(
+                      onPressed:
+                          reloadingStations
+                              ? null
+                              : () => _reloadSources(forceProbe: true),
+                      child: const Text('检测'),
+                    ),
+            onTap:
+                reloadingStations
+                    ? null
+                    : () => _reloadSources(forceProbe: true),
           ),
           ListTile(
             enabled: !reloadingStations,
@@ -161,21 +175,24 @@ class _SourceSettingsScreenState extends ConsumerState<SourceSettingsScreen> {
                   ? '正在更新目录…'
                   : '重新拉取精选和发现目录，主页仍只显示上次能播的源',
             ),
-            trailing: reloadingStations && !testingSources
-                ? const SizedBox(
-                    width: 24,
-                    height: 24,
-                    child: CircularProgressIndicator(strokeWidth: 2),
-                  )
-                : TextButton(
-                    onPressed: reloadingStations
-                        ? null
-                        : () => _reloadSources(forceProbe: false),
-                    child: const Text('刷新'),
-                  ),
-            onTap: reloadingStations
-                ? null
-                : () => _reloadSources(forceProbe: false),
+            trailing:
+                reloadingStations && !testingSources
+                    ? const SizedBox(
+                      width: 24,
+                      height: 24,
+                      child: CircularProgressIndicator(strokeWidth: 2),
+                    )
+                    : TextButton(
+                      onPressed:
+                          reloadingStations
+                              ? null
+                              : () => _reloadSources(forceProbe: false),
+                      child: const Text('刷新'),
+                    ),
+            onTap:
+                reloadingStations
+                    ? null
+                    : () => _reloadSources(forceProbe: false),
           ),
           const Divider(height: 1),
           ListTile(
@@ -185,18 +202,20 @@ class _SourceSettingsScreenState extends ConsumerState<SourceSettingsScreen> {
               testingSources
                   ? '正在检测直播源…'
                   : unreachableCount == 0
-                      ? '坏了来这里换地址，不必再测全部源'
-                      : '有 $unreachableCount 个连不上，点进去更换流地址',
-              style: unreachableCount > 0 && !testingSources
-                  ? TextStyle(color: colorScheme.error)
-                  : null,
+                  ? '坏了来这里换地址，不必再测全部源'
+                  : '有 $unreachableCount 个连不上，点进去更换流地址',
+              style:
+                  unreachableCount > 0 && !testingSources
+                      ? TextStyle(color: colorScheme.error)
+                      : null,
             ),
             trailing: const Icon(Icons.chevron_right),
-            onTap: () => Navigator.of(context).push(
-              MaterialPageRoute<void>(
-                builder: (_) => const UnreachableStationsScreen(),
-              ),
-            ),
+            onTap:
+                () => Navigator.of(context).push(
+                  MaterialPageRoute<void>(
+                    builder: (_) => const UnreachableStationsScreen(),
+                  ),
+                ),
           ),
           ListTile(
             leading: const Icon(Icons.visibility_off_outlined),
@@ -207,73 +226,84 @@ class _SourceSettingsScreenState extends ConsumerState<SourceSettingsScreen> {
                   : '已隐藏 $hiddenCount 个，点进去可恢复',
             ),
             trailing: const Icon(Icons.chevron_right),
-            onTap: () => Navigator.of(context).push(
-              MaterialPageRoute<void>(
-                builder: (_) => const HiddenStationsScreen(),
-              ),
-            ),
+            onTap:
+                () => Navigator.of(context).push(
+                  MaterialPageRoute<void>(
+                    builder: (_) => const HiddenStationsScreen(),
+                  ),
+                ),
           ),
           radioBrowserDiscovery.when(
-            data: (enabled) => SwitchListTile(
-              secondary: const Icon(Icons.explore_outlined),
-              title: const Text('启用 Radio Browser 发现'),
-              subtitle:
-                  const Text('从 Radio Browser 按投票、语言、标签和省份补充电台；港澳台需打开境外开关'),
-              value: enabled,
-              onChanged: (value) => ref
-                  .read(radioBrowserDiscoveryProvider.notifier)
-                  .setEnabled(value),
-            ),
-            loading: () => const ListTile(
-              leading: Icon(Icons.explore_outlined),
-              title: Text('启用 Radio Browser 发现'),
-              trailing: SizedBox(
-                width: 24,
-                height: 24,
-                child: CircularProgressIndicator(strokeWidth: 2),
-              ),
-            ),
-            error: (error, _) => ListTile(
-              leading: const Icon(Icons.explore_outlined),
-              title: const Text('启用 Radio Browser 发现'),
-              subtitle: Text('加载失败: $error'),
-            ),
+            data:
+                (enabled) => SwitchListTile(
+                  secondary: const Icon(Icons.explore_outlined),
+                  title: const Text('启用 Radio Browser 发现'),
+                  subtitle: const Text(
+                    '从 Radio Browser 按投票、语言、标签和省份补充电台；港澳台需打开境外开关',
+                  ),
+                  value: enabled,
+                  onChanged:
+                      (value) => ref
+                          .read(radioBrowserDiscoveryProvider.notifier)
+                          .setEnabled(value),
+                ),
+            loading:
+                () => const ListTile(
+                  leading: Icon(Icons.explore_outlined),
+                  title: Text('启用 Radio Browser 发现'),
+                  trailing: SizedBox(
+                    width: 24,
+                    height: 24,
+                    child: CircularProgressIndicator(strokeWidth: 2),
+                  ),
+                ),
+            error:
+                (error, _) => ListTile(
+                  leading: const Icon(Icons.explore_outlined),
+                  title: const Text('启用 Radio Browser 发现'),
+                  subtitle: Text('加载失败: $error'),
+                ),
           ),
           overseasStations.when(
-            data: (enabled) => SwitchListTile(
-              secondary: const Icon(Icons.public),
-              title: const Text('显示境外电台'),
-              subtitle: const Text('关闭后只显示中国大陆电台；港澳台需打开此开关'),
-              value: enabled,
-              onChanged: (value) => ref
-                  .read(overseasStationsEnabledProvider.notifier)
-                  .setEnabled(value),
-            ),
-            loading: () => const ListTile(
-              leading: Icon(Icons.public),
-              title: Text('显示境外电台'),
-              trailing: SizedBox(
-                width: 24,
-                height: 24,
-                child: CircularProgressIndicator(strokeWidth: 2),
-              ),
-            ),
-            error: (error, _) => ListTile(
-              leading: const Icon(Icons.public),
-              title: const Text('显示境外电台'),
-              subtitle: Text('加载失败: $error'),
-            ),
+            data:
+                (enabled) => SwitchListTile(
+                  secondary: const Icon(Icons.public),
+                  title: const Text('显示境外电台'),
+                  subtitle: const Text('关闭后只显示中国大陆电台；港澳台需打开此开关'),
+                  value: enabled,
+                  onChanged:
+                      (value) => ref
+                          .read(overseasStationsEnabledProvider.notifier)
+                          .setEnabled(value),
+                ),
+            loading:
+                () => const ListTile(
+                  leading: Icon(Icons.public),
+                  title: Text('显示境外电台'),
+                  trailing: SizedBox(
+                    width: 24,
+                    height: 24,
+                    child: CircularProgressIndicator(strokeWidth: 2),
+                  ),
+                ),
+            error:
+                (error, _) => ListTile(
+                  leading: const Icon(Icons.public),
+                  title: const Text('显示境外电台'),
+                  subtitle: Text('加载失败: $error'),
+                ),
           ),
           ListTile(
             leading: const Icon(Icons.add_circle_outline),
             title: const Text('手动添加电台'),
             subtitle: const Text('添加自定义直播流地址'),
             trailing: const Icon(Icons.chevron_right),
-            onTap: () => Navigator.of(context).push(
-              MaterialPageRoute<void>(
-                builder: (_) => const CustomStationsScreen(),
-              ),
-            ),
+            onTap:
+                () => Navigator.of(context).push(
+                  MaterialPageRoute<void>(
+                    builder: (_) => const CustomStationsScreen(),
+                  ),
+                ),
           ),
         ],
       ),

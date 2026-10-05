@@ -23,7 +23,11 @@ import 'sleep_timer_sheet.dart';
 import 'station_artwork.dart';
 
 class MiniPlayer extends ConsumerWidget {
-  const MiniPlayer({super.key, required this.onExpand, this.enableSwipe = false});
+  const MiniPlayer({
+    super.key,
+    required this.onExpand,
+    this.enableSwipe = false,
+  });
 
   final VoidCallback onExpand;
   final bool enableSwipe;
@@ -42,11 +46,13 @@ class MiniPlayer extends ConsumerWidget {
             final state = snapshot.data;
             final playing = state?.playing ?? false;
             final loading = PlaybackLogic.shouldShowBufferingUi(
-              processingState: state?.processingState ?? AudioProcessingState.idle,
+              processingState:
+                  state?.processingState ?? AudioProcessingState.idle,
               playing: playing,
               kind: current.kind,
             );
-            final hasError = state?.processingState == AudioProcessingState.error;
+            final hasError =
+                state?.processingState == AudioProcessingState.error;
             final isPodcast = current.kind == PlaybackKind.podcast;
             final colorScheme = Theme.of(context).colorScheme;
             final tags = isPodcast ? const ['播客'] : [current.subtitle];
@@ -63,143 +69,188 @@ class MiniPlayer extends ConsumerWidget {
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: Material(
-                  elevation: 6,
-                  shadowColor: colorScheme.shadow.withValues(alpha: 0.22),
-                  color: colorScheme.surfaceContainerHigh,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
-                    side: BorderSide.none,
-                  ),
-                  clipBehavior: Clip.antiAlias,
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Row(
-                        children: [
-                          Expanded(
-                            child: _MiniPlayerSwipe(
-                              enabled: enableSwipe && !loading,
-                              isPodcast: isPodcast,
-                              onExpand: onExpand,
-                              onSwipe: (delta) {
-                                if (isPodcast) {
-                                  unawaited(ref.read(playerControllerProvider).skipPodcast(delta));
-                                } else {
-                                  unawaited(ref.read(stationSkipProvider).skip(delta));
-                                }
-                              },
-                              child: Padding(
-                                padding: const EdgeInsets.fromLTRB(10, 8, 4, 8),
-                                child: Row(
-                                  children: [
-                                    Hero(
-                                      tag: NowPlayingHero.tagFor(current.id),
-                                      child: Material(
-                                        type: MaterialType.transparency,
-                                        child: StationArtwork(
-                                          url: current.artworkUrl,
-                                          name: current.title,
-                                          tags: tags,
-                                          size: 48,
-                                          borderRadius: 12,
-                                          icon: isPodcast ? Icons.podcasts : Icons.radio,
+                    elevation: 6,
+                    shadowColor: colorScheme.shadow.withValues(alpha: 0.22),
+                    color: colorScheme.surfaceContainerHigh,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      side: BorderSide.none,
+                    ),
+                    clipBehavior: Clip.antiAlias,
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Row(
+                          children: [
+                            Expanded(
+                              child: _MiniPlayerSwipe(
+                                enabled: enableSwipe && !loading,
+                                isPodcast: isPodcast,
+                                onExpand: onExpand,
+                                onSwipe: (delta) {
+                                  if (isPodcast) {
+                                    unawaited(
+                                      ref
+                                          .read(playerControllerProvider)
+                                          .skipPodcast(delta),
+                                    );
+                                  } else {
+                                    unawaited(
+                                      ref.read(stationSkipProvider).skip(delta),
+                                    );
+                                  }
+                                },
+                                child: Padding(
+                                  padding: const EdgeInsets.fromLTRB(
+                                    10,
+                                    8,
+                                    4,
+                                    8,
+                                  ),
+                                  child: Row(
+                                    children: [
+                                      Hero(
+                                        tag: NowPlayingHero.tagFor(current.id),
+                                        child: Material(
+                                          type: MaterialType.transparency,
+                                          child: StationArtwork(
+                                            url: current.artworkUrl,
+                                            name: current.title,
+                                            tags: tags,
+                                            size: 48,
+                                            borderRadius: 12,
+                                            icon:
+                                                isPodcast
+                                                    ? Icons.podcasts
+                                                    : Icons.radio,
+                                          ),
                                         ),
                                       ),
-                                    ),
-                                    const SizedBox(width: 12),
-                                    Expanded(
-                                      child: Column(
-                                        crossAxisAlignment: CrossAxisAlignment.start,
-                                        mainAxisSize: MainAxisSize.min,
-                                        children: [
-                                          Row(
-                                            children: [
-                                              Expanded(
-                                                child: Text(
-                                                  current.title,
-                                                  maxLines: 1,
-                                                  overflow: TextOverflow.ellipsis,
-                                                  style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                                                        fontWeight: FontWeight.w600,
-                                                      ),
+                                      const SizedBox(width: 12),
+                                      Expanded(
+                                        child: Column(
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
+                                          mainAxisSize: MainAxisSize.min,
+                                          children: [
+                                            Row(
+                                              children: [
+                                                Expanded(
+                                                  child: Text(
+                                                    current.title,
+                                                    maxLines: 1,
+                                                    overflow:
+                                                        TextOverflow.ellipsis,
+                                                    style: Theme.of(context)
+                                                        .textTheme
+                                                        .titleSmall
+                                                        ?.copyWith(
+                                                          fontWeight:
+                                                              FontWeight.w600,
+                                                        ),
+                                                  ),
                                                 ),
-                                              ),
-                                              if (showRemaining) ...[
-                                                const SizedBox(width: 6),
-                                                _RemainingTime(handler: handler, current: current),
+                                                if (showRemaining) ...[
+                                                  const SizedBox(width: 6),
+                                                  _RemainingTime(
+                                                    handler: handler,
+                                                    current: current,
+                                                  ),
+                                                ],
                                               ],
-                                            ],
-                                          ),
-                                          const SizedBox(height: 2),
-                                          _IcyStatusLine(
-                                            handler: handler,
-                                            current: current,
-                                            hasError: hasError,
-                                            loading: loading,
-                                            errorMessage: state?.errorMessage,
-                                            maxLines: 1,
-                                            style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                                                  color: hasError
-                                                      ? colorScheme.error
-                                                      : colorScheme.onSurfaceVariant,
-                                                ),
-                                          ),
-                                        ],
+                                            ),
+                                            const SizedBox(height: 2),
+                                            _IcyStatusLine(
+                                              handler: handler,
+                                              current: current,
+                                              hasError: hasError,
+                                              loading: loading,
+                                              errorMessage: state?.errorMessage,
+                                              maxLines: 1,
+                                              style: Theme.of(
+                                                context,
+                                              ).textTheme.bodySmall?.copyWith(
+                                                color:
+                                                    hasError
+                                                        ? colorScheme.error
+                                                        : colorScheme
+                                                            .onSurfaceVariant,
+                                              ),
+                                            ),
+                                          ],
+                                        ),
                                       ),
+                                    ],
+                                  ),
+                                ),
+                              ),
+                            ),
+                            if (sleepActive)
+                              Padding(
+                                padding: const EdgeInsets.only(right: 4),
+                                child: Column(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    Icon(
+                                      Icons.bedtime,
+                                      size: 16,
+                                      color: colorScheme.primary,
+                                    ),
+                                    SleepTimerCountdown(
+                                      compact: true,
+                                      style: context.liushengSkin
+                                          .countdownStyle(
+                                            Theme.of(
+                                              context,
+                                            ).textTheme.labelSmall,
+                                            colorScheme.primary,
+                                          ),
                                     ),
                                   ],
                                 ),
                               ),
-                            ),
-                          ),
-                          if (sleepActive)
-                            Padding(
-                              padding: const EdgeInsets.only(right: 4),
-                              child: Column(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  Icon(Icons.bedtime, size: 16, color: colorScheme.primary),
-                                  SleepTimerCountdown(
-                                    compact: true,
-                                    style: context.liushengSkin.countdownStyle(
-                                      Theme.of(context).textTheme.labelSmall,
-                                      colorScheme.primary,
-                                    ),
+                            if (loading)
+                              const Padding(
+                                padding: EdgeInsets.all(12),
+                                child: SizedBox(
+                                  width: 28,
+                                  height: 28,
+                                  child: CircularProgressIndicator(
+                                    strokeWidth: 2.5,
                                   ),
-                                ],
+                                ),
+                              )
+                            else
+                              IconButton.filled(
+                                tooltip: playing ? '暂停' : '播放',
+                                style: IconButton.styleFrom(
+                                  backgroundColor: colorScheme.primary,
+                                  foregroundColor: colorScheme.onPrimary,
+                                  minimumSize: const Size(48, 48),
+                                ),
+                                icon: PlaybackStateIcon(playing: playing),
+                                onPressed:
+                                    () =>
+                                        ref
+                                            .read(playerControllerProvider)
+                                            .togglePlayPause(),
                               ),
+                            IconButton(
+                              tooltip: '停止',
+                              icon: Icon(
+                                Icons.close_rounded,
+                                color: colorScheme.onSurfaceVariant,
+                              ),
+                              onPressed:
+                                  () =>
+                                      ref.read(playerControllerProvider).stop(),
                             ),
-                          if (loading)
-                            const Padding(
-                              padding: EdgeInsets.all(12),
-                              child: SizedBox(
-                                width: 28,
-                                height: 28,
-                                child: CircularProgressIndicator(strokeWidth: 2.5),
-                              ),
-                            )
-                          else
-                            IconButton.filled(
-                              tooltip: playing ? '暂停' : '播放',
-                              style: IconButton.styleFrom(
-                                backgroundColor: colorScheme.primary,
-                                foregroundColor: colorScheme.onPrimary,
-                                minimumSize: const Size(48, 48),
-                              ),
-                              icon: PlaybackStateIcon(playing: playing),
-                              onPressed: () => ref.read(playerControllerProvider).togglePlayPause(),
-                            ),
-                          IconButton(
-                            tooltip: '停止',
-                            icon: Icon(Icons.close_rounded, color: colorScheme.onSurfaceVariant),
-                            onPressed: () => ref.read(playerControllerProvider).stop(),
-                          ),
-                        ],
-                      ),
-                      if (isPodcast)
-                        _MiniProgressBar(handler: handler, current: current),
-                    ],
-                  ),
+                          ],
+                        ),
+                        if (isPodcast)
+                          _MiniProgressBar(handler: handler, current: current),
+                      ],
+                    ),
                   ),
                 ),
               ),
@@ -240,28 +291,28 @@ class _MiniPlayerSwipeState extends State<_MiniPlayerSwipe> {
   Widget build(BuildContext context) {
     return GestureDetector(
       onHorizontalDragStart: widget.enabled ? (_) => _dx = 0 : null,
-      onHorizontalDragUpdate: widget.enabled ? (details) => _dx += details.delta.dx : null,
-      onHorizontalDragEnd: widget.enabled
-          ? (_) {
-              final now = DateTime.now();
-              final last = _lastSwipeAt;
-              if (last != null && now.difference(last) < ListSwipeLogic.miniPlayerCooldown) {
-                return;
+      onHorizontalDragUpdate:
+          widget.enabled ? (details) => _dx += details.delta.dx : null,
+      onHorizontalDragEnd:
+          widget.enabled
+              ? (_) {
+                final now = DateTime.now();
+                final last = _lastSwipeAt;
+                if (last != null &&
+                    now.difference(last) < ListSwipeLogic.miniPlayerCooldown) {
+                  return;
+                }
+                final kind = ListSwipeLogic.miniPlayerKind(
+                  dx: _dx,
+                  isPodcast: widget.isPodcast,
+                  loading: !widget.enabled,
+                );
+                if (kind == null) return;
+                _lastSwipeAt = now;
+                widget.onSwipe(ListSwipeLogic.deltaFromDx(_dx));
               }
-              final kind = ListSwipeLogic.miniPlayerKind(
-                dx: _dx,
-                isPodcast: widget.isPodcast,
-                loading: !widget.enabled,
-              );
-              if (kind == null) return;
-              _lastSwipeAt = now;
-              widget.onSwipe(ListSwipeLogic.deltaFromDx(_dx));
-            }
-          : null,
-      child: InkWell(
-        onTap: widget.onExpand,
-        child: widget.child,
-      ),
+              : null,
+      child: InkWell(onTap: widget.onExpand, child: widget.child),
     );
   }
 }
@@ -279,7 +330,8 @@ class _MiniProgressBar extends StatelessWidget {
       stream: handler.player.positionStream,
       builder: (context, snapshot) {
         final position = snapshot.data ?? Duration.zero;
-        final duration = current.duration ?? handler.player.duration ?? Duration.zero;
+        final duration =
+            current.duration ?? handler.player.duration ?? Duration.zero;
         final maxMs = duration.inMilliseconds;
         final value = maxMs > 0 ? position.inMilliseconds / maxMs : 0.0;
         return LinearProgressIndicator(
@@ -314,9 +366,9 @@ class _RemainingTime extends StatelessWidget {
           label,
           maxLines: 1,
           style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                color: colorScheme.onSurfaceVariant,
-                fontFeatures: const [FontFeature.tabularFigures()],
-              ),
+            color: colorScheme.onSurfaceVariant,
+            fontFeatures: const [FontFeature.tabularFigures()],
+          ),
         );
       },
     );
@@ -357,11 +409,13 @@ class NowPlayingSheet extends ConsumerWidget {
             final state = snapshot.data;
             final playing = state?.playing ?? false;
             final loading = PlaybackLogic.shouldShowBufferingUi(
-              processingState: state?.processingState ?? AudioProcessingState.idle,
+              processingState:
+                  state?.processingState ?? AudioProcessingState.idle,
               playing: playing,
               kind: current.kind,
             );
-            final hasError = state?.processingState == AudioProcessingState.error;
+            final hasError =
+                state?.processingState == AudioProcessingState.error;
             if (current.kind == PlaybackKind.podcast) {
               return PodcastNowPlayingSheet(
                 handler: handler,
@@ -450,4 +504,3 @@ class _IcyStatusLine extends StatelessWidget {
     );
   }
 }
-

@@ -11,10 +11,7 @@ abstract final class DeskLaunchLogic {
 
   static String get runValueName => AppBrand.englishSlug;
 
-  static bool offered({
-    TargetPlatform? platform,
-    bool isWeb = false,
-  }) {
+  static bool offered({TargetPlatform? platform, bool isWeb = false}) {
     if (isWeb) return false;
     return (platform ?? defaultTargetPlatform) == TargetPlatform.windows;
   }
@@ -23,21 +20,18 @@ abstract final class DeskLaunchLogic {
 
   static String startupSubtitle() => '登录 Windows 后自动打开流声，不自动播放';
 
-  static String launchCompactSubtitle() =>
-      '每次打开都先显示迷你窗；首次选收听范围时仍用完整窗口';
+  static String launchCompactSubtitle() => '每次打开都先显示迷你窗；首次选收听范围时仍用完整窗口';
 
   static bool compactOnLaunch({
     required bool compactEnabled,
     required bool launchCompact,
     bool catalogConfigured = true,
-  }) =>
-      catalogConfigured && (compactEnabled || launchCompact);
+  }) => catalogConfigured && (compactEnabled || launchCompact);
 
   static bool shouldApplyNative({
     required bool offered,
     required bool flutterTest,
-  }) =>
-      offered && !flutterTest;
+  }) => offered && !flutterTest;
 
   /// `flutter run` 的 Debug exe 不要写进开机项，以免登录后拉起临时构建。
   static bool shouldWriteStartup({required String executable}) {
@@ -46,30 +40,30 @@ abstract final class DeskLaunchLogic {
   }
 
   static List<String> enableArgs(String executable) => [
-        'add',
-        runKey,
-        '/v',
-        runValueName,
-        '/t',
-        'REG_SZ',
-        '/d',
-        executable,
-        '/f',
-      ];
+    'add',
+    runKey,
+    '/v',
+    runValueName,
+    '/t',
+    'REG_SZ',
+    '/d',
+    executable,
+    '/f',
+  ];
 
   static List<String> disableArgs() => [
-        'delete',
-        runKey,
-        '/v',
-        runValueName,
-        '/f',
-      ];
+    'delete',
+    runKey,
+    '/v',
+    runValueName,
+    '/f',
+  ];
 
   static List<String> disableLegacyArgs() => [
-        'delete',
-        runKey,
-        '/v',
-        legacyRunValueName,
-        '/f',
-      ];
+    'delete',
+    runKey,
+    '/v',
+    legacyRunValueName,
+    '/f',
+  ];
 }

@@ -89,7 +89,10 @@ abstract final class PodcastChapterLogic {
   }
 
   static List<PodcastChapter> tocOf(List<PodcastChapter> chapters) {
-    return [for (final chapter in chapters) if (chapter.toc) chapter];
+    return [
+      for (final chapter in chapters)
+        if (chapter.toc) chapter,
+    ];
   }
 
   static const chapterRestartWindow = Duration(seconds: 3);
@@ -158,9 +161,10 @@ abstract final class PodcastChapterLogic {
         if (value == null) return null;
         nums.add(value);
       }
-      final seconds = nums.length == 3
-          ? nums[0] * 3600 + nums[1] * 60 + nums[2]
-          : nums[0] * 60 + nums[1];
+      final seconds =
+          nums.length == 3
+              ? nums[0] * 3600 + nums[1] * 60 + nums[2]
+              : nums[0] * 60 + nums[1];
       if (seconds.isNegative) return null;
       return Duration(milliseconds: (seconds * 1000).round());
     }

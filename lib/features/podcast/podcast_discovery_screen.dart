@@ -17,7 +17,8 @@ class PodcastDiscoveryScreen extends ConsumerStatefulWidget {
   const PodcastDiscoveryScreen({super.key});
 
   @override
-  ConsumerState<PodcastDiscoveryScreen> createState() => _PodcastDiscoveryScreenState();
+  ConsumerState<PodcastDiscoveryScreen> createState() =>
+      _PodcastDiscoveryScreenState();
 }
 
 class _PodcastDiscoveryScreenState extends ConsumerState<PodcastDiscoveryScreen>
@@ -82,13 +83,13 @@ class _PodcastDiscoveryScreenState extends ConsumerState<PodcastDiscoveryScreen>
       _searchSource = null;
     });
 
-    final hideExplicit = ref.read(podcastIndexSettingsProvider).value?.hideExplicit ?? true;
+    final hideExplicit =
+        ref.read(podcastIndexSettingsProvider).value?.hideExplicit ?? true;
     Object? itunesError;
     try {
-      final hits = await ref.read(itunesPodcastClientProvider).search(
-            query: query,
-            hideExplicit: hideExplicit,
-          );
+      final hits = await ref
+          .read(itunesPodcastClientProvider)
+          .search(query: query, hideExplicit: hideExplicit);
       if (!mounted) return;
       setState(() {
         _searching = false;
@@ -104,7 +105,9 @@ class _PodcastDiscoveryScreenState extends ConsumerState<PodcastDiscoveryScreen>
     final settings = ref.read(podcastIndexSettingsProvider).value;
     if (settings != null && settings.hasCredentials) {
       try {
-        final hits = await ref.read(podcastIndexClientProvider).search(
+        final hits = await ref
+            .read(podcastIndexClientProvider)
+            .search(
               query: query,
               apiKey: settings.apiKey,
               apiSecret: settings.apiSecret,
@@ -113,7 +116,9 @@ class _PodcastDiscoveryScreenState extends ConsumerState<PodcastDiscoveryScreen>
         if (!mounted) return;
         setState(() {
           _searching = false;
-          _searchHits = [for (final hit in hits) PodcastDiscoveryHit.fromIndex(hit)];
+          _searchHits = [
+            for (final hit in hits) PodcastDiscoveryHit.fromIndex(hit),
+          ];
           _searchSource = hits.isEmpty ? null : 'Podcast Index';
           _searchError = hits.isEmpty ? '没有找到匹配的公开 RSS' : null;
         });
@@ -176,7 +181,9 @@ class _PodcastDiscoveryScreenState extends ConsumerState<PodcastDiscoveryScreen>
       _searchError = null;
     });
     try {
-      final hits = await ref.read(podcastIndexClientProvider).search(
+      final hits = await ref
+          .read(podcastIndexClientProvider)
+          .search(
             query: query,
             apiKey: settings.apiKey,
             apiSecret: settings.apiSecret,
@@ -185,7 +192,9 @@ class _PodcastDiscoveryScreenState extends ConsumerState<PodcastDiscoveryScreen>
       if (!mounted) return;
       setState(() {
         _searching = false;
-        _searchHits = [for (final hit in hits) PodcastDiscoveryHit.fromIndex(hit)];
+        _searchHits = [
+          for (final hit in hits) PodcastDiscoveryHit.fromIndex(hit),
+        ];
         _searchError = hits.isEmpty ? '没有找到匹配的公开 RSS' : null;
       });
     } on PodcastIndexAuthException {
@@ -220,9 +229,9 @@ class _PodcastDiscoveryScreenState extends ConsumerState<PodcastDiscoveryScreen>
       }
     });
     try {
-      final page = await ref.read(xyzrankCatalogClientProvider).fetchPodcasts(
-            offset: more ? _rankHits.length : 0,
-          );
+      final page = await ref
+          .read(xyzrankCatalogClientProvider)
+          .fetchPodcasts(offset: more ? _rankHits.length : 0);
       if (!mounted) return;
       setState(() {
         _rankLoading = false;
@@ -246,38 +255,44 @@ class _PodcastDiscoveryScreenState extends ConsumerState<PodcastDiscoveryScreen>
     if (!hit.canSubscribe || _subscribingUrl.isNotEmpty) return;
     setState(() => _subscribingUrl = url);
     try {
-      final feed = await ref.read(subscribedFeedsProvider.notifier).subscribeFromUrl(
+      final feed = await ref
+          .read(subscribedFeedsProvider.notifier)
+          .subscribeFromUrl(
             feedUrl: url,
             title: hit.title,
             homepage: hit.homepage,
             imageUrl: hit.artworkUrl,
           );
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('已订阅「${feed.title}」')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('已订阅「${feed.title}」')));
     } on PodcastFeedException catch (error) {
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(error.message)));
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(error.message)));
     } catch (_) {
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('订阅失败，可到播客页手动粘贴 RSS')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('订阅失败，可到播客页手动粘贴 RSS')));
     } finally {
       if (mounted) setState(() => _subscribingUrl = '');
     }
   }
 
   Future<void> _saveKeys() async {
-    await ref.read(podcastIndexSettingsProvider.notifier).saveCredentials(
+    await ref
+        .read(podcastIndexSettingsProvider.notifier)
+        .saveCredentials(
           apiKey: _keyController.text,
           apiSecret: _secretController.text,
         );
     if (!mounted) return;
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('密钥已保存在本机')),
-    );
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(const SnackBar(content: Text('密钥已保存在本机')));
   }
 
   @override
@@ -291,10 +306,7 @@ class _PodcastDiscoveryScreenState extends ConsumerState<PodcastDiscoveryScreen>
         title: const Text('发现播客'),
         bottom: TabBar(
           controller: _tabs,
-          tabs: const [
-            Tab(text: '搜索'),
-            Tab(text: '中文热榜'),
-          ],
+          tabs: const [Tab(text: '搜索'), Tab(text: '中文热榜')],
         ),
       ),
       body: TabBarView(
@@ -302,11 +314,12 @@ class _PodcastDiscoveryScreenState extends ConsumerState<PodcastDiscoveryScreen>
         children: [
           settings.when(
             loading: () => const Center(child: CircularProgressIndicator()),
-            error: (error, _) => AppEmptyState(
-              icon: Icons.error_outline,
-              message: '无法读取设置',
-              detail: '$error',
-            ),
+            error:
+                (error, _) => AppEmptyState(
+                  icon: Icons.error_outline,
+                  message: '无法读取设置',
+                  detail: '$error',
+                ),
             data: (value) => _buildSearchTab(context, value, subscribedUrls),
           ),
           _buildRankTab(context, subscribedUrls),
@@ -333,8 +346,8 @@ class _PodcastDiscoveryScreenState extends ConsumerState<PodcastDiscoveryScreen>
         Text(
           '默认用 iTunes 搜索公开 RSS，免密钥。结果订阅后仍走流声自己的播放器。',
           style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                color: Theme.of(context).colorScheme.onSurfaceVariant,
-              ),
+            color: Theme.of(context).colorScheme.onSurfaceVariant,
+          ),
         ),
         const SizedBox(height: 12),
         TextField(
@@ -350,13 +363,14 @@ class _PodcastDiscoveryScreenState extends ConsumerState<PodcastDiscoveryScreen>
         const SizedBox(height: 12),
         FilledButton.icon(
           onPressed: _searching ? null : _search,
-          icon: _searching
-              ? const SizedBox(
-                  width: 16,
-                  height: 16,
-                  child: CircularProgressIndicator(strokeWidth: 2),
-                )
-              : const Icon(Icons.search),
+          icon:
+              _searching
+                  ? const SizedBox(
+                    width: 16,
+                    height: 16,
+                    child: CircularProgressIndicator(strokeWidth: 2),
+                  )
+                  : const Icon(Icons.search),
           label: const Text('搜索'),
         ),
         SwitchListTile(
@@ -364,13 +378,17 @@ class _PodcastDiscoveryScreenState extends ConsumerState<PodcastDiscoveryScreen>
           title: const Text('隐藏不适宜内容'),
           subtitle: const Text('默认打开，对应 explicit / 内容分级'),
           value: settings.hideExplicit,
-          onChanged: (hide) =>
-              ref.read(podcastIndexSettingsProvider.notifier).setHideExplicit(hide),
+          onChanged:
+              (hide) => ref
+                  .read(podcastIndexSettingsProvider.notifier)
+                  .setHideExplicit(hide),
         ),
         ExpansionTile(
           tilePadding: EdgeInsets.zero,
           title: const Text('高级：Podcast Index'),
-          subtitle: Text(settings.hasCredentials ? '已保存到本机' : '可选，免费申请密钥后用目录再搜一次'),
+          subtitle: Text(
+            settings.hasCredentials ? '已保存到本机' : '可选，免费申请密钥后用目录再搜一次',
+          ),
           children: [
             TextField(
               controller: _keyController,
@@ -393,14 +411,12 @@ class _PodcastDiscoveryScreenState extends ConsumerState<PodcastDiscoveryScreen>
             Row(
               children: [
                 TextButton(
-                  onPressed: () => _openUrl(context, 'https://api.podcastindex.org/'),
+                  onPressed:
+                      () => _openUrl(context, 'https://api.podcastindex.org/'),
                   child: const Text('去申请密钥'),
                 ),
                 const Spacer(),
-                FilledButton(
-                  onPressed: _saveKeys,
-                  child: const Text('保存'),
-                ),
+                FilledButton(onPressed: _saveKeys, child: const Text('保存')),
               ],
             ),
             Align(
@@ -424,8 +440,8 @@ class _PodcastDiscoveryScreenState extends ConsumerState<PodcastDiscoveryScreen>
           Text(
             '来自 $_searchSource',
             style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                  color: Theme.of(context).colorScheme.onSurfaceVariant,
-                ),
+              color: Theme.of(context).colorScheme.onSurfaceVariant,
+            ),
           ),
         ],
         const SizedBox(height: 8),
@@ -471,14 +487,17 @@ class _PodcastDiscoveryScreenState extends ConsumerState<PodcastDiscoveryScreen>
             child: Text(
               '中文热榜来自 xyzrank 公开 JSON，点订阅才写入本机。第三方转接源会标成无法订阅。',
               style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                    color: Theme.of(context).colorScheme.onSurfaceVariant,
-                  ),
+                color: Theme.of(context).colorScheme.onSurfaceVariant,
+              ),
             ),
           );
         }
         if (index == _rankHits.length + 1) {
           if (_rankError != null && _rankHits.isNotEmpty) {
-            return TextButton(onPressed: () => _loadRank(more: true), child: Text(_rankError!));
+            return TextButton(
+              onPressed: () => _loadRank(more: true),
+              child: Text(_rankError!),
+            );
           }
           if (_rankHits.length >= _rankTotal && _rankTotal > 0) {
             return const SizedBox(height: LiushengTheme.listBottomPadding);
@@ -486,16 +505,17 @@ class _PodcastDiscoveryScreenState extends ConsumerState<PodcastDiscoveryScreen>
           return Padding(
             padding: const EdgeInsets.symmetric(vertical: 12),
             child: Center(
-              child: _rankLoadingMore
-                  ? const SizedBox(
-                      width: 24,
-                      height: 24,
-                      child: CircularProgressIndicator(strokeWidth: 2),
-                    )
-                  : TextButton(
-                      onPressed: () => _loadRank(more: true),
-                      child: const Text('加载更多'),
-                    ),
+              child:
+                  _rankLoadingMore
+                      ? const SizedBox(
+                        width: 24,
+                        height: 24,
+                        child: CircularProgressIndicator(strokeWidth: 2),
+                      )
+                      : TextButton(
+                        onPressed: () => _loadRank(more: true),
+                        child: const Text('加载更多'),
+                      ),
             ),
           );
         }
@@ -511,11 +531,14 @@ class _PodcastDiscoveryScreenState extends ConsumerState<PodcastDiscoveryScreen>
   }
 
   Future<void> _openUrl(BuildContext context, String url) async {
-    final ok = await launchUrl(Uri.parse(url), mode: LaunchMode.externalApplication);
+    final ok = await launchUrl(
+      Uri.parse(url),
+      mode: LaunchMode.externalApplication,
+    );
     if (!ok && context.mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('无法打开网页')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('无法打开网页')));
     }
   }
 }
@@ -540,7 +563,9 @@ class _DiscoveryHitTile extends StatelessWidget {
     if (!hit.canSubscribe) {
       trailing = Text(
         '无法在流声订阅',
-        style: Theme.of(context).textTheme.labelSmall?.copyWith(color: colorScheme.error),
+        style: Theme.of(
+          context,
+        ).textTheme.labelSmall?.copyWith(color: colorScheme.error),
       );
     } else if (subscribed) {
       trailing = const Text('已订阅');

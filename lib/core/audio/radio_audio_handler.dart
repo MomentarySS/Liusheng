@@ -25,8 +25,8 @@ class RadioAudioHandler extends BaseAudioHandler with SeekHandler {
     this._storage, {
     NetworkMonitor? network,
     PodcastDownloadStore? downloads,
-  })  : _network = network ?? NetworkMonitor(),
-        _downloads = downloads {
+  }) : _network = network ?? NetworkMonitor(),
+       _downloads = downloads {
     _player.playerStateStream.listen((state) {
       final uiPlaying = _uiPlaying(state.playing);
       playbackState.add(
@@ -36,7 +36,8 @@ class RadioAudioHandler extends BaseAudioHandler with SeekHandler {
           playing: uiPlaying,
         ),
       );
-    }, onError: (_) {},);
+      // ignore: require_trailing_commas
+    }, onError: (_) {});
     _player.positionStream.listen((position) {
       playbackState.add(_buildPlaybackState(_player.playerState));
       _persistProgress(_currentItem);
@@ -59,7 +60,8 @@ class RadioAudioHandler extends BaseAudioHandler with SeekHandler {
           }
         }
       }
-    }, onError: (_) {},);
+      // ignore: require_trailing_commas
+    }, onError: (_) {});
     _player.processingStateStream.listen((processingState) async {
       if (!PlaybackLogic.stillOpening(processingState)) {
         _bufferWatchdog?.cancel();
@@ -74,7 +76,8 @@ class RadioAudioHandler extends BaseAudioHandler with SeekHandler {
         }
         await stop();
       }
-    }, onError: (_) {},);
+      // ignore: require_trailing_commas
+    }, onError: (_) {});
     _player.icyMetadataStream.listen(_onIcyMetadata, onError: (_) {});
     _networkSubscription = _network.changes().listen(_onNetworkChanged);
     unawaited(_attachBluetoothResume());
@@ -126,7 +129,9 @@ class RadioAudioHandler extends BaseAudioHandler with SeekHandler {
   final AudioPlayer _player = AudioPlayer(
     userAgent: AppBrand.userAgent,
     useProxyForRequestHeaders: false,
-    audioLoadConfiguration: PlaybackLogic.audioLoadConfigurationFor(defaultTargetPlatform),
+    audioLoadConfiguration: PlaybackLogic.audioLoadConfigurationFor(
+      defaultTargetPlatform,
+    ),
   );
   Duration skipStep = PodcastPlaybackLogic.skipStep;
   PlaybackItem? _currentItem;
@@ -249,7 +254,9 @@ class RadioAudioHandler extends BaseAudioHandler with SeekHandler {
 
   Future<String?> _localPodcastPath(PlaybackItem item) async {
     final guid = item.episodeGuid;
-    if (item.kind != PlaybackKind.podcast || guid == null || _downloads == null) {
+    if (item.kind != PlaybackKind.podcast ||
+        guid == null ||
+        _downloads == null) {
       return null;
     }
     return _downloads.existingPath(guid);
@@ -299,7 +306,9 @@ class RadioAudioHandler extends BaseAudioHandler with SeekHandler {
       if (item.kind == PlaybackKind.podcast) {
         final feedId = item.feedId ?? '';
         await _player.setSpeed(_storage.getPodcastSpeedForFeed(feedId));
-        final skipIntro = Duration(seconds: _storage.getPodcastSkipIntro(feedId));
+        final skipIntro = Duration(
+          seconds: _storage.getPodcastSkipIntro(feedId),
+        );
         if (item.episodeGuid != null) {
           final saved = await _storage.getPodcastProgress(item.episodeGuid!);
           // 已听完从头播：seek 到结尾会立刻 completed 并跳下一集。
@@ -350,7 +359,10 @@ class RadioAudioHandler extends BaseAudioHandler with SeekHandler {
       }
       await _safeStop();
       final offline = await _network.isOffline;
-      if (PlaybackLogic.shouldRetry(retryCount: _retryCount, offline: offline)) {
+      if (PlaybackLogic.shouldRetry(
+        retryCount: _retryCount,
+        offline: offline,
+      )) {
         _retryCount++;
         await Future<void>.delayed(Duration(seconds: _retryCount));
         await _startPlayback(item, request);
@@ -376,7 +388,10 @@ class RadioAudioHandler extends BaseAudioHandler with SeekHandler {
       }
       if (!PlaybackLogic.stillOpening(_player.processingState)) return;
       final offline = await _network.isOffline;
-      if (PlaybackLogic.shouldRetry(retryCount: _retryCount, offline: offline)) {
+      if (PlaybackLogic.shouldRetry(
+        retryCount: _retryCount,
+        offline: offline,
+      )) {
         _retryCount++;
         await _startPlayback(item, request);
         return;
@@ -462,9 +477,15 @@ class RadioAudioHandler extends BaseAudioHandler with SeekHandler {
     return MediaItem(
       id: item.id,
       title: item.title,
-      artist: PlaybackLogic.mediaArtist(subtitle: item.subtitle, icyTitle: nowPlaying),
+      artist: PlaybackLogic.mediaArtist(
+        subtitle: item.subtitle,
+        icyTitle: nowPlaying,
+      ),
       displayTitle: item.title,
-      displaySubtitle: PlaybackLogic.mediaArtist(subtitle: item.subtitle, icyTitle: nowPlaying),
+      displaySubtitle: PlaybackLogic.mediaArtist(
+        subtitle: item.subtitle,
+        icyTitle: nowPlaying,
+      ),
       artUri: ArtworkUrlLogic.mediaArtUri(item.artworkUrl),
       duration: item.duration,
       extras: {'kind': item.kind.name},
@@ -475,10 +496,14 @@ class RadioAudioHandler extends BaseAudioHandler with SeekHandler {
   Future<void> seek(Duration position) => _player.seek(position);
 
   Future<void> seekBy(Duration delta) async {
-    final duration = _player.duration ?? _currentItem?.duration ?? Duration.zero;
+    final duration =
+        _player.duration ?? _currentItem?.duration ?? Duration.zero;
     Duration skipIntro = Duration.zero;
-    if (_currentItem?.kind == PlaybackKind.podcast && _currentItem?.feedId != null) {
-      skipIntro = Duration(seconds: _storage.getPodcastSkipIntro(_currentItem!.feedId!));
+    if (_currentItem?.kind == PlaybackKind.podcast &&
+        _currentItem?.feedId != null) {
+      skipIntro = Duration(
+        seconds: _storage.getPodcastSkipIntro(_currentItem!.feedId!),
+      );
     }
     await _player.seek(
       PodcastPlaybackLogic.clampSeek(
@@ -495,7 +520,9 @@ class RadioAudioHandler extends BaseAudioHandler with SeekHandler {
     await _player.setSpeed(PodcastPlaybackLogic.snapSpeed(speed));
     // 记忆当前节目的倍速
     final item = _currentItem;
-    if (item?.kind == PlaybackKind.podcast && item?.feedId != null && item!.feedId!.isNotEmpty) {
+    if (item?.kind == PlaybackKind.podcast &&
+        item?.feedId != null &&
+        item!.feedId!.isNotEmpty) {
       await _storage.setPodcastSpeedForFeed(item.feedId!, speed);
     }
   }
@@ -547,12 +574,18 @@ class RadioAudioHandler extends BaseAudioHandler with SeekHandler {
   }
 
   @override
-  Future<List<MediaItem>> getChildren(String parentMediaId, [Map<String, dynamic>? options]) async {
+  Future<List<MediaItem>> getChildren(
+    String parentMediaId, [
+    Map<String, dynamic>? options,
+  ]) async {
     return AutoBrowseLogic.children(parentMediaId, _browseCatalog);
   }
 
   @override
-  Future<void> playFromMediaId(String mediaId, [Map<String, dynamic>? extras]) async {
+  Future<void> playFromMediaId(
+    String mediaId, [
+    Map<String, dynamic>? extras,
+  ]) async {
     final item = AutoBrowseLogic.playbackItemFor(
       mediaId: mediaId,
       catalog: _browseCatalog,
@@ -611,12 +644,17 @@ class RadioAudioHandler extends BaseAudioHandler with SeekHandler {
   static const _progressPersistInterval = Duration(seconds: 5);
   DateTime? _lastProgressPersistAt;
 
-  Future<void> _persistProgress(PlaybackItem? item, {bool force = false}) async {
+  Future<void> _persistProgress(
+    PlaybackItem? item, {
+    bool force = false,
+  }) async {
     if (item?.kind != PlaybackKind.podcast || item?.episodeGuid == null) return;
     if (_player.position <= Duration.zero) return;
     final now = DateTime.now();
     final last = _lastProgressPersistAt;
-    if (!force && last != null && now.difference(last) < _progressPersistInterval) {
+    if (!force &&
+        last != null &&
+        now.difference(last) < _progressPersistInterval) {
       return;
     }
     _lastProgressPersistAt = now;
@@ -645,7 +683,9 @@ class RadioAudioHandler extends BaseAudioHandler with SeekHandler {
     if (!BluetoothResumeLogic.offeredOnThisPlatform) return;
     try {
       final session = await AudioSession.instance;
-      _devicesSubscription = session.devicesChangedEventStream.listen(_onDevicesChanged);
+      _devicesSubscription = session.devicesChangedEventStream.listen(
+        _onDevicesChanged,
+      );
     } catch (_) {}
   }
 
@@ -702,8 +742,8 @@ class RadioAudioHandler extends BaseAudioHandler with SeekHandler {
       (_switching && _userWantsPlayback) || playerPlaying;
 
   bool _shouldContinueStartup(int request) => PlaybackLogic.shouldAutoPlay(
-        userWantsPlayback: _userWantsPlayback,
-        request: request,
-        currentRequest: _playRequest,
-      );
+    userWantsPlayback: _userWantsPlayback,
+    request: request,
+    currentRequest: _playRequest,
+  );
 }

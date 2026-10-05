@@ -8,10 +8,11 @@ class PlayQueue {
     final raw = json['items'] as List<dynamic>?;
     if (raw == null) return const PlayQueue();
     return PlayQueue(
-      items: raw
-          .map((e) => PlaybackItem.fromJson(e as Map<String, dynamic>))
-          .where((item) => item.streamUrl.isNotEmpty)
-          .toList(),
+      items:
+          raw
+              .map((e) => PlaybackItem.fromJson(e as Map<String, dynamic>))
+              .where((item) => item.streamUrl.isNotEmpty)
+              .toList(),
     );
   }
 
@@ -71,6 +72,6 @@ class PlayQueue {
   PlayQueue pop() => items.isEmpty ? this : PlayQueue(items: items.sublist(1));
 
   Map<String, dynamic> toJson() => {
-        'items': items.map((item) => item.toJson()).toList(),
-      };
+    'items': items.map((item) => item.toJson()).toList(),
+  };
 }

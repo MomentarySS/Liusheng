@@ -43,15 +43,18 @@ class RadioNowPlayingSheet extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final colorScheme = Theme.of(context).colorScheme;
     final textTheme = Theme.of(context).textTheme;
-    final accent =
-        StationArtwork.gradientColors(name: current.title, tags: [current.subtitle]);
+    final accent = StationArtwork.gradientColors(
+      name: current.title,
+      tags: [current.subtitle],
+    );
     final wash = context.liushengSkin.nowPlayingWash(
       surface: colorScheme.surface,
       coverAccent: accent.first,
     );
     final stationId = current.stationId ?? current.id;
     final playingStation = ref.watch(playingStationProvider);
-    final sourceLabel = playingStation != null ? stationSourceLabel(playingStation) : null;
+    final sourceLabel =
+        playingStation != null ? stationSourceLabel(playingStation) : null;
     final skipQueue = ref.watch(stationSkipQueueProvider(stationId));
     final canPrev = StationSkipLogic.neighbor(skipQueue, stationId, -1) != null;
     final canNext = StationSkipLogic.neighbor(skipQueue, stationId, 1) != null;
@@ -94,7 +97,11 @@ class RadioNowPlayingSheet extends ConsumerWidget {
                     loading: loading,
                     canPrev: canPrev,
                     canNext: canNext,
-                    onToggle: () => ref.read(playerControllerProvider).togglePlayPause(),
+                    onToggle:
+                        () =>
+                            ref
+                                .read(playerControllerProvider)
+                                .togglePlayPause(),
                     onPrev: () => ref.read(stationSkipProvider).skip(-1),
                     onNext: () => ref.read(stationSkipProvider).skip(1),
                   ),
@@ -151,7 +158,10 @@ class _StationCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final tags = [current.subtitle];
-    final colors = StationArtwork.gradientColors(name: current.title, tags: tags);
+    final colors = StationArtwork.gradientColors(
+      name: current.title,
+      tags: tags,
+    );
     final label = StationArtwork.monogram(name: current.title);
     final glyph = StationArtwork.categoryIcon(tags: tags);
     final radius = context.liushengSkin.anchorRadius;
@@ -236,7 +246,10 @@ class _StationHeader extends StatelessWidget {
           current.title,
           maxLines: 2,
           overflow: TextOverflow.ellipsis,
-          style: textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.w700, height: 1.3),
+          style: textTheme.headlineSmall?.copyWith(
+            fontWeight: FontWeight.w700,
+            height: 1.3,
+          ),
         ),
         const SizedBox(height: 4),
         _IcySubtitle(
@@ -245,7 +258,9 @@ class _StationHeader extends StatelessWidget {
           hasError: hasError,
           loading: loading,
           errorMessage: errorMessage,
-          style: textTheme.bodyMedium?.copyWith(color: colorScheme.onSurfaceVariant),
+          style: textTheme.bodyMedium?.copyWith(
+            color: colorScheme.onSurfaceVariant,
+          ),
         ),
       ],
     );
@@ -337,8 +352,8 @@ class _VolumeControl extends ConsumerWidget {
                 muted
                     ? Icons.volume_off_rounded
                     : volume < 0.5
-                        ? Icons.volume_down_rounded
-                        : Icons.volume_up_rounded,
+                    ? Icons.volume_down_rounded
+                    : Icons.volume_up_rounded,
                 color: colorScheme.onSurfaceVariant,
               ),
               onPressed: () => ref.read(playerControllerProvider).toggleMute(),
@@ -348,15 +363,23 @@ class _VolumeControl extends ConsumerWidget {
                 data: SliderTheme.of(context).copyWith(
                   trackHeight: 3,
                   activeTrackColor: colorScheme.onSurface,
-                  inactiveTrackColor: colorScheme.onSurface.withValues(alpha: 0.16),
+                  inactiveTrackColor: colorScheme.onSurface.withValues(
+                    alpha: 0.16,
+                  ),
                   thumbColor: colorScheme.onSurface,
                   overlayColor: colorScheme.onSurface.withValues(alpha: 0.12),
-                  thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 6),
-                  overlayShape: const RoundSliderOverlayShape(overlayRadius: 14),
+                  thumbShape: const RoundSliderThumbShape(
+                    enabledThumbRadius: 6,
+                  ),
+                  overlayShape: const RoundSliderOverlayShape(
+                    overlayRadius: 14,
+                  ),
                 ),
                 child: Slider(
                   value: volume.clamp(0.0, 1.0),
-                  onChanged: (value) => ref.read(playerControllerProvider).setVolume(value),
+                  onChanged:
+                      (value) =>
+                          ref.read(playerControllerProvider).setVolume(value),
                 ),
               ),
             ),
@@ -366,8 +389,8 @@ class _VolumeControl extends ConsumerWidget {
                 '${(volume * 100).round()}',
                 textAlign: TextAlign.end,
                 style: Theme.of(context).textTheme.labelLarge?.copyWith(
-                      color: colorScheme.onSurfaceVariant,
-                    ),
+                  color: colorScheme.onSurfaceVariant,
+                ),
               ),
             ),
           ],
@@ -413,59 +436,60 @@ class _TransportRow extends ConsumerWidget {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
       children: [
-            IconButton(
-              tooltip: sleepActive ? '关闭睡眠定时' : '睡眠定时',
-              style: auxiliary,
-              iconSize: 30,
-              isSelected: sleepActive,
-              icon: Icon(
-                sleepActive ? Icons.bedtime : Icons.bedtime_outlined,
-                color: iconColor,
-              ),
-              // 定时开着时再点一下就是关闭（想改时长再点一次开面板）。
-              onPressed: sleepActive
+        IconButton(
+          tooltip: sleepActive ? '关闭睡眠定时' : '睡眠定时',
+          style: auxiliary,
+          iconSize: 30,
+          isSelected: sleepActive,
+          icon: Icon(
+            sleepActive ? Icons.bedtime : Icons.bedtime_outlined,
+            color: iconColor,
+          ),
+          // 定时开着时再点一下就是关闭（想改时长再点一次开面板）。
+          onPressed:
+              sleepActive
                   ? () => ref.read(sleepTimerProvider.notifier).cancel()
                   : () => showSleepTimerSheet(context),
+        ),
+        IconButton(
+          tooltip: '上一台',
+          style: auxiliary,
+          iconSize: 30,
+          icon: Icon(Icons.skip_previous_rounded, color: iconColor),
+          onPressed: canPrev ? onPrev : null,
+        ),
+        if (loading)
+          const SizedBox(
+            width: 84,
+            height: 84,
+            child: Padding(
+              padding: EdgeInsets.all(22),
+              child: CircularProgressIndicator(strokeWidth: 3),
             ),
-            IconButton(
-              tooltip: '上一台',
-              style: auxiliary,
-              iconSize: 30,
-              icon: Icon(Icons.skip_previous_rounded, color: iconColor),
-              onPressed: canPrev ? onPrev : null,
-            ),
-            if (loading)
-              const SizedBox(
-                width: 84,
-                height: 84,
-                child: Padding(
-                  padding: EdgeInsets.all(22),
-                  child: CircularProgressIndicator(strokeWidth: 3),
-                ),
-              )
-            else
-              IconButton(
-                tooltip: playing ? '暂停' : '播放',
-                padding: const EdgeInsets.all(14),
-                iconSize: 54,
-                icon: PlaybackStateIcon(playing: playing, color: iconColor),
-                onPressed: onToggle,
-              ),
-            IconButton(
-              tooltip: '下一台',
-              style: auxiliary,
-              iconSize: 30,
-              icon: Icon(Icons.skip_next_rounded, color: iconColor),
-              onPressed: canNext ? onNext : null,
-            ),
-            IconButton(
-              tooltip: '播放列表',
-              style: auxiliary,
-              iconSize: 30,
-              icon: Icon(Icons.queue_music_rounded, color: iconColor),
-              onPressed: () => showNowPlayingQueueSheet(context),
-            ),
-          ],
-        );
+          )
+        else
+          IconButton(
+            tooltip: playing ? '暂停' : '播放',
+            padding: const EdgeInsets.all(14),
+            iconSize: 54,
+            icon: PlaybackStateIcon(playing: playing, color: iconColor),
+            onPressed: onToggle,
+          ),
+        IconButton(
+          tooltip: '下一台',
+          style: auxiliary,
+          iconSize: 30,
+          icon: Icon(Icons.skip_next_rounded, color: iconColor),
+          onPressed: canNext ? onNext : null,
+        ),
+        IconButton(
+          tooltip: '播放列表',
+          style: auxiliary,
+          iconSize: 30,
+          icon: Icon(Icons.queue_music_rounded, color: iconColor),
+          onPressed: () => showNowPlayingQueueSheet(context),
+        ),
+      ],
+    );
   }
 }

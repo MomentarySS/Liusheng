@@ -78,10 +78,7 @@ void main() {
 
     test('position == duration → "剩余 0:00"', () {
       const dur = Duration(minutes: 5);
-      expect(
-        RemainingTimeLogic.label(duration: dur, position: dur),
-        '剩余 0:00',
-      );
+      expect(RemainingTimeLogic.label(duration: dur, position: dur), '剩余 0:00');
     });
 
     test('position > duration → "剩余 0:00"（clamp，不出现负数）', () {

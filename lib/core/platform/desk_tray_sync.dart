@@ -30,19 +30,16 @@ final deskTraySyncProvider = Provider<void>((ref) {
   ref.listen<AsyncValue<DeskWindowMode>>(deskWindowModeProvider, (_, __) {
     unawaited(binding.refreshChrome(force: true));
   });
-  ref.listen<AsyncValue<RadioAudioHandler>>(
-    audioHandlerProvider,
-    (_, next) {
-      playbackSub?.cancel();
-      playbackSub = null;
-      next.whenData((handler) {
-        playbackSub = handler.playbackState.listen((_) {
-          unawaited(binding.refreshChrome());
-        });
+  ref.listen<AsyncValue<RadioAudioHandler>>(audioHandlerProvider, (_, next) {
+    playbackSub?.cancel();
+    playbackSub = null;
+    next.whenData((handler) {
+      playbackSub = handler.playbackState.listen((_) {
+        unawaited(binding.refreshChrome());
       });
-    },
-    fireImmediately: true,
-  );
+    });
+    // ignore: require_trailing_commas
+  }, fireImmediately: true);
   unawaited(binding.attach());
 });
 
@@ -102,10 +99,18 @@ class DeskTrayBinding with WindowListener, TrayListener {
     if (!_attached) return false;
     if (!_trayReady && !force) return false;
     final playing =
-        _ref.read(audioHandlerProvider).value?.playbackState.value.playing ?? false;
-    final tooltip = DeskTrayLogic.tooltip(title: _ref.read(currentPlaybackProvider)?.title);
+        _ref.read(audioHandlerProvider).value?.playbackState.value.playing ??
+        false;
+    final tooltip = DeskTrayLogic.tooltip(
+      title: _ref.read(currentPlaybackProvider)?.title,
+    );
     final mode = _ref.read(deskWindowModeProvider).value ?? DeskWindowMode.main;
-    if (!force && playing == _lastPlaying && tooltip == _lastTooltip && mode == _lastMode) return true;
+    if (!force &&
+        playing == _lastPlaying &&
+        tooltip == _lastTooltip &&
+        mode == _lastMode) {
+      return true;
+    }
     _lastPlaying = playing;
     _lastTooltip = tooltip;
     _lastMode = mode;
@@ -114,17 +119,32 @@ class DeskTrayBinding with WindowListener, TrayListener {
       await trayManager.setContextMenu(
         Menu(
           items: [
-            MenuItem(key: DeskTrayLogic.showKey, label: DeskTrayLogic.showLabel),
+            MenuItem(
+              key: DeskTrayLogic.showKey,
+              label: DeskTrayLogic.showLabel,
+            ),
             MenuItem(
               key: DeskTrayLogic.toggleKey,
               label: DeskTrayLogic.toggleLabel(playing: playing),
             ),
             MenuItem.separator(),
-            MenuItem(key: DeskTrayLogic.mainKey, label: DeskTrayLogic.modeLabel(DeskWindowMode.main, mode)),
-            MenuItem(key: DeskTrayLogic.miniBarKey, label: DeskTrayLogic.modeLabel(DeskWindowMode.miniBar, mode)),
-            MenuItem(key: DeskTrayLogic.sidebarKey, label: DeskTrayLogic.modeLabel(DeskWindowMode.sidebar, mode)),
+            MenuItem(
+              key: DeskTrayLogic.mainKey,
+              label: DeskTrayLogic.modeLabel(DeskWindowMode.main, mode),
+            ),
+            MenuItem(
+              key: DeskTrayLogic.miniBarKey,
+              label: DeskTrayLogic.modeLabel(DeskWindowMode.miniBar, mode),
+            ),
+            MenuItem(
+              key: DeskTrayLogic.sidebarKey,
+              label: DeskTrayLogic.modeLabel(DeskWindowMode.sidebar, mode),
+            ),
             MenuItem.separator(),
-            MenuItem(key: DeskTrayLogic.quitKey, label: DeskTrayLogic.quitLabel),
+            MenuItem(
+              key: DeskTrayLogic.quitKey,
+              label: DeskTrayLogic.quitLabel,
+            ),
           ],
         ),
       );
@@ -141,13 +161,19 @@ class DeskTrayBinding with WindowListener, TrayListener {
       case DeskTrayAction.toggle:
         await _ref.read(playerControllerProvider).togglePlayPause();
       case DeskTrayAction.main:
-        await _ref.read(deskWindowModeProvider.notifier).setMode(DeskWindowMode.main);
+        await _ref
+            .read(deskWindowModeProvider.notifier)
+            .setMode(DeskWindowMode.main);
         await DeskWindow.restoreFromTray();
       case DeskTrayAction.miniBar:
-        await _ref.read(deskWindowModeProvider.notifier).setMode(DeskWindowMode.miniBar);
+        await _ref
+            .read(deskWindowModeProvider.notifier)
+            .setMode(DeskWindowMode.miniBar);
         await DeskWindow.restoreFromTray();
       case DeskTrayAction.sidebar:
-        await _ref.read(deskWindowModeProvider.notifier).setMode(DeskWindowMode.sidebar);
+        await _ref
+            .read(deskWindowModeProvider.notifier)
+            .setMode(DeskWindowMode.sidebar);
         await DeskWindow.restoreFromTray();
       case DeskTrayAction.quit:
         await _quit();

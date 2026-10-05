@@ -10,8 +10,12 @@ abstract final class PodcastDownloadLogic {
     'https://podcasts.rthk.hk/podcast/item.php?pid=1137&lang=zh-CN',
   };
 
-  static bool isBundledDefaultFeed({required String id, required String feedUrl}) {
-    return bundledDefaultIds.contains(id) || bundledDefaultUrls.contains(feedUrl);
+  static bool isBundledDefaultFeed({
+    required String id,
+    required String feedUrl,
+  }) {
+    return bundledDefaultIds.contains(id) ||
+        bundledDefaultUrls.contains(feedUrl);
   }
 
   static String sanitizeGuid(String guid) {
@@ -21,7 +25,8 @@ abstract final class PodcastDownloadLogic {
   }
 
   static String extensionFromUrl(String audioUrl) {
-    final path = Uri.tryParse(audioUrl)?.path.toLowerCase() ?? audioUrl.toLowerCase();
+    final path =
+        Uri.tryParse(audioUrl)?.path.toLowerCase() ?? audioUrl.toLowerCase();
     for (final ext in ['.mp3', '.m4a', '.aac', '.ogg', '.opus', '.wav']) {
       if (path.endsWith(ext)) return ext;
     }
@@ -183,7 +188,8 @@ abstract final class PodcastDownloadLogic {
     return switch (status) {
       EpisodeDownloadStatus.downloading => '正在下载 ${downloadPercent(progress)}%',
       EpisodeDownloadStatus.failed => '下载失败',
-      EpisodeDownloadStatus.ready => bytes > 0 ? '已下载 (${formatBytes(bytes)})' : '已下载',
+      EpisodeDownloadStatus.ready =>
+        bytes > 0 ? '已下载 (${formatBytes(bytes)})' : '已下载',
       EpisodeDownloadStatus.none => null,
     };
   }
@@ -240,9 +246,10 @@ abstract final class PodcastDownloadLogic {
     final toDelete = <String>{};
     for (final record in records) {
       if (!listenedGuids.contains(record.guid)) continue;
-      final completedAt = record.completedAtMs == null
-          ? DateTime.fromMillisecondsSinceEpoch(0)
-          : DateTime.fromMillisecondsSinceEpoch(record.completedAtMs!);
+      final completedAt =
+          record.completedAtMs == null
+              ? DateTime.fromMillisecondsSinceEpoch(0)
+              : DateTime.fromMillisecondsSinceEpoch(record.completedAtMs!);
       if (completedAt.isBefore(cutoff)) {
         toDelete.add(record.guid);
       }
@@ -279,14 +286,14 @@ class PodcastDownloadRecord {
   final int? completedAtMs;
 
   Map<String, dynamic> toJson() => {
-        'guid': guid,
-        'feedId': feedId,
-        'title': title,
-        'audioUrl': audioUrl,
-        'fileName': fileName,
-        'bytes': bytes,
-        if (completedAtMs != null) 'completedAtMs': completedAtMs,
-      };
+    'guid': guid,
+    'feedId': feedId,
+    'title': title,
+    'audioUrl': audioUrl,
+    'fileName': fileName,
+    'bytes': bytes,
+    if (completedAtMs != null) 'completedAtMs': completedAtMs,
+  };
 
   static PodcastDownloadRecord? tryFromJson(Map<String, dynamic> json) {
     final guid = (json['guid'] as String?)?.trim() ?? '';
@@ -307,7 +314,7 @@ class PodcastDownloadRecord {
 
 class DownloadWorkQueue {
   DownloadWorkQueue(Iterable<PodcastEpisode> episodes)
-      : _items = List<PodcastEpisode>.from(episodes);
+    : _items = List<PodcastEpisode>.from(episodes);
 
   final List<PodcastEpisode> _items;
   var _cursor = 0;
@@ -344,7 +351,8 @@ class PodcastDownloadState {
     return EpisodeDownloadStatus.none;
   }
 
-  int get totalBytes => records.values.fold<int>(0, (sum, item) => sum + item.bytes);
+  int get totalBytes =>
+      records.values.fold<int>(0, (sum, item) => sum + item.bytes);
 
   List<PodcastDownloadRecord> get recordsNewestFirst {
     final items = records.values.toList();

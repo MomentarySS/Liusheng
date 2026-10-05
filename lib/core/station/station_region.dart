@@ -46,9 +46,9 @@ abstract final class StationRegion {
   static bool looksOverseasByName(String name) {
     final isCnrHongKongVoice =
         (name.contains('香港之声') || name.contains('香港之聲')) &&
-            !name.contains('RTHK') &&
-            !name.contains('香港電台') &&
-            !name.contains('香港电台');
+        !name.contains('RTHK') &&
+        !name.contains('香港電台') &&
+        !name.contains('香港电台');
     if (isCnrHongKongVoice) return false;
     return _overseasNameNeedles.any(name.contains);
   }

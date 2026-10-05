@@ -16,11 +16,11 @@ class PlaybackStateIcon extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     Icon buildIcon({Key? key}) => Icon(
-          playing ? Icons.pause_rounded : Icons.play_arrow_rounded,
-          key: key,
-          size: size,
-          color: color,
-        );
+      playing ? Icons.pause_rounded : Icons.play_arrow_rounded,
+      key: key,
+      size: size,
+      color: color,
+    );
 
     if (MediaQuery.of(context).disableAnimations) return buildIcon();
 
@@ -29,13 +29,14 @@ class PlaybackStateIcon extends StatelessWidget {
       reverseDuration: const Duration(milliseconds: 100),
       switchInCurve: Curves.easeOutCubic,
       switchOutCurve: Curves.easeIn,
-      transitionBuilder: (child, animation) => FadeTransition(
-        opacity: animation,
-        child: ScaleTransition(
-          scale: Tween<double>(begin: 0.9, end: 1).animate(animation),
-          child: child,
-        ),
-      ),
+      transitionBuilder:
+          (child, animation) => FadeTransition(
+            opacity: animation,
+            child: ScaleTransition(
+              scale: Tween<double>(begin: 0.9, end: 1).animate(animation),
+              child: child,
+            ),
+          ),
       child: buildIcon(key: ValueKey(playing)),
     );
   }

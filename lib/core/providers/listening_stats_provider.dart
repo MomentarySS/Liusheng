@@ -7,9 +7,11 @@ import '../stats/listening_stats.dart';
 import 'storage_providers.dart';
 
 final listeningStatsProvider =
-    StateNotifierProvider<ListeningStatsNotifier, AsyncValue<ListeningStats>>((ref) {
-  return ListeningStatsNotifier(ref);
-});
+    StateNotifierProvider<ListeningStatsNotifier, AsyncValue<ListeningStats>>((
+      ref,
+    ) {
+      return ListeningStatsNotifier(ref);
+    });
 
 class ListeningStatsNotifier extends StateNotifier<AsyncValue<ListeningStats>> {
   ListeningStatsNotifier(this._ref) : super(const AsyncLoading()) {
@@ -40,7 +42,12 @@ class ListeningStatsNotifier extends StateNotifier<AsyncValue<ListeningStats>> {
     if (seconds <= 0) return;
     final current = state.value ?? const ListeningStats();
     state = AsyncData(
-      current.recordTick(item: item, kind: kind, seconds: seconds, now: DateTime.now()),
+      current.recordTick(
+        item: item,
+        kind: kind,
+        seconds: seconds,
+        now: DateTime.now(),
+      ),
     );
     _pendingTicks++;
     _flushTimer?.cancel();

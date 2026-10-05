@@ -11,13 +11,18 @@ class PrivacyScreen extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(title: const Text(PrivacyCopy.title)),
       body: ListView(
-        padding: const EdgeInsets.fromLTRB(20, 8, 20, LiushengTheme.listBottomPadding),
+        padding: const EdgeInsets.fromLTRB(
+          20,
+          8,
+          20,
+          LiushengTheme.listBottomPadding,
+        ),
         children: [
           Text(
             PrivacyCopy.summary,
-            style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                  fontWeight: FontWeight.w600,
-                ),
+            style: Theme.of(
+              context,
+            ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w600),
           ),
           const SizedBox(height: 16),
           for (final paragraph in PrivacyCopy.paragraphs) ...[

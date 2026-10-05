@@ -75,8 +75,9 @@ abstract final class StationProbeLogic {
     return '可先听已测到的电台';
   }
 
-  static Set<String> idsOf(Iterable<RadioStation> stations) =>
-      {for (final station in stations) station.id};
+  static Set<String> idsOf(Iterable<RadioStation> stations) => {
+    for (final station in stations) station.id,
+  };
 
   static Set<String> rememberId(Set<String> cachedIds, String stationId) {
     if (stationId.isEmpty || cachedIds.contains(stationId)) return cachedIds;

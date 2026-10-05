@@ -8,11 +8,11 @@ enum EpisodeListFilter {
   starred;
 
   String get label => switch (this) {
-        EpisodeListFilter.all => '全部',
-        EpisodeListFilter.unlistened => '未听',
-        EpisodeListFilter.downloaded => '已下载',
-        EpisodeListFilter.starred => '收藏',
-      };
+    EpisodeListFilter.all => '全部',
+    EpisodeListFilter.unlistened => '未听',
+    EpisodeListFilter.downloaded => '已下载',
+    EpisodeListFilter.starred => '收藏',
+  };
 }
 
 enum PodcastEpisodeSort {
@@ -20,12 +20,14 @@ enum PodcastEpisodeSort {
   oldestFirst;
 
   String get label => switch (this) {
-        PodcastEpisodeSort.newestFirst => '最新在前',
-        PodcastEpisodeSort.oldestFirst => '最早在前',
-      };
+    PodcastEpisodeSort.newestFirst => '最新在前',
+    PodcastEpisodeSort.oldestFirst => '最早在前',
+  };
 
   static PodcastEpisodeSort parse(String? raw) {
-    return PodcastEpisodeSort.values.where((value) => value.name == raw).firstOrNull ??
+    return PodcastEpisodeSort.values
+            .where((value) => value.name == raw)
+            .firstOrNull ??
         PodcastEpisodeSort.newestFirst;
   }
 }
@@ -37,6 +39,7 @@ abstract final class PodcastPlaybackLogic {
   static const skipStepOptions = [10, 15, 30, 60];
   static const speeds = [0.5, 0.6, 0.8, 1.0, 1.25, 1.5, 2.0];
   static const defaultSpeed = 1.0;
+
   /// Available skip durations in seconds for intro/outro skip.
   static const skipDurationOptions = [0, 5, 10, 15, 20, 30, 45, 60, 90, 120];
 
@@ -110,19 +113,20 @@ abstract final class PodcastPlaybackLogic {
 
   static String stripHtml(String? raw) {
     if (raw == null || raw.isEmpty) return '';
-    final text = raw
-        .replaceAll(RegExp(r'<br\s*/?>', caseSensitive: false), '\n')
-        .replaceAll(RegExp(r'</p>', caseSensitive: false), '\n\n')
-        .replaceAll(RegExp(r'<[^>]+>'), '')
-        .replaceAll('&nbsp;', ' ')
-        .replaceAll('&amp;', '&')
-        .replaceAll('&lt;', '<')
-        .replaceAll('&gt;', '>')
-        .replaceAll('&quot;', '"')
-        .replaceAll('&#39;', "'")
-        .replaceAll(RegExp(r'[ \t]+\n'), '\n')
-        .replaceAll(RegExp(r'\n{3,}'), '\n\n')
-        .trim();
+    final text =
+        raw
+            .replaceAll(RegExp(r'<br\s*/?>', caseSensitive: false), '\n')
+            .replaceAll(RegExp(r'</p>', caseSensitive: false), '\n\n')
+            .replaceAll(RegExp(r'<[^>]+>'), '')
+            .replaceAll('&nbsp;', ' ')
+            .replaceAll('&amp;', '&')
+            .replaceAll('&lt;', '<')
+            .replaceAll('&gt;', '>')
+            .replaceAll('&quot;', '"')
+            .replaceAll('&#39;', "'")
+            .replaceAll(RegExp(r'[ \t]+\n'), '\n')
+            .replaceAll(RegExp(r'\n{3,}'), '\n\n')
+            .trim();
     return text;
   }
 
@@ -162,7 +166,10 @@ abstract final class PodcastPlaybackLogic {
     return seekTo;
   }
 
-  static double speedForFeed({required double? stored, required double fallback}) {
+  static double speedForFeed({
+    required double? stored,
+    required double fallback,
+  }) {
     return snapSpeed(stored ?? fallback);
   }
 
@@ -195,9 +202,12 @@ abstract final class PodcastPlaybackLogic {
   static final RegExp _naturalToken = RegExp(r'\d+|\D+');
 
   static int _naturalCompare(String a, String b) {
-    final aTokens = _naturalToken.allMatches(a).map((m) => m.group(0)!).toList();
-    final bTokens = _naturalToken.allMatches(b).map((m) => m.group(0)!).toList();
-    final len = aTokens.length < bTokens.length ? aTokens.length : bTokens.length;
+    final aTokens =
+        _naturalToken.allMatches(a).map((m) => m.group(0)!).toList();
+    final bTokens =
+        _naturalToken.allMatches(b).map((m) => m.group(0)!).toList();
+    final len =
+        aTokens.length < bTokens.length ? aTokens.length : bTokens.length;
     for (var i = 0; i < len; i++) {
       final x = int.tryParse(aTokens[i]);
       final y = int.tryParse(bTokens[i]);
@@ -241,12 +251,18 @@ abstract final class PodcastPlaybackLogic {
   }) {
     return switch (filter) {
       EpisodeListFilter.all => episodes,
-      EpisodeListFilter.unlistened =>
-        [for (final episode in episodes) if (!listened.contains(episode.guid)) episode],
-      EpisodeListFilter.downloaded =>
-        [for (final episode in episodes) if (isDownloaded(episode.guid)) episode],
-      EpisodeListFilter.starred =>
-        [for (final episode in episodes) if (starred.contains(episode.guid)) episode],
+      EpisodeListFilter.unlistened => [
+        for (final episode in episodes)
+          if (!listened.contains(episode.guid)) episode,
+      ],
+      EpisodeListFilter.downloaded => [
+        for (final episode in episodes)
+          if (isDownloaded(episode.guid)) episode,
+      ],
+      EpisodeListFilter.starred => [
+        for (final episode in episodes)
+          if (starred.contains(episode.guid)) episode,
+      ],
     };
   }
 }
@@ -286,7 +302,9 @@ abstract final class PodcastQueueLogic {
     required String currentGuid,
     Set<String> listened = const {},
   }) {
-    final index = sortedEpisodes.indexWhere((episode) => episode.guid == currentGuid);
+    final index = sortedEpisodes.indexWhere(
+      (episode) => episode.guid == currentGuid,
+    );
     if (index < 0) return null;
     for (var i = index + 1; i < sortedEpisodes.length; i++) {
       final episode = sortedEpisodes[i];

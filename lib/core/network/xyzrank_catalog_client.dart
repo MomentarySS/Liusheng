@@ -6,14 +6,15 @@ import 'system_http_proxy.dart';
 
 class XyzrankCatalogClient {
   XyzrankCatalogClient({Dio? dio})
-      : _dio = dio ??
-            SystemHttpProxy.createDio(
-              BaseOptions(
-                connectTimeout: const Duration(seconds: 15),
-                receiveTimeout: const Duration(seconds: 20),
-                headers: {'User-Agent': AppBrand.podcastUserAgent},
-              ),
-            );
+    : _dio =
+          dio ??
+          SystemHttpProxy.createDio(
+            BaseOptions(
+              connectTimeout: const Duration(seconds: 15),
+              receiveTimeout: const Duration(seconds: 20),
+              headers: {'User-Agent': AppBrand.podcastUserAgent},
+            ),
+          );
 
   final Dio _dio;
 

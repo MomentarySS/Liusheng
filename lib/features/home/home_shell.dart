@@ -91,11 +91,11 @@ class _HomeShellState extends ConsumerState<HomeShell> {
   ];
 
   Widget _pageFor(int index) => switch (index) {
-        0 => const RadioScreen(),
-        1 => const PodcastScreen(),
-        2 => const ListeningScreen(),
-        _ => const SettingsScreen(),
-      };
+    0 => const RadioScreen(),
+    1 => const PodcastScreen(),
+    2 => const ListeningScreen(),
+    _ => const SettingsScreen(),
+  };
 
   void _selectPage(int index) {
     if (_pages[index] == null) {
@@ -108,9 +108,9 @@ class _HomeShellState extends ConsumerState<HomeShell> {
   Widget build(BuildContext context) {
     ref.listen(sleepTimerProvider, (previous, next) {
       if (next.stoppedByTimer) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('已按定时停止播放')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(const SnackBar(content: Text('已按定时停止播放')));
       }
     });
     ref.listen(podcastDownloadsProvider, (previous, next) {
@@ -142,8 +142,10 @@ class _HomeShellState extends ConsumerState<HomeShell> {
     ref.watch(deskLaunchAtStartupProvider);
     ref.watch(podcastSkipStepProvider);
     ref.watch(lastSleepValueProvider);
-    final deskWindowMode = ref.watch(deskWindowModeProvider).value ?? DeskWindowMode.main;
-    final useRail = MediaQuery.sizeOf(context).width >= LiushengTheme.railBreakpoint;
+    final deskWindowMode =
+        ref.watch(deskWindowModeProvider).value ?? DeskWindowMode.main;
+    final useRail =
+        MediaQuery.sizeOf(context).width >= LiushengTheme.railBreakpoint;
 
     void openNowPlaying() {
       Navigator.of(context).push(NowPlayingPageRoute());
@@ -175,8 +177,14 @@ class _HomeShellState extends ConsumerState<HomeShell> {
         child: Material(
           type: MaterialType.transparency,
           child: DeskMiniBar(
-            onExit: () => ref.read(deskWindowModeProvider.notifier).setMode(DeskWindowMode.main),
-            onSidebar: () => ref.read(deskWindowModeProvider.notifier).setMode(DeskWindowMode.sidebar),
+            onExit:
+                () => ref
+                    .read(deskWindowModeProvider.notifier)
+                    .setMode(DeskWindowMode.main),
+            onSidebar:
+                () => ref
+                    .read(deskWindowModeProvider.notifier)
+                    .setMode(DeskWindowMode.sidebar),
           ),
         ),
       );
@@ -196,15 +204,16 @@ class _HomeShellState extends ConsumerState<HomeShell> {
                 selectedIndex: _index,
                 onDestinationSelected: _selectPage,
                 labelType: NavigationRailLabelType.all,
-                destinations: _destinations
-                    .map(
-                      (item) => NavigationRailDestination(
-                        icon: item.icon,
-                        selectedIcon: item.selectedIcon,
-                        label: Text(item.label),
-                      ),
-                    )
-                    .toList(),
+                destinations:
+                    _destinations
+                        .map(
+                          (item) => NavigationRailDestination(
+                            icon: item.icon,
+                            selectedIcon: item.selectedIcon,
+                            label: Text(item.label),
+                          ),
+                        )
+                        .toList(),
               ),
               const VerticalDivider(width: 1),
               Expanded(child: body),

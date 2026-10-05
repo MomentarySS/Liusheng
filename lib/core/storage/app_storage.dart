@@ -16,7 +16,8 @@ import 'podcast_episode_state_store.dart';
 /// 收藏、最近播放、主题与上次播放会话的本地持久化。
 class AppStorage {
   AppStorage(this._prefs, [PodcastEpisodeStateStore? episodeStateStore])
-      : _episodeStateStore = episodeStateStore ?? PodcastEpisodeStateStore.memory();
+    : _episodeStateStore =
+          episodeStateStore ?? PodcastEpisodeStateStore.memory();
 
   final SharedPreferences _prefs;
   final PodcastEpisodeStateStore _episodeStateStore;
@@ -51,7 +52,8 @@ class AppStorage {
   static const _listeningStatsKey = 'listening_stats_json';
   static const _podcastEpisodeSortKey = 'podcast_episode_sort';
   static const _podcastDownloadAllFeedsKey = 'podcast_download_all_feed_ids';
-  static const _podcastDownloadLatestFeedsKey = 'podcast_download_latest_feed_ids';
+  static const _podcastDownloadLatestFeedsKey =
+      'podcast_download_latest_feed_ids';
   static const _deskCompactKey = 'desk_compact_enabled';
   static const _deskWindowModeKey = 'desk_window_mode';
   static const _deskSidebarPositionKey = 'desk_sidebar_position_json';
@@ -83,7 +85,8 @@ class AppStorage {
   static const _stationCatalogConfiguredKey = 'station_catalog_configured';
   static const _reachableStationIdsKey = 'reachable_station_ids';
   static const _hiddenStationIdsKey = 'hidden_station_ids';
-  static const _legacyPlaybackFailedStationIdsKey = 'playback_failed_station_ids';
+  static const _legacyPlaybackFailedStationIdsKey =
+      'playback_failed_station_ids';
   static const _radioSearchHistoryKey = 'radio_search_history';
   static const _lastRadioBitrateFloorKey = 'last_radio_bitrate_floor';
 
@@ -101,7 +104,9 @@ class AppStorage {
     return AppStorage(prefs, episodeStateStore);
   }
 
-  static PodcastEpisodeState _legacyPodcastEpisodeStateFromPrefs(SharedPreferences prefs) {
+  static PodcastEpisodeState _legacyPodcastEpisodeStateFromPrefs(
+    SharedPreferences prefs,
+  ) {
     final progress = <String, Duration>{};
     for (final key in prefs.getKeys()) {
       if (!key.startsWith(_podcastProgressPrefix)) continue;
@@ -111,14 +116,21 @@ class AppStorage {
       progress[guid] = Duration(milliseconds: ms);
     }
     final listened = {
-      for (final guid in prefs.getStringList(_listenedEpisodeGuidsKey) ?? const <String>[])
+      for (final guid
+          in prefs.getStringList(_listenedEpisodeGuidsKey) ?? const <String>[])
         if (guid.isNotEmpty) guid,
     };
     return PodcastEpisodeState(progress: progress, listenedGuids: listened);
   }
 
-  static Future<void> _removeLegacyPodcastEpisodeStateFromPrefs(SharedPreferences prefs) async {
-    final keys = prefs.getKeys().where((key) => key.startsWith(_podcastProgressPrefix)).toList();
+  static Future<void> _removeLegacyPodcastEpisodeStateFromPrefs(
+    SharedPreferences prefs,
+  ) async {
+    final keys =
+        prefs
+            .getKeys()
+            .where((key) => key.startsWith(_podcastProgressPrefix))
+            .toList();
     for (final key in keys) {
       await prefs.remove(key);
     }
@@ -174,9 +186,15 @@ class AppStorage {
       final decoded = jsonDecode(raw);
       if (decoded is! List) return const [];
       return [
-        for (final item in decoded)
-          if (item is Map<String, dynamic>) PodcastHistoryEntry.fromJson(item),
-      ].where((entry) => entry.episodeGuid.isNotEmpty && entry.streamUrl.isNotEmpty).toList();
+            for (final item in decoded)
+              if (item is Map<String, dynamic>)
+                PodcastHistoryEntry.fromJson(item),
+          ]
+          .where(
+            (entry) =>
+                entry.episodeGuid.isNotEmpty && entry.streamUrl.isNotEmpty,
+          )
+          .toList();
     } catch (_) {
       return const [];
     }
@@ -196,9 +214,12 @@ class AppStorage {
       final decoded = jsonDecode(raw);
       if (decoded is! List) return const [];
       return [
-        for (final item in decoded)
-          if (item is Map) EpisodeBookmark.fromJson(Map<String, dynamic>.from(item)),
-      ].where((entry) => entry.id.isNotEmpty && entry.episodeGuid.isNotEmpty).toList();
+            for (final item in decoded)
+              if (item is Map)
+                EpisodeBookmark.fromJson(Map<String, dynamic>.from(item)),
+          ]
+          .where((entry) => entry.id.isNotEmpty && entry.episodeGuid.isNotEmpty)
+          .toList();
     } catch (_) {
       return const [];
     }
@@ -266,7 +287,9 @@ class AppStorage {
     return decoded.map((key, value) => MapEntry(key, value.toString()));
   }
 
-  Future<void> setStationCategoryOverrides(Map<String, String> overrides) async {
+  Future<void> setStationCategoryOverrides(
+    Map<String, String> overrides,
+  ) async {
     await _prefs.setString(_categoryOverridesKey, jsonEncode(overrides));
   }
 
@@ -331,7 +354,8 @@ class AppStorage {
 
   Future<List<String>> getHiddenStationIds() async {
     final hidden = _prefs.getStringList(_hiddenStationIdsKey) ?? const [];
-    final legacy = _prefs.getStringList(_legacyPlaybackFailedStationIdsKey) ?? const [];
+    final legacy =
+        _prefs.getStringList(_legacyPlaybackFailedStationIdsKey) ?? const [];
     if (legacy.isEmpty) return hidden;
     final merged = {...hidden, ...legacy}.toList();
     await setHiddenStationIds(merged);
@@ -373,7 +397,9 @@ class AppStorage {
     return const StationCatalogSelection();
   }
 
-  Future<void> setStationCatalogSelection(StationCatalogSelection selection) async {
+  Future<void> setStationCatalogSelection(
+    StationCatalogSelection selection,
+  ) async {
     await _prefs.setString(
       _stationCatalogSelectionKey,
       jsonEncode(selection.toJson()),
@@ -444,7 +470,10 @@ class AppStorage {
   }
 
   Future<void> setPodcastSpeed(double speed) async {
-    await _prefs.setDouble(_podcastSpeedKey, PodcastPlaybackLogic.snapSpeed(speed));
+    await _prefs.setDouble(
+      _podcastSpeedKey,
+      PodcastPlaybackLogic.snapSpeed(speed),
+    );
   }
 
   double getPodcastSpeedForFeed(String feedId) {
@@ -463,11 +492,16 @@ class AppStorage {
   }
 
   int getPodcastSkipStepSeconds() {
-    return PodcastPlaybackLogic.skipStepFromSeconds(_prefs.getInt(_podcastSkipStepKey));
+    return PodcastPlaybackLogic.skipStepFromSeconds(
+      _prefs.getInt(_podcastSkipStepKey),
+    );
   }
 
   Future<void> setPodcastSkipStepSeconds(int seconds) async {
-    await _prefs.setInt(_podcastSkipStepKey, PodcastPlaybackLogic.skipStepFromSeconds(seconds));
+    await _prefs.setInt(
+      _podcastSkipStepKey,
+      PodcastPlaybackLogic.skipStepFromSeconds(seconds),
+    );
   }
 
   SleepLastValue? getSleepTimerLast() {
@@ -490,7 +524,10 @@ class AppStorage {
   }
 
   Future<void> setPodcastSkipIntro(String feedId, int seconds) async {
-    await _prefs.setInt('$_podcastSkipIntroPrefix$feedId', seconds.clamp(0, 300));
+    await _prefs.setInt(
+      '$_podcastSkipIntroPrefix$feedId',
+      seconds.clamp(0, 300),
+    );
   }
 
   /// Returns skip-outro seconds for a feed; 0 means disabled.
@@ -499,7 +536,10 @@ class AppStorage {
   }
 
   Future<void> setPodcastSkipOutro(String feedId, int seconds) async {
-    await _prefs.setInt('$_podcastSkipOutroPrefix$feedId', seconds.clamp(0, 300));
+    await _prefs.setInt(
+      '$_podcastSkipOutroPrefix$feedId',
+      seconds.clamp(0, 300),
+    );
   }
 
   Future<bool> getDownloadWifiOnly() async {
@@ -549,7 +589,8 @@ class AppStorage {
   }
 
   Future<Set<String>> getPodcastDownloadAllFeedIds() async {
-    return (_prefs.getStringList(_podcastDownloadAllFeedsKey) ?? const []).toSet();
+    return (_prefs.getStringList(_podcastDownloadAllFeedsKey) ?? const [])
+        .toSet();
   }
 
   Future<void> setPodcastDownloadAllFeedIds(Set<String> ids) async {
@@ -557,7 +598,8 @@ class AppStorage {
   }
 
   Future<Set<String>> getPodcastDownloadLatestFeedIds() async {
-    return (_prefs.getStringList(_podcastDownloadLatestFeedsKey) ?? const []).toSet();
+    return (_prefs.getStringList(_podcastDownloadLatestFeedsKey) ?? const [])
+        .toSet();
   }
 
   Future<void> setPodcastDownloadLatestFeedIds(Set<String> ids) async {
@@ -584,7 +626,9 @@ class AppStorage {
     if (raw == null) return null;
     try {
       final decoded = jsonDecode(raw);
-      if (decoded is List && decoded.length == 2 && decoded.every((v) => v is num)) {
+      if (decoded is List &&
+          decoded.length == 2 &&
+          decoded.every((v) => v is num)) {
         return [for (final value in decoded) (value as num).toDouble()];
       }
     } catch (_) {}
@@ -652,7 +696,8 @@ class AppStorage {
     await _prefs.setStringList(_favoriteEpisodeGuidsKey, guids.toList());
   }
 
-  Future<Map<String, FavoritePodcastEpisode>> getFavoritePodcastEpisodes() async {
+  Future<Map<String, FavoritePodcastEpisode>>
+  getFavoritePodcastEpisodes() async {
     final raw = _prefs.getString(_favoritePodcastEpisodesKey);
     if (raw == null || raw.isEmpty) return {};
     try {
@@ -661,7 +706,9 @@ class AppStorage {
       final episodes = <String, FavoritePodcastEpisode>{};
       for (final item in decoded) {
         if (item is! Map) continue;
-        final episode = FavoritePodcastEpisode.fromJson(Map<String, dynamic>.from(item));
+        final episode = FavoritePodcastEpisode.fromJson(
+          Map<String, dynamic>.from(item),
+        );
         if (episode.guid.isNotEmpty) episodes[episode.guid] = episode;
       }
       return episodes;
@@ -672,7 +719,9 @@ class AppStorage {
     }
   }
 
-  Future<void> setFavoritePodcastEpisodes(Map<String, FavoritePodcastEpisode> episodes) async {
+  Future<void> setFavoritePodcastEpisodes(
+    Map<String, FavoritePodcastEpisode> episodes,
+  ) async {
     await _prefs.setString(
       _favoritePodcastEpisodesKey,
       jsonEncode([for (final episode in episodes.values) episode.toJson()]),
@@ -744,7 +793,8 @@ class AppStorage {
   }
 
   Future<Set<String>> getMutedNewEpisodeFeedIds() async =>
-      (_prefs.getStringList(_mutedNewEpisodeFeedsKey) ?? const <String>[]).toSet();
+      (_prefs.getStringList(_mutedNewEpisodeFeedsKey) ?? const <String>[])
+          .toSet();
 
   Future<void> setMutedNewEpisodeFeedIds(Set<String> ids) async {
     await _prefs.setStringList(_mutedNewEpisodeFeedsKey, ids.toList());
@@ -765,7 +815,9 @@ class AppStorage {
     if (raw == null) return {};
     final decoded = jsonDecode(raw);
     if (decoded is! Map) return {};
-    return decoded.map((key, value) => MapEntry(key.toString(), value.toString()));
+    return decoded.map(
+      (key, value) => MapEntry(key.toString(), value.toString()),
+    );
   }
 
   Future<void> setNewEpisodeLastGuids(Map<String, String> guids) async {
@@ -807,20 +859,25 @@ class AppStorage {
       await _prefs.remove(key);
     }
     var written = 0;
-    final legacyEpisodeState = _legacyPodcastEpisodeStateFromBackupPrefs(backup.prefs);
+    final legacyEpisodeState = _legacyPodcastEpisodeStateFromBackupPrefs(
+      backup.prefs,
+    );
     for (final entry in backup.prefs.entries) {
       if (!DeviceBackupLogic.includeKey(entry.key)) continue;
       if (_isLegacyPodcastEpisodeStateKey(entry.key)) continue;
       final ok = await _writePref(entry.key, entry.value);
       if (ok) written++;
     }
-    final episodeState = PodcastEpisodeState.fromJson(backup.podcastState).merge(legacyEpisodeState);
+    final episodeState = PodcastEpisodeState.fromJson(
+      backup.podcastState,
+    ).merge(legacyEpisodeState);
     await _episodeStateStore.replace(episodeState);
     return written;
   }
 
   static bool _isLegacyPodcastEpisodeStateKey(String key) {
-    return key == _listenedEpisodeGuidsKey || key.startsWith(_podcastProgressPrefix);
+    return key == _listenedEpisodeGuidsKey ||
+        key.startsWith(_podcastProgressPrefix);
   }
 
   static PodcastEpisodeState _legacyPodcastEpisodeStateFromBackupPrefs(
@@ -857,7 +914,10 @@ class AppStorage {
       case DevicePrefKind.doubleValue:
         return _prefs.setDouble(key, pref.value as double);
       case DevicePrefKind.stringList:
-        return _prefs.setStringList(key, List<String>.from(pref.value as List<String>));
+        return _prefs.setStringList(
+          key,
+          List<String>.from(pref.value as List<String>),
+        );
     }
   }
 }

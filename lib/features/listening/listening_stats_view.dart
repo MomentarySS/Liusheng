@@ -17,11 +17,12 @@ class ListeningStatsView extends ConsumerWidget {
     final statsAsync = ref.watch(listeningStatsProvider);
     return statsAsync.when(
       loading: () => const Center(child: CircularProgressIndicator()),
-      error: (error, _) => AppEmptyState(
-        icon: Icons.error_outline,
-        message: '无法读取收听统计',
-        detail: error.toString(),
-      ),
+      error:
+          (error, _) => AppEmptyState(
+            icon: Icons.error_outline,
+            message: '无法读取收听统计',
+            detail: error.toString(),
+          ),
       data: (stats) {
         if (stats.totalSeconds <= 0) {
           return const AppEmptyState(
@@ -33,14 +34,20 @@ class ListeningStatsView extends ConsumerWidget {
         final now = DateTime.now();
         final today = ListeningStatsLogic.todaySeconds(stats, now);
         final week = ListeningStatsLogic.weekSeconds(stats, now);
-        final podcast = stats.byDay.values
-            .fold<int>(0, (sum, day) => sum + day.podcastSeconds);
-        final radio = stats.byDay.values
-            .fold<int>(0, (sum, day) => sum + day.radioSeconds);
+        final podcast = stats.byDay.values.fold<int>(
+          0,
+          (sum, day) => sum + day.podcastSeconds,
+        );
+        final radio = stats.byDay.values.fold<int>(
+          0,
+          (sum, day) => sum + day.radioSeconds,
+        );
         final top = ListeningStatsLogic.topSources(stats, limit: 5);
 
         return ListView(
-          padding: const EdgeInsets.only(bottom: LiushengTheme.listBottomPadding),
+          padding: const EdgeInsets.only(
+            bottom: LiushengTheme.listBottomPadding,
+          ),
           children: [
             Align(
               alignment: Alignment.centerRight,
@@ -70,7 +77,9 @@ class ListeningStatsView extends ConsumerWidget {
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                 ),
-                trailing: Text(ListeningStatsLogic.formatDuration(entry.value.seconds)),
+                trailing: Text(
+                  ListeningStatsLogic.formatDuration(entry.value.seconds),
+                ),
               ),
           ],
         );
@@ -79,29 +88,41 @@ class ListeningStatsView extends ConsumerWidget {
   }
 
   Future<void> _confirmClear(BuildContext context, WidgetRef ref) async {
-    final confirmed = await showDialog<bool>(
+    final confirmed =
+        await showDialog<bool>(
           context: context,
-          builder: (context) => AlertDialog(
-            title: const Text('清除收听统计'),
-            content: const Text('将清空收听时长记录，不影响收藏、历史和播放进度。'),
-            actions: [
-              TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('取消')),
-              FilledButton(onPressed: () => Navigator.pop(context, true), child: const Text('清除')),
-            ],
-          ),
+          builder:
+              (context) => AlertDialog(
+                title: const Text('清除收听统计'),
+                content: const Text('将清空收听时长记录，不影响收藏、历史和播放进度。'),
+                actions: [
+                  TextButton(
+                    onPressed: () => Navigator.pop(context, false),
+                    child: const Text('取消'),
+                  ),
+                  FilledButton(
+                    onPressed: () => Navigator.pop(context, true),
+                    child: const Text('清除'),
+                  ),
+                ],
+              ),
         ) ??
         false;
     if (!confirmed || !context.mounted) return;
     await ref.read(listeningStatsProvider.notifier).clear();
     if (!context.mounted) return;
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('收听统计已清除')),
-    );
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(const SnackBar(content: Text('收听统计已清除')));
   }
 }
 
 class _TotalCard extends StatelessWidget {
-  const _TotalCard({required this.total, required this.today, required this.week});
+  const _TotalCard({
+    required this.total,
+    required this.today,
+    required this.week,
+  });
 
   final int total;
   final int today;
@@ -118,16 +139,16 @@ class _TotalCard extends StatelessWidget {
           Text(
             '累计收听',
             style: Theme.of(context).textTheme.labelLarge?.copyWith(
-                  color: colorScheme.onSurfaceVariant,
-                ),
+              color: colorScheme.onSurfaceVariant,
+            ),
           ),
           const SizedBox(height: 4),
           Text(
             ListeningStatsLogic.formatDuration(total),
             style: Theme.of(context).textTheme.displaySmall?.copyWith(
-                  fontWeight: FontWeight.w700,
-                  color: colorScheme.primary,
-                ),
+              fontWeight: FontWeight.w700,
+              color: colorScheme.primary,
+            ),
           ),
           const SizedBox(height: 8),
           Row(
@@ -155,14 +176,14 @@ class _Metric extends StatelessWidget {
       TextSpan(
         text: '$label  ',
         style: Theme.of(context).textTheme.bodySmall?.copyWith(
-              color: Theme.of(context).colorScheme.onSurfaceVariant,
-            ),
+          color: Theme.of(context).colorScheme.onSurfaceVariant,
+        ),
         children: [
           TextSpan(
             text: ListeningStatsLogic.formatDuration(seconds),
-            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                  fontWeight: FontWeight.w600,
-                ),
+            style: Theme.of(
+              context,
+            ).textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w600),
           ),
         ],
       ),
@@ -171,7 +192,11 @@ class _Metric extends StatelessWidget {
 }
 
 class _KindBar extends StatelessWidget {
-  const _KindBar({required this.label, required this.seconds, required this.total});
+  const _KindBar({
+    required this.label,
+    required this.seconds,
+    required this.total,
+  });
 
   final String label;
   final int seconds;
@@ -202,8 +227,8 @@ class _KindBar extends StatelessWidget {
               ListeningStatsLogic.formatDuration(seconds),
               textAlign: TextAlign.end,
               style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                    color: colorScheme.onSurfaceVariant,
-                  ),
+                color: colorScheme.onSurfaceVariant,
+              ),
             ),
           ),
         ],
@@ -224,8 +249,8 @@ class _SectionLabel extends StatelessWidget {
       child: Text(
         text,
         style: Theme.of(context).textTheme.labelLarge?.copyWith(
-              color: Theme.of(context).colorScheme.onSurfaceVariant,
-            ),
+          color: Theme.of(context).colorScheme.onSurfaceVariant,
+        ),
       ),
     );
   }

@@ -49,7 +49,10 @@ abstract final class PodcastStarredLogic {
     return PodcastGuidSetLogic.add(current, guid: episodeGuid);
   }
 
-  static Set<String> unstar(Set<String> current, {required String episodeGuid}) {
+  static Set<String> unstar(
+    Set<String> current, {
+    required String episodeGuid,
+  }) {
     return PodcastGuidSetLogic.remove(current, guid: episodeGuid);
   }
 }

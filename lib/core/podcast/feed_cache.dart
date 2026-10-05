@@ -31,9 +31,10 @@ class CachedEpisode {
       guid: json['guid'] as String? ?? '',
       title: json['title'] as String? ?? '',
       audioUrl: json['audioUrl'] as String? ?? '',
-      publishedAt: publishedMs is int
-          ? DateTime.fromMillisecondsSinceEpoch(publishedMs)
-          : DateTime.tryParse(json['publishedAt']?.toString() ?? ''),
+      publishedAt:
+          publishedMs is int
+              ? DateTime.fromMillisecondsSinceEpoch(publishedMs)
+              : DateTime.tryParse(json['publishedAt']?.toString() ?? ''),
       durationMs: json['durationMs'] as int?,
       imageUrl: json['imageUrl'] as String?,
     );
@@ -47,16 +48,19 @@ class CachedEpisode {
   final String? imageUrl;
 
   Duration? get duration =>
-      durationMs != null && durationMs! > 0 ? Duration(milliseconds: durationMs!) : null;
+      durationMs != null && durationMs! > 0
+          ? Duration(milliseconds: durationMs!)
+          : null;
 
   Map<String, dynamic> toJson() => {
-        'guid': guid,
-        'title': title,
-        'audioUrl': audioUrl,
-        if (publishedAt != null) 'publishedAtMs': publishedAt!.millisecondsSinceEpoch,
-        if (durationMs != null) 'durationMs': durationMs,
-        if (imageUrl != null) 'imageUrl': imageUrl,
-      };
+    'guid': guid,
+    'title': title,
+    'audioUrl': audioUrl,
+    if (publishedAt != null)
+      'publishedAtMs': publishedAt!.millisecondsSinceEpoch,
+    if (durationMs != null) 'durationMs': durationMs,
+    if (imageUrl != null) 'imageUrl': imageUrl,
+  };
 
   PodcastEpisode toEpisode() {
     return PodcastEpisode(
@@ -110,9 +114,10 @@ class FavoritePodcastEpisode {
       title: json['title'] as String? ?? '',
       audioUrl: json['audioUrl'] as String? ?? '',
       feedImageUrl: json['feedImageUrl'] as String?,
-      publishedAt: publishedMs is int
-          ? DateTime.fromMillisecondsSinceEpoch(publishedMs)
-          : DateTime.tryParse(json['publishedAt']?.toString() ?? ''),
+      publishedAt:
+          publishedMs is int
+              ? DateTime.fromMillisecondsSinceEpoch(publishedMs)
+              : DateTime.tryParse(json['publishedAt']?.toString() ?? ''),
       durationMs: json['durationMs'] as int?,
       imageUrl: json['imageUrl'] as String?,
     );
@@ -129,30 +134,33 @@ class FavoritePodcastEpisode {
   final String? imageUrl;
 
   Duration? get duration =>
-      durationMs != null && durationMs! > 0 ? Duration(milliseconds: durationMs!) : null;
+      durationMs != null && durationMs! > 0
+          ? Duration(milliseconds: durationMs!)
+          : null;
 
   String? get artworkUrl => imageUrl ?? feedImageUrl;
 
   PodcastEpisode toEpisode() => PodcastEpisode(
-        guid: guid,
-        title: title,
-        audioUrl: audioUrl,
-        publishedAt: publishedAt,
-        duration: duration,
-        imageUrl: imageUrl,
-      );
+    guid: guid,
+    title: title,
+    audioUrl: audioUrl,
+    publishedAt: publishedAt,
+    duration: duration,
+    imageUrl: imageUrl,
+  );
 
   Map<String, dynamic> toJson() => {
-        'feedId': feedId,
-        'feedTitle': feedTitle,
-        'guid': guid,
-        'title': title,
-        'audioUrl': audioUrl,
-        if (feedImageUrl != null) 'feedImageUrl': feedImageUrl,
-        if (publishedAt != null) 'publishedAtMs': publishedAt!.millisecondsSinceEpoch,
-        if (durationMs != null) 'durationMs': durationMs,
-        if (imageUrl != null) 'imageUrl': imageUrl,
-      };
+    'feedId': feedId,
+    'feedTitle': feedTitle,
+    'guid': guid,
+    'title': title,
+    'audioUrl': audioUrl,
+    if (feedImageUrl != null) 'feedImageUrl': feedImageUrl,
+    if (publishedAt != null)
+      'publishedAtMs': publishedAt!.millisecondsSinceEpoch,
+    if (durationMs != null) 'durationMs': durationMs,
+    if (imageUrl != null) 'imageUrl': imageUrl,
+  };
 }
 
 class CachedFeedSnapshot {
@@ -167,13 +175,15 @@ class CachedFeedSnapshot {
     final raw = json['episodes'];
     return CachedFeedSnapshot(
       feedId: json['feedId'] as String? ?? '',
-      fetchedAt: fetchedMs is int
-          ? DateTime.fromMillisecondsSinceEpoch(fetchedMs)
-          : DateTime.fromMillisecondsSinceEpoch(0),
+      fetchedAt:
+          fetchedMs is int
+              ? DateTime.fromMillisecondsSinceEpoch(fetchedMs)
+              : DateTime.fromMillisecondsSinceEpoch(0),
       episodes: [
         if (raw is List)
           for (final item in raw)
-            if (item is Map) CachedEpisode.fromJson(Map<String, dynamic>.from(item)),
+            if (item is Map)
+              CachedEpisode.fromJson(Map<String, dynamic>.from(item)),
       ],
     );
   }
@@ -183,17 +193,14 @@ class CachedFeedSnapshot {
   final List<CachedEpisode> episodes;
 
   Map<String, dynamic> toJson() => {
-        'feedId': feedId,
-        'fetchedAtMs': fetchedAt.millisecondsSinceEpoch,
-        'episodes': [for (final episode in episodes) episode.toJson()],
-      };
+    'feedId': feedId,
+    'fetchedAtMs': fetchedAt.millisecondsSinceEpoch,
+    'episodes': [for (final episode in episodes) episode.toJson()],
+  };
 }
 
 class InboxItem {
-  const InboxItem({
-    required this.feed,
-    required this.episode,
-  });
+  const InboxItem({required this.feed, required this.episode});
 
   final PodcastFeed feed;
   final PodcastEpisode episode;
@@ -209,12 +216,11 @@ abstract final class FeedCacheLogic {
     PodcastDetail detail, {
     required DateTime fetchedAt,
   }) {
-    final newestFirst = [...detail.episodes]
-      ..sort((a, b) {
-        final aAt = a.publishedAt ?? DateTime.fromMillisecondsSinceEpoch(0);
-        final bAt = b.publishedAt ?? DateTime.fromMillisecondsSinceEpoch(0);
-        return bAt.compareTo(aAt);
-      });
+    final newestFirst = [...detail.episodes]..sort((a, b) {
+      final aAt = a.publishedAt ?? DateTime.fromMillisecondsSinceEpoch(0);
+      final bAt = b.publishedAt ?? DateTime.fromMillisecondsSinceEpoch(0);
+      return bAt.compareTo(aAt);
+    });
     return CachedFeedSnapshot(
       feedId: detail.feed.id,
       fetchedAt: fetchedAt,
@@ -256,7 +262,9 @@ abstract final class FeedCacheLogic {
     });
     final due = [
       for (final feed in ranked)
-        if (force || isStale(snapshot: cache[feed.id], now: now, minAge: minAge)) feed,
+        if (force ||
+            isStale(snapshot: cache[feed.id], now: now, minAge: minAge))
+          feed,
     ];
     return due.take(max).toList();
   }
@@ -287,17 +295,24 @@ abstract final class FeedCacheLogic {
       items.add(InboxItem(feed: feed, episode: newest.toEpisode()));
     }
     items.sort((a, b) {
-      final aAt = a.episode.publishedAt ?? DateTime.fromMillisecondsSinceEpoch(0);
-      final bAt = b.episode.publishedAt ?? DateTime.fromMillisecondsSinceEpoch(0);
+      final aAt =
+          a.episode.publishedAt ?? DateTime.fromMillisecondsSinceEpoch(0);
+      final bAt =
+          b.episode.publishedAt ?? DateTime.fromMillisecondsSinceEpoch(0);
       return bAt.compareTo(aAt);
     });
     return items.take(max).toList();
   }
 
-  static Map<String, Set<String>> searchTitles(Map<String, CachedFeedSnapshot> cache) {
+  static Map<String, Set<String>> searchTitles(
+    Map<String, CachedFeedSnapshot> cache,
+  ) {
     return {
       for (final entry in cache.entries)
-        entry.key: {for (final episode in entry.value.episodes) episode.title.toLowerCase()},
+        entry.key: {
+          for (final episode in entry.value.episodes)
+            episode.title.toLowerCase(),
+        },
     };
   }
 
@@ -312,7 +327,8 @@ abstract final class FeedCacheLogic {
         final snapshot = CachedFeedSnapshot.fromJson(
           Map<String, dynamic>.from(entry.value as Map),
         );
-        final id = snapshot.feedId.isEmpty ? entry.key.toString() : snapshot.feedId;
+        final id =
+            snapshot.feedId.isEmpty ? entry.key.toString() : snapshot.feedId;
         if (id.isEmpty) continue;
         out[id] = CachedFeedSnapshot(
           feedId: id,

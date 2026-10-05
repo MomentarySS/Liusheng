@@ -35,9 +35,12 @@ class AboutScreen extends StatelessWidget {
             title: const Text(PrivacyCopy.title),
             subtitle: const Text(PrivacyCopy.summary),
             trailing: const Icon(Icons.chevron_right),
-            onTap: () => Navigator.of(context).push(
-              MaterialPageRoute<void>(builder: (_) => const PrivacyScreen()),
-            ),
+            onTap:
+                () => Navigator.of(context).push(
+                  MaterialPageRoute<void>(
+                    builder: (_) => const PrivacyScreen(),
+                  ),
+                ),
           ),
         ],
       ),

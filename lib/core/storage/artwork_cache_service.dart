@@ -22,11 +22,15 @@ class ArtworkCacheService {
     try {
       var total = 0;
       final tempDir = await getTemporaryDirectory();
-      final cacheDir = Directory('${tempDir.path}${Platform.pathSeparator}$_cacheKey');
+      final cacheDir = Directory(
+        '${tempDir.path}${Platform.pathSeparator}$_cacheKey',
+      );
       if (await cacheDir.exists()) {
         total += await _directorySize(cacheDir);
       }
-      final dbFile = File('${tempDir.path}${Platform.pathSeparator}$_cacheKey.db');
+      final dbFile = File(
+        '${tempDir.path}${Platform.pathSeparator}$_cacheKey.db',
+      );
       if (await dbFile.exists()) {
         total += await dbFile.length();
       }

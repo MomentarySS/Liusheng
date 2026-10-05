@@ -54,12 +54,14 @@ class _RecordingPlayerController extends PlayerController {
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
-  testWidgets('hover actions remove a queue item and un-favorite a station',
-      (tester) async {
+  testWidgets('hover actions remove a queue item and un-favorite a station', (
+    tester,
+  ) async {
     SharedPreferences.setMockInitialValues({});
     final storage = AppStorage(await SharedPreferences.getInstance());
-    await storage
-        .setPlayQueue(const PlayQueue(items: [_queueFirst, _queueSecond]));
+    await storage.setPlayQueue(
+      const PlayQueue(items: [_queueFirst, _queueSecond]),
+    );
     await storage.setFavoriteIds([_station.id]);
     late final _RecordingPlayerController playerController;
     final container = ProviderContainer(
@@ -68,8 +70,9 @@ void main() {
         audioHandlerProvider.overrideWith(
           (ref) => Completer<RadioAudioHandler>().future,
         ),
-        favoriteStationsProvider
-            .overrideWith((ref) => const AsyncData([_station])),
+        favoriteStationsProvider.overrideWith(
+          (ref) => const AsyncData([_station]),
+        ),
         playerControllerProvider.overrideWith((ref) {
           playerController = _RecordingPlayerController(ref);
           return playerController;
@@ -90,14 +93,12 @@ void main() {
     container.read(favoriteIdsProvider);
     await tester.pumpAndSettle();
 
-    double actionOpacity(Finder action) => tester
-        .widget<AnimatedOpacity>(
-          find.ancestor(
-            of: action,
-            matching: find.byType(AnimatedOpacity),
-          ),
-        )
-        .opacity;
+    double actionOpacity(Finder action) =>
+        tester
+            .widget<AnimatedOpacity>(
+              find.ancestor(of: action, matching: find.byType(AnimatedOpacity)),
+            )
+            .opacity;
 
     final queueRow = find.ancestor(
       of: find.text(_queueFirst.title),
@@ -123,10 +124,9 @@ void main() {
     expect(playerController.played, isEmpty);
     await tester.tap(find.text(_queueSecond.title));
     await tester.pump();
-    expect(
-      playerController.played.map((item) => item.title),
-      [_queueSecond.title],
-    );
+    expect(playerController.played.map((item) => item.title), [
+      _queueSecond.title,
+    ]);
 
     final favoriteRow = find.ancestor(
       of: find.text(_station.name),
@@ -150,26 +150,28 @@ void main() {
     await tester.tap(favoriteAction);
     await tester.pumpAndSettle();
     expect(await storage.getFavoriteIds(), isEmpty);
-    expect(
-      playerController.played.map((item) => item.title),
-      [_queueSecond.title],
-    );
+    expect(playerController.played.map((item) => item.title), [
+      _queueSecond.title,
+    ]);
   });
 
-  testWidgets('sidebar arrow keys move focus through the visible controls',
-      (tester) async {
+  testWidgets('sidebar arrow keys move focus through the visible controls', (
+    tester,
+  ) async {
     SharedPreferences.setMockInitialValues({});
     final storage = AppStorage(await SharedPreferences.getInstance());
-    await storage
-        .setPlayQueue(const PlayQueue(items: [_queueFirst, _queueSecond]));
+    await storage.setPlayQueue(
+      const PlayQueue(items: [_queueFirst, _queueSecond]),
+    );
     final container = ProviderContainer(
       overrides: [
         appStorageProvider.overrideWith((ref) async => storage),
         audioHandlerProvider.overrideWith(
           (ref) => Completer<RadioAudioHandler>().future,
         ),
-        favoriteStationsProvider
-            .overrideWith((ref) => const AsyncData([_station])),
+        favoriteStationsProvider.overrideWith(
+          (ref) => const AsyncData([_station]),
+        ),
       ],
     );
     addTearDown(container.dispose);
@@ -206,14 +208,15 @@ void main() {
     for (var i = 0; i < 30; i++) {
       await tester.sendKeyEvent(LogicalKeyboardKey.arrowDown);
       await tester.pump();
-      final opacity = tester
-          .widget<AnimatedOpacity>(
-            find.ancestor(
-              of: queueAction,
-              matching: find.byType(AnimatedOpacity),
-            ),
-          )
-          .opacity;
+      final opacity =
+          tester
+              .widget<AnimatedOpacity>(
+                find.ancestor(
+                  of: queueAction,
+                  matching: find.byType(AnimatedOpacity),
+                ),
+              )
+              .opacity;
       if (opacity > 0) {
         actionShownByFocus = true;
         break;
@@ -222,44 +225,46 @@ void main() {
     expect(actionShownByFocus, isTrue);
   });
 
-  testWidgets('Tab, Space and Enter operate keyboard-focused sidebar controls',
-      (tester) async {
-    final activated = <String>[];
-    await tester.pumpWidget(
-      MaterialApp(
-        home: DeskSidebarKeyboardNavigation(
-          child: Scaffold(
-            body: Column(
-              children: [
-                TextButton(
-                  onPressed: () => activated.add('first'),
-                  child: const Text('第一个操作'),
-                ),
-                TextButton(
-                  onPressed: () => activated.add('second'),
-                  child: const Text('第二个操作'),
-                ),
-              ],
+  testWidgets(
+    'Tab, Space and Enter operate keyboard-focused sidebar controls',
+    (tester) async {
+      final activated = <String>[];
+      await tester.pumpWidget(
+        MaterialApp(
+          home: DeskSidebarKeyboardNavigation(
+            child: Scaffold(
+              body: Column(
+                children: [
+                  TextButton(
+                    onPressed: () => activated.add('first'),
+                    child: const Text('第一个操作'),
+                  ),
+                  TextButton(
+                    onPressed: () => activated.add('second'),
+                    child: const Text('第二个操作'),
+                  ),
+                ],
+              ),
             ),
           ),
         ),
-      ),
-    );
+      );
 
-    await tester.sendKeyEvent(LogicalKeyboardKey.tab);
-    final firstFocus = FocusManager.instance.primaryFocus;
-    await tester.sendKeyEvent(LogicalKeyboardKey.space);
-    await tester.pump();
-    expect(activated, ['first']);
+      await tester.sendKeyEvent(LogicalKeyboardKey.tab);
+      final firstFocus = FocusManager.instance.primaryFocus;
+      await tester.sendKeyEvent(LogicalKeyboardKey.space);
+      await tester.pump();
+      expect(activated, ['first']);
 
-    await tester.sendKeyEvent(LogicalKeyboardKey.tab);
-    await tester.sendKeyEvent(LogicalKeyboardKey.enter);
-    await tester.pump();
-    expect(activated, ['first', 'second']);
+      await tester.sendKeyEvent(LogicalKeyboardKey.tab);
+      await tester.sendKeyEvent(LogicalKeyboardKey.enter);
+      await tester.pump();
+      expect(activated, ['first', 'second']);
 
-    await tester.sendKeyDownEvent(LogicalKeyboardKey.shiftLeft);
-    await tester.sendKeyEvent(LogicalKeyboardKey.tab);
-    await tester.sendKeyUpEvent(LogicalKeyboardKey.shiftLeft);
-    expect(FocusManager.instance.primaryFocus, same(firstFocus));
-  });
+      await tester.sendKeyDownEvent(LogicalKeyboardKey.shiftLeft);
+      await tester.sendKeyEvent(LogicalKeyboardKey.tab);
+      await tester.sendKeyUpEvent(LogicalKeyboardKey.shiftLeft);
+      expect(FocusManager.instance.primaryFocus, same(firstFocus));
+    },
+  );
 }

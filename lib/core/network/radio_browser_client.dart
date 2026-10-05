@@ -12,16 +12,15 @@ import 'system_http_proxy.dart';
 /// 启动时通过 `all.api.radio-browser.info` 解析当前可用镜像，失败则回退到内置列表。
 class RadioBrowserClient {
   RadioBrowserClient({Dio? dio})
-      : _dio = dio ??
-            SystemHttpProxy.createDio(
-              BaseOptions(
-                connectTimeout: const Duration(seconds: 15),
-                receiveTimeout: const Duration(seconds: 20),
-                headers: {
-                  'User-Agent': userAgent,
-                },
-              ),
-            );
+    : _dio =
+          dio ??
+          SystemHttpProxy.createDio(
+            BaseOptions(
+              connectTimeout: const Duration(seconds: 15),
+              receiveTimeout: const Duration(seconds: 20),
+              headers: {'User-Agent': userAgent},
+            ),
+          );
 
   /// Radio Browser 要求可识别的 User-Agent，禁止占位邮箱。
   static const userAgent = AppBrand.userAgent;
@@ -65,7 +64,12 @@ class RadioBrowserClient {
         _hostIndex = 0;
       }
     } catch (error, stackTrace) {
-      AppLog.e('RadioBrowser', 'resolve servers failed', error: error, stackTrace: stackTrace);
+      AppLog.e(
+        'RadioBrowser',
+        'resolve servers failed',
+        error: error,
+        stackTrace: stackTrace,
+      );
     }
     _resolved = true;
   }
@@ -99,7 +103,9 @@ class RadioBrowserClient {
         final data = response.data ?? [];
         final stations = <RadioStation>[];
         for (final item in data.whereType<Map<String, dynamic>>()) {
-          if (!RadioBrowserCatalogLogic.keepCountry(item['countrycode']?.toString())) {
+          if (!RadioBrowserCatalogLogic.keepCountry(
+            item['countrycode']?.toString(),
+          )) {
             continue;
           }
           final station = RadioStation.fromRadioBrowser(item);
@@ -120,14 +126,18 @@ class RadioBrowserClient {
     int voteLimit = 80,
     StationCatalogSelection? selection,
   }) async {
-    final queries = selection == null
-        ? RadioBrowserCatalogLogic.chinaCatalogQueries(voteLimit: voteLimit)
-        : RadioBrowserCatalogLogic.catalogQueriesForSelection(
-            selection,
-            voteLimit: voteLimit,
-          );
+    final queries =
+        selection == null
+            ? RadioBrowserCatalogLogic.chinaCatalogQueries(voteLimit: voteLimit)
+            : RadioBrowserCatalogLogic.catalogQueriesForSelection(
+              selection,
+              voteLimit: voteLimit,
+            );
     if (queries.isEmpty) return const [];
-    final batches = List<List<RadioStation>>.generate(queries.length, (_) => const []);
+    final batches = List<List<RadioStation>>.generate(
+      queries.length,
+      (_) => const [],
+    );
     var next = 0;
 
     Future<void> worker() async {
@@ -145,7 +155,9 @@ class RadioBrowserClient {
     return mergeById(batches.expand((list) => list));
   }
 
-  Future<List<RadioStation>> _safeFetchQuery(RadioBrowserSearchQuery query) async {
+  Future<List<RadioStation>> _safeFetchQuery(
+    RadioBrowserSearchQuery query,
+  ) async {
     try {
       return await fetchByQuery(query);
     } catch (_) {

@@ -55,9 +55,9 @@ class LiushengSkinTheme extends ThemeExtension<LiushengSkinTheme> {
       Color.alphaBlend(coverAccent.withValues(alpha: 0.36), surface);
 
   TextStyle? countdownStyle(TextStyle? base, Color color) => base?.copyWith(
-        color: color,
-        fontFeatures: const [FontFeature.tabularFigures()],
-      );
+    color: color,
+    fontFeatures: const [FontFeature.tabularFigures()],
+  );
 
   @override
   LiushengSkinTheme copyWith() => const LiushengSkinTheme();

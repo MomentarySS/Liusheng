@@ -59,13 +59,20 @@ class AppEmptyState extends StatelessWidget {
                 const SizedBox(height: 16),
                 FilledButton(onPressed: onAction, child: Text(actionLabel!)),
               ],
-              if (onSecondaryAction != null && secondaryActionLabel != null) ...[
+              if (onSecondaryAction != null &&
+                  secondaryActionLabel != null) ...[
                 const SizedBox(height: 8),
-                TextButton(onPressed: onSecondaryAction, child: Text(secondaryActionLabel!)),
+                TextButton(
+                  onPressed: onSecondaryAction,
+                  child: Text(secondaryActionLabel!),
+                ),
               ],
               if (onTertiaryAction != null && tertiaryActionLabel != null) ...[
                 const SizedBox(height: 4),
-                TextButton(onPressed: onTertiaryAction, child: Text(tertiaryActionLabel!)),
+                TextButton(
+                  onPressed: onTertiaryAction,
+                  child: Text(tertiaryActionLabel!),
+                ),
               ],
             ],
           ),

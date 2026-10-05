@@ -13,7 +13,11 @@ import '../podcast/podcast_providers.dart';
 
 /// 播客单集收听历史条目：显示收听进度，点按续播。
 class PodcastHistoryTile extends ConsumerWidget {
-  const PodcastHistoryTile({super.key, required this.entry, required this.current});
+  const PodcastHistoryTile({
+    super.key,
+    required this.entry,
+    required this.current,
+  });
 
   final PodcastHistoryEntry entry;
   final PlaybackItem? current;
@@ -22,10 +26,22 @@ class PodcastHistoryTile extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final progress = ref.watch(podcastProgressProvider(entry.episodeGuid));
     final duration = entry.duration;
-    final isCurrent = NowPlayingIndicatorLogic.isCurrentEpisode(current, entry.episodeGuid);
-    final finished = PodcastPlaybackLogic.isFinished(progress: progress, duration: duration);
-    final fraction = PodcastPlaybackLogic.progressFraction(progress: progress, duration: duration);
-    final playedAt = PodcastHistoryLogic.playedAtLabel(entry.playedAt, DateTime.now());
+    final isCurrent = NowPlayingIndicatorLogic.isCurrentEpisode(
+      current,
+      entry.episodeGuid,
+    );
+    final finished = PodcastPlaybackLogic.isFinished(
+      progress: progress,
+      duration: duration,
+    );
+    final fraction = PodcastPlaybackLogic.progressFraction(
+      progress: progress,
+      duration: duration,
+    );
+    final playedAt = PodcastHistoryLogic.playedAtLabel(
+      entry.playedAt,
+      DateTime.now(),
+    );
     final progressText = PodcastHistoryLogic.progressLabel(
       progress: progress,
       duration: duration,
@@ -40,7 +56,11 @@ class PodcastHistoryTile extends ConsumerWidget {
       ),
       leading: NowPlayingLeading(
         active: isCurrent,
-        child: StationArtwork(url: entry.artworkUrl, size: 48, icon: Icons.podcasts),
+        child: StationArtwork(
+          url: entry.artworkUrl,
+          size: 48,
+          icon: Icons.podcasts,
+        ),
       ),
       title: Text(
         entry.episodeTitle,
@@ -71,7 +91,8 @@ class PodcastHistoryTile extends ConsumerWidget {
         NowPlayingIndicatorLogic.icon,
         color: isCurrent ? Theme.of(context).colorScheme.primary : null,
       ),
-      onTap: () => ref.read(playerControllerProvider).play(entry.toPlaybackItem()),
+      onTap:
+          () => ref.read(playerControllerProvider).play(entry.toPlaybackItem()),
     );
   }
 }

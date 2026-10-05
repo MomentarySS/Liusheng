@@ -24,10 +24,15 @@ abstract final class PlaylistImportLogic {
     final text = raw.trim();
     if (text.isEmpty || looksLikeHlsManifest(text)) return false;
     final head = text.length > 64 ? text.substring(0, 64) : text;
-    if (head.startsWith('#EXTM3U') || head.toLowerCase().startsWith('[playlist]')) {
+    if (head.startsWith('#EXTM3U') ||
+        head.toLowerCase().startsWith('[playlist]')) {
       return true;
     }
-    return RegExp(r'^File\d+\s*=', multiLine: true, caseSensitive: false).hasMatch(text);
+    return RegExp(
+      r'^File\d+\s*=',
+      multiLine: true,
+      caseSensitive: false,
+    ).hasMatch(text);
   }
 
   static bool isHttpUrl(String raw) {
@@ -46,7 +51,11 @@ abstract final class PlaylistImportLogic {
   static bool looksLikePls(String text) {
     final head = text.length > 64 ? text.substring(0, 64) : text;
     return head.toLowerCase().contains('[playlist]') ||
-        RegExp(r'^File\d+\s*=', multiLine: true, caseSensitive: false).hasMatch(text);
+        RegExp(
+          r'^File\d+\s*=',
+          multiLine: true,
+          caseSensitive: false,
+        ).hasMatch(text);
   }
 
   static PlaylistEntry? firstPlayable(String raw) {
@@ -94,7 +103,9 @@ abstract final class PlaylistImportLogic {
     final titles = <int, String>{};
     for (final rawLine in text.split(RegExp(r'\r?\n'))) {
       final line = rawLine.trim();
-      if (line.isEmpty || line.startsWith('[') || line.startsWith(';')) continue;
+      if (line.isEmpty || line.startsWith('[') || line.startsWith(';')) {
+        continue;
+      }
       final eq = line.indexOf('=');
       if (eq <= 0) continue;
       final key = line.substring(0, eq).trim().toLowerCase();

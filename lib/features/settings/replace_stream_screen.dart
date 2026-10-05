@@ -14,7 +14,8 @@ class ReplaceStreamScreen extends ConsumerStatefulWidget {
   final RadioStation station;
 
   @override
-  ConsumerState<ReplaceStreamScreen> createState() => _ReplaceStreamScreenState();
+  ConsumerState<ReplaceStreamScreen> createState() =>
+      _ReplaceStreamScreenState();
 }
 
 class _ReplaceStreamScreenState extends ConsumerState<ReplaceStreamScreen> {
@@ -74,33 +75,34 @@ class _ReplaceStreamScreenState extends ConsumerState<ReplaceStreamScreen> {
     if (!resolved.ok) {
       if (!mounted) return;
       setState(() => _saving = false);
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(resolved.message ?? '无法解析地址')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(resolved.message ?? '无法解析地址')));
       return;
     }
-    final error = await ref.read(stationPatchesProvider.notifier).replaceUrl(
-          station: widget.station,
-          streamUrl: resolved.streamUrl,
-        );
+    final error = await ref
+        .read(stationPatchesProvider.notifier)
+        .replaceUrl(station: widget.station, streamUrl: resolved.streamUrl);
     if (!mounted) return;
     setState(() => _saving = false);
     if (error != null) {
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(error)));
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(error)));
       return;
     }
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('已更换流地址，可直接播放')),
-    );
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(const SnackBar(content: Text('已更换流地址，可直接播放')));
     Navigator.of(context).pop();
   }
 
   Future<void> _restore() async {
     await ref.read(stationPatchesProvider.notifier).restore(widget.station.id);
     if (!mounted) return;
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('已恢复精选原址')),
-    );
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(const SnackBar(content: Text('已恢复精选原址')));
     Navigator.of(context).pop();
   }
 
@@ -108,25 +110,38 @@ class _ReplaceStreamScreenState extends ConsumerState<ReplaceStreamScreen> {
   Widget build(BuildContext context) {
     final patches = ref.watch(stationPatchesProvider).value ?? {};
     final patched = StationPatchLogic.isPatched(widget.station.id, patches);
-    final original = patches[widget.station.id]?.originalStreamUrl ?? widget.station.streamUrl;
+    final original =
+        patches[widget.station.id]?.originalStreamUrl ??
+        widget.station.streamUrl;
 
     return Scaffold(
       appBar: AppBar(title: const Text('更换流地址')),
       body: ListView(
-        padding: const EdgeInsets.fromLTRB(16, 16, 16, LiushengTheme.listBottomPadding),
+        padding: const EdgeInsets.fromLTRB(
+          16,
+          16,
+          16,
+          LiushengTheme.listBottomPadding,
+        ),
         children: [
-          Text(widget.station.name, style: Theme.of(context).textTheme.titleMedium),
+          Text(
+            widget.station.name,
+            style: Theme.of(context).textTheme.titleMedium,
+          ),
           const SizedBox(height: 8),
           Text(
             '精选和网络发现的台也可以在这里改地址，不用等发版。改动只存在本机。',
             style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                  color: Theme.of(context).colorScheme.onSurfaceVariant,
-                ),
+              color: Theme.of(context).colorScheme.onSurfaceVariant,
+            ),
           ),
           if (patched) ...[
             const SizedBox(height: 12),
             Text('原址', style: Theme.of(context).textTheme.labelLarge),
-            SelectableText(original, style: Theme.of(context).textTheme.bodySmall),
+            SelectableText(
+              original,
+              style: Theme.of(context).textTheme.bodySmall,
+            ),
           ],
           const SizedBox(height: 16),
           TextField(
@@ -151,9 +166,10 @@ class _ReplaceStreamScreenState extends ConsumerState<ReplaceStreamScreen> {
                   child: Text(
                     _testMessage!,
                     style: TextStyle(
-                      color: _testOk == true
-                          ? Theme.of(context).colorScheme.primary
-                          : Theme.of(context).colorScheme.error,
+                      color:
+                          _testOk == true
+                              ? Theme.of(context).colorScheme.primary
+                              : Theme.of(context).colorScheme.error,
                     ),
                   ),
                 ),
@@ -167,10 +183,7 @@ class _ReplaceStreamScreenState extends ConsumerState<ReplaceStreamScreen> {
           ),
           if (patched) ...[
             const SizedBox(height: 8),
-            TextButton(
-              onPressed: _restore,
-              child: const Text('恢复精选原址'),
-            ),
+            TextButton(onPressed: _restore, child: const Text('恢复精选原址')),
           ],
         ],
       ),

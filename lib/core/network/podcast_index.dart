@@ -29,7 +29,8 @@ abstract final class PodcastIndexLogic {
   static const maxResults = 30;
 
   static bool hasCredentials(String? key, String? secret) {
-    return (key?.trim().isNotEmpty ?? false) && (secret?.trim().isNotEmpty ?? false);
+    return (key?.trim().isNotEmpty ?? false) &&
+        (secret?.trim().isNotEmpty ?? false);
   }
 
   static String authorization({

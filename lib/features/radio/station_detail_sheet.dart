@@ -61,26 +61,24 @@ class _StationDetailSheet extends ConsumerWidget {
                   size: 56,
                 ),
                 const SizedBox(width: 12),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            station.name,
-                            style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                                  fontWeight: FontWeight.w600,
-                                ),
-                          ),
-                          if (patched)
-                            Text(
-                              '已在本机更换流地址',
-                              style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                                    color: colorScheme.primary,
-                                  ),
-                            ),
-                        ],
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        station.name,
+                        style: Theme.of(context).textTheme.titleMedium
+                            ?.copyWith(fontWeight: FontWeight.w600),
                       ),
-                    ),
+                      if (patched)
+                        Text(
+                          '已在本机更换流地址',
+                          style: Theme.of(context).textTheme.bodySmall
+                              ?.copyWith(color: colorScheme.primary),
+                        ),
+                    ],
+                  ),
+                ),
               ],
             ),
             const SizedBox(height: 16),
@@ -95,8 +93,8 @@ class _StationDetailSheet extends ConsumerWidget {
                       child: Text(
                         row.$1,
                         style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                              color: colorScheme.onSurfaceVariant,
-                            ),
+                          color: colorScheme.onSurfaceVariant,
+                        ),
                       ),
                     ),
                     Expanded(
@@ -119,11 +117,15 @@ class _StationDetailSheet extends ConsumerWidget {
                     Navigator.pop(context);
                     await ref.read(recentIdsProvider.notifier).add(station.id);
                     if (station.source == StationSource.api) {
-                      unawaited(ref.read(radioBrowserClientProvider).reportClick(station.id));
+                      unawaited(
+                        ref
+                            .read(radioBrowserClientProvider)
+                            .reportClick(station.id),
+                      );
                     }
-                    await ref.read(playerControllerProvider).play(
-                          PlaybackItem.fromStation(station),
-                        );
+                    await ref
+                        .read(playerControllerProvider)
+                        .play(PlaybackItem.fromStation(station));
                   },
                   icon: const Icon(Icons.play_arrow_rounded),
                   label: const Text('播放'),
@@ -144,11 +146,13 @@ class _StationDetailSheet extends ConsumerWidget {
                 if (StationDetailLogic.canShareStream(station)) ...[
                   OutlinedButton(
                     onPressed: () async {
-                      await Clipboard.setData(ClipboardData(text: station.streamUrl));
+                      await Clipboard.setData(
+                        ClipboardData(text: station.streamUrl),
+                      );
                       if (context.mounted) {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(content: Text('已复制流地址')),
-                        );
+                        ScaffoldMessenger.of(
+                          context,
+                        ).showSnackBar(const SnackBar(content: Text('已复制流地址')));
                       }
                     },
                     child: const Text('复制地址'),
@@ -163,18 +167,26 @@ class _StationDetailSheet extends ConsumerWidget {
                     Navigator.pop(context);
                     Navigator.of(context).push(
                       MaterialPageRoute<void>(
-                        builder: (_) => StationDetailLogic.usesCustomEditor(station)
-                            ? CustomStationsScreen(editing: station)
-                            : ReplaceStreamScreen(station: station),
+                        builder:
+                            (_) =>
+                                StationDetailLogic.usesCustomEditor(station)
+                                    ? CustomStationsScreen(editing: station)
+                                    : ReplaceStreamScreen(station: station),
                       ),
                     );
                   },
-                  child: Text(StationDetailLogic.usesCustomEditor(station) ? '编辑' : '更换地址'),
+                  child: Text(
+                    StationDetailLogic.usesCustomEditor(station)
+                        ? '编辑'
+                        : '更换地址',
+                  ),
                 ),
                 OutlinedButton.icon(
                   onPressed: () async {
                     final messenger = ScaffoldMessenger.of(context);
-                    await ref.read(hiddenStationIdsProvider.notifier).hide(station.id);
+                    await ref
+                        .read(hiddenStationIdsProvider.notifier)
+                        .hide(station.id);
                     if (!context.mounted) return;
                     Navigator.pop(context);
                     messenger.showSnackBar(
@@ -182,8 +194,10 @@ class _StationDetailSheet extends ConsumerWidget {
                         content: Text('已隐藏 ${station.name}'),
                         action: SnackBarAction(
                           label: '撤销',
-                          onPressed: () =>
-                              ref.read(hiddenStationIdsProvider.notifier).unhide(station.id),
+                          onPressed:
+                              () => ref
+                                  .read(hiddenStationIdsProvider.notifier)
+                                  .unhide(station.id),
                         ),
                       ),
                     );
@@ -206,9 +220,9 @@ class _StationDetailSheet extends ConsumerWidget {
     } catch (_) {
       await Clipboard.setData(ClipboardData(text: text));
       if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('已复制台名和流地址，可粘贴分享')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(const SnackBar(content: Text('已复制台名和流地址，可粘贴分享')));
       }
     }
   }
@@ -218,9 +232,9 @@ class _StationDetailSheet extends ConsumerWidget {
     if (uri == null) return;
     final ok = await launchUrl(uri, mode: LaunchMode.externalApplication);
     if (!ok && context.mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('无法打开官网')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('无法打开官网')));
     }
   }
 }

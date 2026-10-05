@@ -2,7 +2,6 @@ import '../models/radio_station.dart';
 
 /// 本机覆盖精选 / 发现台的流地址。发版 JSON 不变，换机可靠备份。
 class StationPatch {
-
   factory StationPatch.fromJson(Map<String, dynamic> json) {
     return StationPatch(
       stationId: json['stationId'] as String? ?? '',
@@ -21,13 +20,14 @@ class StationPatch {
   final String originalStreamUrl;
 
   bool get changesUrl =>
-      streamUrl.trim().isNotEmpty && streamUrl.trim() != originalStreamUrl.trim();
+      streamUrl.trim().isNotEmpty &&
+      streamUrl.trim() != originalStreamUrl.trim();
 
   Map<String, dynamic> toJson() => {
-        'stationId': stationId,
-        'streamUrl': streamUrl,
-        'originalStreamUrl': originalStreamUrl,
-      };
+    'stationId': stationId,
+    'streamUrl': streamUrl,
+    'originalStreamUrl': originalStreamUrl,
+  };
 }
 
 abstract final class StationPatchLogic {
@@ -40,7 +40,9 @@ abstract final class StationPatchLogic {
     List<RadioStation> stations,
     Map<String, StationPatch> patches,
   ) {
-    return [for (final station in stations) applyOne(station, patches[station.id])];
+    return [
+      for (final station in stations) applyOne(station, patches[station.id]),
+    ];
   }
 
   static List<RadioStation> unreachable({
@@ -48,7 +50,10 @@ abstract final class StationPatchLogic {
     required List<RadioStation> reachable,
   }) {
     final ok = {for (final station in reachable) station.id};
-    return [for (final station in catalog) if (!ok.contains(station.id)) station];
+    return [
+      for (final station in catalog)
+        if (!ok.contains(station.id)) station,
+    ];
   }
 
   static bool isPatched(String stationId, Map<String, StationPatch> patches) {
@@ -62,9 +67,10 @@ abstract final class StationPatchLogic {
   }) {
     final url = nextUrl.trim();
     if (url.isEmpty) return null;
-    final original = existing?.originalStreamUrl.trim().isNotEmpty == true
-        ? existing!.originalStreamUrl.trim()
-        : station.streamUrl.trim();
+    final original =
+        existing?.originalStreamUrl.trim().isNotEmpty == true
+            ? existing!.originalStreamUrl.trim()
+            : station.streamUrl.trim();
     if (url == original) return null;
     return StationPatch(
       stationId: station.id,

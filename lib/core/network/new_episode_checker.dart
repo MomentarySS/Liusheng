@@ -64,7 +64,10 @@ class NewEpisodeChecker {
   }
 }
 
-Future<void> _notifyUnmuted(AppStorage storage, List<NewEpisodeHit> hits) async {
+Future<void> _notifyUnmuted(
+  AppStorage storage,
+  List<NewEpisodeHit> hits,
+) async {
   final muted = await storage.getMutedNewEpisodeFeedIds();
   for (final hit in hits) {
     if (!NewEpisodeLogic.shouldNotifyFeed(
@@ -109,7 +112,10 @@ Future<List<NewEpisodeHit>> scanNewEpisodes({
   for (final feed in toScan) {
     try {
       final detail = await client.fetchFeed(feed);
-      final snapshot = FeedCacheLogic.snapshotFromDetail(detail, fetchedAt: scannedAt);
+      final snapshot = FeedCacheLogic.snapshotFromDetail(
+        detail,
+        fetchedAt: scannedAt,
+      );
       final latest = await storage.getFeedCache();
       latest[feed.id] = snapshot;
       latest.removeWhere((id, _) => !keepIds.contains(id));

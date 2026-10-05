@@ -5,29 +5,44 @@ void main() {
   tearDown(SystemHttpProxy.resetCache);
 
   test('parseWindowsProxyServer reads host:port and per-scheme lists', () {
-    expect(SystemHttpProxy.parseWindowsProxyServer('127.0.0.1:7897'), '127.0.0.1:7897');
+    expect(
+      SystemHttpProxy.parseWindowsProxyServer('127.0.0.1:7897'),
+      '127.0.0.1:7897',
+    );
     expect(
       SystemHttpProxy.parseWindowsProxyServer(
         'http=127.0.0.1:7897;https=127.0.0.1:7897;socks=127.0.0.1:7898',
       ),
       '127.0.0.1:7897',
     );
-    expect(SystemHttpProxy.parseWindowsProxyServer('http://127.0.0.1:7897'), '127.0.0.1:7897');
+    expect(
+      SystemHttpProxy.parseWindowsProxyServer('http://127.0.0.1:7897'),
+      '127.0.0.1:7897',
+    );
     expect(SystemHttpProxy.parseWindowsProxyServer(''), isNull);
   });
 
   test('matchesProxyOverride understands localhost globs and <local>', () {
     final override = 'localhost;127.*;192.168.*;<local>';
     expect(
-      SystemHttpProxy.matchesProxyOverride(Uri.parse('https://localhost/x'), override),
+      SystemHttpProxy.matchesProxyOverride(
+        Uri.parse('https://localhost/x'),
+        override,
+      ),
       isTrue,
     );
     expect(
-      SystemHttpProxy.matchesProxyOverride(Uri.parse('https://127.0.0.1/x'), override),
+      SystemHttpProxy.matchesProxyOverride(
+        Uri.parse('https://127.0.0.1/x'),
+        override,
+      ),
       isTrue,
     );
     expect(
-      SystemHttpProxy.matchesProxyOverride(Uri.parse('https://intranet/x'), override),
+      SystemHttpProxy.matchesProxyOverride(
+        Uri.parse('https://intranet/x'),
+        override,
+      ),
       isTrue,
     );
     expect(
@@ -112,23 +127,26 @@ void main() {
     );
   });
 
-  test('discoverLocalHttpProxy caches first open port in preference order', () async {
-    final seen = <int>[];
-    final found = await SystemHttpProxy.discoverLocalHttpProxy(
-      probe: (host, port) async {
-        seen.add(port);
-        return port == 7890 || port == 10808;
-      },
-    );
-    expect(found, '127.0.0.1:7890');
-    expect(seen, containsAll(SystemHttpProxy.localHttpProxyPorts));
-    expect(
-      await SystemHttpProxy.discoverLocalHttpProxy(
-        probe: (host, port) async => throw StateError('should use cache'),
-      ),
-      '127.0.0.1:7890',
-    );
-  });
+  test(
+    'discoverLocalHttpProxy caches first open port in preference order',
+    () async {
+      final seen = <int>[];
+      final found = await SystemHttpProxy.discoverLocalHttpProxy(
+        probe: (host, port) async {
+          seen.add(port);
+          return port == 7890 || port == 10808;
+        },
+      );
+      expect(found, '127.0.0.1:7890');
+      expect(seen, containsAll(SystemHttpProxy.localHttpProxyPorts));
+      expect(
+        await SystemHttpProxy.discoverLocalHttpProxy(
+          probe: (host, port) async => throw StateError('should use cache'),
+        ),
+        '127.0.0.1:7890',
+      );
+    },
+  );
 
   test('parseRegDwordEnabled reads REG_DWORD', () {
     expect(

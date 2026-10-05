@@ -43,7 +43,9 @@ abstract final class ListSwipeLogic {
     required bool loading,
   }) {
     if (loading || dx.abs() < miniPlayerThresholdPx) return null;
-    return isPodcast ? MiniPlayerSwipeKind.seekPodcast : MiniPlayerSwipeKind.skipStation;
+    return isPodcast
+        ? MiniPlayerSwipeKind.seekPodcast
+        : MiniPlayerSwipeKind.skipStation;
   }
 
   /// 左滑为正方向（下一台 / 前进），右滑为反方向。

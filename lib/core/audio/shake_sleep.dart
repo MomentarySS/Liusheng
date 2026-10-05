@@ -4,8 +4,13 @@ abstract final class ShakeSleepLogic {
   static const cooldown = Duration(seconds: 8);
   static const accelerationThreshold = 18.0;
 
-  static bool isShake({required double x, required double y, required double z}) {
-    return x * x + y * y + z * z >= accelerationThreshold * accelerationThreshold;
+  static bool isShake({
+    required double x,
+    required double y,
+    required double z,
+  }) {
+    return x * x + y * y + z * z >=
+        accelerationThreshold * accelerationThreshold;
   }
 
   static bool shouldExtend({

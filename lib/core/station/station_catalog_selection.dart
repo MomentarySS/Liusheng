@@ -4,7 +4,6 @@ import '../network/catalog_fetch_logic.dart';
 
 /// 用户选择的电台加载范围：主题类 + 省份（并集）。
 class StationCatalogSelection {
-
   factory StationCatalogSelection.fromJson(Map<String, dynamic>? json) {
     if (json == null) return const StationCatalogSelection();
     return StationCatalogSelection(
@@ -40,10 +39,10 @@ class StationCatalogSelection {
   }
 
   Map<String, dynamic> toJson() => {
-        'themes': themes.toList()..sort(),
-        'provinces': provinces.toList()..sort(),
-        'allCurated': allCurated,
-      };
+    'themes': themes.toList()..sort(),
+    'provinces': provinces.toList()..sort(),
+    'allCurated': allCurated,
+  };
 
   static Set<String> _stringSet(Object? raw) {
     if (raw is! List) return {};
@@ -207,20 +206,20 @@ abstract final class StationCatalogSelectionLogic {
     final queries = <RadioBrowserSearchQuery>[];
     for (final province in selection.provinces) {
       if (_provinceRbStates[province] != null) {
-        queries.add(RadioBrowserSearchQuery(
-          countrycode: 'CN',
-          state: _provinceRbStates[province],
-          limit: 30,
-        ),);
+        queries.add(
+          RadioBrowserSearchQuery(
+            countrycode: 'CN',
+            state: _provinceRbStates[province],
+            limit: 30,
+          ),
+        );
       }
     }
     for (final theme in selection.themes) {
       if (theme == cnrTheme) continue;
-      queries.add(RadioBrowserSearchQuery(
-        countrycode: 'CN',
-        tag: theme,
-        limit: 30,
-      ),);
+      queries.add(
+        RadioBrowserSearchQuery(countrycode: 'CN', tag: theme, limit: 30),
+      );
     }
     return queries;
   }

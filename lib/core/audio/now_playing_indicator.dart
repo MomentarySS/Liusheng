@@ -8,8 +8,11 @@ abstract final class NowPlayingIndicatorLogic {
   static const IconData icon = Icons.play_arrow;
 
   static bool isCurrentEpisode(PlaybackItem? current, String? episodeGuid) {
-    if (current == null || episodeGuid == null || episodeGuid.isEmpty) return false;
-    return current.kind == PlaybackKind.podcast && current.episodeGuid == episodeGuid;
+    if (current == null || episodeGuid == null || episodeGuid.isEmpty) {
+      return false;
+    }
+    return current.kind == PlaybackKind.podcast &&
+        current.episodeGuid == episodeGuid;
   }
 
   /// 单集行 leading：当前用播放；已听完用勾；其余空心播放。

@@ -8,8 +8,7 @@ abstract final class StationSkipLogic {
   static bool catalogStillLoading({
     required bool filteredLoading,
     required bool visibleLoading,
-  }) =>
-      filteredLoading || visibleLoading;
+  }) => filteredLoading || visibleLoading;
 
   /// 非「只看收藏」时，把收藏台按 [favoriteIds] 顺序置顶，其余保持原序。
   static List<RadioStation> favoritesFirst({

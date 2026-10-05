@@ -8,28 +8,28 @@ export 'theme/app_skin.dart';
 /// 外观：跟随系统 / 浅色 / 深色。旧版开关会把「关」写成浅色，从此不再跟系统。
 abstract final class ThemeModeLogic {
   static ThemeMode parse(String? raw) => switch (raw) {
-        'light' => ThemeMode.light,
-        'dark' => ThemeMode.dark,
-        _ => ThemeMode.system,
-      };
+    'light' => ThemeMode.light,
+    'dark' => ThemeMode.dark,
+    _ => ThemeMode.system,
+  };
 
   static String persist(ThemeMode mode) => switch (mode) {
-        ThemeMode.light => 'light',
-        ThemeMode.dark => 'dark',
-        ThemeMode.system => 'system',
-      };
+    ThemeMode.light => 'light',
+    ThemeMode.dark => 'dark',
+    ThemeMode.system => 'system',
+  };
 
   static String label(ThemeMode mode) => switch (mode) {
-        ThemeMode.system => '跟随系统',
-        ThemeMode.light => '浅色',
-        ThemeMode.dark => '深色',
-      };
+    ThemeMode.system => '跟随系统',
+    ThemeMode.light => '浅色',
+    ThemeMode.dark => '深色',
+  };
 
   static String subtitle(ThemeMode mode) => switch (mode) {
-        ThemeMode.system => '与系统浅色、深色同步',
-        ThemeMode.light => '始终使用浅色',
-        ThemeMode.dark => '始终使用深色',
-      };
+    ThemeMode.system => '与系统浅色、深色同步',
+    ThemeMode.light => '始终使用浅色',
+    ThemeMode.dark => '始终使用深色',
+  };
 }
 
 /// 列表密度：只作用在电台 / 单集 `ListTile`，不改全局 `ThemeData.visualDensity`。
@@ -39,9 +39,8 @@ abstract final class ListDensityLogic {
   static VisualDensity visualDensity({required bool compact}) =>
       compact ? VisualDensity.compact : VisualDensity.standard;
 
-  static String subtitle({required bool compact}) => compact
-      ? '电台和单集行更密；底栏、芯片和设置不变'
-      : '标准行距；只压电台和单集列表，不压底栏';
+  static String subtitle({required bool compact}) =>
+      compact ? '电台和单集行更密；底栏、芯片和设置不变' : '标准行距；只压电台和单集列表，不压底栏';
 }
 
 /// 壁纸 / 系统强调色 → ColorScheme。没有平台色时退回流声蓝种子。
@@ -86,12 +85,11 @@ abstract final class LiushengTheme {
   static const listBottomPadding = 16.0;
 
   static ThemeData light({ColorScheme? scheme}) => _build(
-        scheme ?? DynamicThemeLogic.fallback(brightness: Brightness.light),
-      );
+    scheme ?? DynamicThemeLogic.fallback(brightness: Brightness.light),
+  );
 
-  static ThemeData dark({ColorScheme? scheme}) => _build(
-        scheme ?? DynamicThemeLogic.fallback(brightness: Brightness.dark),
-      );
+  static ThemeData dark({ColorScheme? scheme}) =>
+      _build(scheme ?? DynamicThemeLogic.fallback(brightness: Brightness.dark));
 
   static SystemUiOverlayStyle overlayFor(Brightness brightness, Color surface) {
     final lightIcons = brightness == Brightness.dark;
@@ -100,7 +98,8 @@ abstract final class LiushengTheme {
       statusBarIconBrightness: lightIcons ? Brightness.light : Brightness.dark,
       statusBarBrightness: lightIcons ? Brightness.dark : Brightness.light,
       systemNavigationBarColor: surface,
-      systemNavigationBarIconBrightness: lightIcons ? Brightness.light : Brightness.dark,
+      systemNavigationBarIconBrightness:
+          lightIcons ? Brightness.light : Brightness.dark,
     );
   }
 
@@ -136,7 +135,10 @@ abstract final class LiushengTheme {
           final selected = states.contains(WidgetState.selected);
           return IconThemeData(
             size: 24,
-            color: selected ? scheme.onSecondaryContainer : scheme.onSurfaceVariant,
+            color:
+                selected
+                    ? scheme.onSecondaryContainer
+                    : scheme.onSurfaceVariant,
           );
         }),
         labelTextStyle: WidgetStateProperty.resolveWith((states) {
@@ -211,9 +213,7 @@ abstract final class LiushengTheme {
       ),
       dialogTheme: DialogThemeData(
         backgroundColor: scheme.surface,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(28),
-        ),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(28)),
       ),
       iconButtonTheme: IconButtonThemeData(
         style: IconButton.styleFrom(minimumSize: const Size(48, 48)),

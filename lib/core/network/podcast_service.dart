@@ -14,22 +14,26 @@ import 'system_http_proxy.dart';
 /// RSS 播客抓取与解析。
 class PodcastService {
   PodcastService({Dio? dio})
-      : _dio = dio ??
-            SystemHttpProxy.createDio(
-              BaseOptions(
-                connectTimeout: const Duration(seconds: 15),
-                receiveTimeout: const Duration(seconds: 30),
-                headers: {
-                  'User-Agent': AppBrand.podcastUserAgent,
-                  'Accept': PodcastFeedLogic.rssAccept,
-                  'Accept-Language': 'zh-CN,zh;q=0.9,en;q=0.8',
-                },
-              ),
-            );
+    : _dio =
+          dio ??
+          SystemHttpProxy.createDio(
+            BaseOptions(
+              connectTimeout: const Duration(seconds: 15),
+              receiveTimeout: const Duration(seconds: 30),
+              headers: {
+                'User-Agent': AppBrand.podcastUserAgent,
+                'Accept': PodcastFeedLogic.rssAccept,
+                'Accept-Language': 'zh-CN,zh;q=0.9,en;q=0.8',
+              },
+            ),
+          );
 
   final Dio _dio;
 
-  Future<PodcastDetail> fetchFeed(PodcastFeed feed, {bool forNewSubscription = false}) async {
+  Future<PodcastDetail> fetchFeed(
+    PodcastFeed feed, {
+    bool forNewSubscription = false,
+  }) async {
     final url = PodcastFeedLogic.resolveUrl(
       feed.feedUrl,
       enforceCatalogPolicy: forNewSubscription,
@@ -38,7 +42,9 @@ class PodcastService {
       final body = await _getBody(url, AppBrand.podcastUserAgent);
       return _parseRss(body, feed, url);
     } on DioException catch (error) {
-      if (PodcastFeedLogic.shouldRetryWithFallbackUa(error.response?.statusCode)) {
+      if (PodcastFeedLogic.shouldRetryWithFallbackUa(
+        error.response?.statusCode,
+      )) {
         try {
           final body = await _getBody(url, AppBrand.podcastFallbackUserAgent);
           return _parseRss(body, feed, url);
@@ -96,16 +102,18 @@ class PodcastService {
   PodcastDetail _parseRss(String body, PodcastFeed feed, String feedUrl) {
     final document = XmlDocument.parse(body);
     final root = document.rootElement;
-    final channel = root.name.local == 'rss'
-        ? root.findElements('channel').firstOrNull
-        : root.findElements('channel').firstOrNull ?? root;
+    final channel =
+        root.name.local == 'rss'
+            ? root.findElements('channel').firstOrNull
+            : root.findElements('channel').firstOrNull ?? root;
 
     if (channel == null) {
       throw const PodcastFeedException('无效的 RSS 格式');
     }
 
     final title = _textOf(channel, 'title') ?? feed.title;
-    final description = PodcastPlaybackLogic.chooseRawNotes([
+    final description =
+        PodcastPlaybackLogic.chooseRawNotes([
           _textOf(channel, 'summary'),
           _textOf(channel, 'description'),
           _textOf(channel, 'subtitle'),
@@ -175,7 +183,9 @@ class PodcastService {
       final type = enclosure.getAttribute('type') ?? '';
       final url = enclosure.getAttribute('url');
       if (url != null &&
-          (type.startsWith('audio/') || url.endsWith('.mp3') || url.endsWith('.m4a'))) {
+          (type.startsWith('audio/') ||
+              url.endsWith('.mp3') ||
+              url.endsWith('.m4a'))) {
         return url;
       }
     }

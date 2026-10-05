@@ -10,10 +10,7 @@ abstract final class PlaybackSessionLogic {
   static PlaybackSessionProfile get startupProfile =>
       PlaybackSessionProfile.music;
 
-  static bool offered({
-    TargetPlatform? platform,
-    bool isWeb = false,
-  }) {
+  static bool offered({TargetPlatform? platform, bool isWeb = false}) {
     if (isWeb) return false;
     return (platform ?? defaultTargetPlatform) == TargetPlatform.android;
   }
@@ -42,14 +39,12 @@ abstract final class PlaybackSession {
     if (!PlaybackSessionLogic.offeredOnThisPlatform) return false;
     try {
       final session = await AudioSession.instance;
-      await session.configure(
-        switch (profile) {
-          PlaybackSessionProfile.music =>
-            const AudioSessionConfiguration.music(),
-          PlaybackSessionProfile.speech =>
-            const AudioSessionConfiguration.speech(),
-        },
-      );
+      await session.configure(switch (profile) {
+        PlaybackSessionProfile.music => const AudioSessionConfiguration.music(),
+        PlaybackSessionProfile.speech =>
+          const AudioSessionConfiguration.speech(),
+        // ignore: require_trailing_commas
+      });
       return true;
     } catch (_) {
       return false;

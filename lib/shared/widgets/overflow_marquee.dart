@@ -89,9 +89,10 @@ class _OverflowMarqueeState extends State<OverflowMarquee>
               animation: _controller,
               builder: (context, child) {
                 final t = _controller.value;
-                final travel = t < 0.15
-                    ? 0.0
-                    : t > 0.85
+                final travel =
+                    t < 0.15
+                        ? 0.0
+                        : t > 0.85
                         ? _overflow
                         : _overflow * ((t - 0.15) / 0.7);
                 return Transform.translate(

@@ -34,7 +34,11 @@ class ResumeListeningCard extends ConsumerWidget {
             padding: const EdgeInsets.all(12),
             child: Row(
               children: [
-                Icon(Icons.play_circle_fill_rounded, size: 40, color: colorScheme.onPrimaryContainer),
+                Icon(
+                  Icons.play_circle_fill_rounded,
+                  size: 40,
+                  color: colorScheme.onPrimaryContainer,
+                ),
                 const SizedBox(width: 12),
                 Expanded(
                   child: Column(
@@ -43,8 +47,8 @@ class ResumeListeningCard extends ConsumerWidget {
                       Text(
                         '继续收听',
                         style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                              color: colorScheme.onPrimaryContainer,
-                            ),
+                          color: colorScheme.onPrimaryContainer,
+                        ),
                       ),
                       const SizedBox(height: 2),
                       Text(
@@ -52,9 +56,9 @@ class ResumeListeningCard extends ConsumerWidget {
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                         style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                              color: colorScheme.onPrimaryContainer,
-                              fontWeight: FontWeight.w600,
-                            ),
+                          color: colorScheme.onPrimaryContainer,
+                          fontWeight: FontWeight.w600,
+                        ),
                       ),
                       if (fraction != null)
                         Padding(
@@ -65,7 +69,8 @@ class ResumeListeningCard extends ConsumerWidget {
                               value: fraction,
                               minHeight: 4,
                               color: colorScheme.primary,
-                              backgroundColor: colorScheme.surfaceContainerHighest,
+                              backgroundColor:
+                                  colorScheme.surfaceContainerHighest,
                             ),
                           ),
                         ),

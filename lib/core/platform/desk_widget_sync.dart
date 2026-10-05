@@ -33,12 +33,18 @@ final deskWidgetSyncProvider = Provider<void>((ref) {
       useDynamicColor: useDynamicColor,
     );
     try {
-      await HomeWidget.saveWidgetData<String>(DeskWidgetLogic.titleKey, snapshot.title);
+      await HomeWidget.saveWidgetData<String>(
+        DeskWidgetLogic.titleKey,
+        snapshot.title,
+      );
       await HomeWidget.saveWidgetData<String>(
         DeskWidgetLogic.subtitleKey,
         snapshot.subtitle,
       );
-      await HomeWidget.saveWidgetData<bool>(DeskWidgetLogic.playingKey, snapshot.playing);
+      await HomeWidget.saveWidgetData<bool>(
+        DeskWidgetLogic.playingKey,
+        snapshot.playing,
+      );
       // B1 动态色开关：仅 Kotlin 读取后生效；当前 Kotlin 未读 → 静默写入无害。
       await HomeWidget.saveWidgetData<bool>(
         DeskWidgetLogic.useDynamicColorKey,
@@ -61,7 +67,10 @@ final deskWidgetSyncProvider = Provider<void>((ref) {
   ref.listen<PlaybackItem?>(currentPlaybackProvider, (_, __) => publish());
   // B1：开关变化时重发 widget（Kotlin 未读时也无副作用，仅多写一次 key）。
   ref.listen<AsyncValue<bool>>(dynamicColorProvider, (_, __) => publish());
-  ref.listen<AsyncValue<RadioAudioHandler>>(audioHandlerProvider, (previous, next) {
+  ref.listen<AsyncValue<RadioAudioHandler>>(audioHandlerProvider, (
+    previous,
+    next,
+  ) {
     sub?.cancel();
     sub = null;
     next.whenData((handler) {
@@ -69,7 +78,10 @@ final deskWidgetSyncProvider = Provider<void>((ref) {
     });
   });
   // B2 待听 widget：inbox 变化时（含订阅/听标记）刷新 widget。
-  ref.listen<List<InboxItem>>(inboxProvider, (_, next) => publishEpisodes(next));
+  ref.listen<List<InboxItem>>(
+    inboxProvider,
+    (_, next) => publishEpisodes(next),
+  );
   publish();
   publishEpisodes(ref.read(inboxProvider));
 });
@@ -149,7 +161,8 @@ Future<void> _resumeFromWidget(WidgetRef ref) async {
   final controller = ref.read(playerControllerProvider);
   await controller.restoreLastSession();
   final playing =
-      ref.read(audioHandlerProvider).value?.playbackState.value.playing ?? false;
+      ref.read(audioHandlerProvider).value?.playbackState.value.playing ??
+      false;
   if (playing || ref.read(currentPlaybackProvider) == null) return;
   await controller.resume();
 }
@@ -159,12 +172,12 @@ Future<void> _resumeFromWidget(WidgetRef ref) async {
 /// 不弹 SnackBar（App 已被 widget intent 拉起，弹提示反而突兀；计划 §5 #11）。
 Future<void> _playFromWidget(WidgetRef ref, String? guid) async {
   if (guid == null || guid.isEmpty) return;
-  final item = ref
-      .read(inboxProvider)
-      .where((i) => i.episode.guid == guid)
-      .firstOrNull;
+  final item =
+      ref.read(inboxProvider).where((i) => i.episode.guid == guid).firstOrNull;
   if (item == null) return;
-  await ref.read(playerControllerProvider).play(
+  await ref
+      .read(playerControllerProvider)
+      .play(
         PlaybackItem.fromPodcastEpisode(
           podcastTitle: item.feed.title,
           episodeTitle: item.episode.title,

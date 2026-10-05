@@ -26,9 +26,9 @@ class OfflineBanner extends ConsumerWidget {
               child: Text(
                 NetworkStatusLogic.banner,
                 style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                      color: colorScheme.onErrorContainer,
-                      fontWeight: FontWeight.w600,
-                    ),
+                  color: colorScheme.onErrorContainer,
+                  fontWeight: FontWeight.w600,
+                ),
               ),
             ),
           ],

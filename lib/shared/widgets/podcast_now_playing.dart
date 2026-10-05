@@ -49,7 +49,10 @@ class PodcastNowPlayingSheet extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final colorScheme = Theme.of(context).colorScheme;
-    final accent = StationArtwork.gradientColors(name: current.subtitle, tags: const []);
+    final accent = StationArtwork.gradientColors(
+      name: current.subtitle,
+      tags: const [],
+    );
     final wash = context.liushengSkin.nowPlayingWash(
       surface: colorScheme.surface,
       coverAccent: accent.first,
@@ -91,7 +94,11 @@ class PodcastNowPlayingSheet extends ConsumerWidget {
                     playing: playing,
                     loading: loading,
                     current: current,
-                    onToggle: () => ref.read(playerControllerProvider).togglePlayPause(),
+                    onToggle:
+                        () =>
+                            ref
+                                .read(playerControllerProvider)
+                                .togglePlayPause(),
                   ),
                   if (hasError)
                     Padding(
@@ -175,7 +182,12 @@ class _Cover extends StatelessWidget {
     );
   }
 
-  Widget _artwork(BuildContext context, ColorScheme colorScheme, double side, double radius) {
+  Widget _artwork(
+    BuildContext context,
+    ColorScheme colorScheme,
+    double side,
+    double radius,
+  ) {
     final url = current.artworkUrl;
     if (url == null || url.isEmpty) {
       return Container(
@@ -208,7 +220,9 @@ class _EpisodeHeader extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final textTheme = Theme.of(context).textTheme;
     final colorScheme = Theme.of(context).colorScheme;
-    final chapters = ref.watch(playingEpisodeChaptersProvider).value ?? const <PodcastChapter>[];
+    final chapters =
+        ref.watch(playingEpisodeChaptersProvider).value ??
+        const <PodcastChapter>[];
     return Column(
       crossAxisAlignment: CrossAxisAlignment.center,
       children: [
@@ -216,14 +230,19 @@ class _EpisodeHeader extends ConsumerWidget {
           current.title,
           maxLines: 3,
           overflow: TextOverflow.ellipsis,
-          style: textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.w700, height: 1.3),
+          style: textTheme.headlineSmall?.copyWith(
+            fontWeight: FontWeight.w700,
+            height: 1.3,
+          ),
         ),
         const SizedBox(height: 4),
         Text(
           current.subtitle,
           maxLines: 2,
           overflow: TextOverflow.ellipsis,
-          style: textTheme.bodyMedium?.copyWith(color: colorScheme.onSurfaceVariant),
+          style: textTheme.bodyMedium?.copyWith(
+            color: colorScheme.onSurfaceVariant,
+          ),
         ),
         if (chapters.isNotEmpty)
           StreamBuilder<Duration>(
@@ -238,12 +257,13 @@ class _EpisodeHeader extends ConsumerWidget {
               return Padding(
                 padding: const EdgeInsets.only(top: 8),
                 child: TextButton(
-                  onPressed: () => showChapterListSheet(
-                    context: context,
-                    handler: handler,
-                    chapters: chapters,
-                    position: position,
-                  ),
+                  onPressed:
+                      () => showChapterListSheet(
+                        context: context,
+                        handler: handler,
+                        chapters: chapters,
+                        position: position,
+                      ),
                   child: Text(
                     chapter.title,
                     maxLines: 1,
@@ -274,25 +294,29 @@ class _EpisodeChips extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final colorScheme = Theme.of(context).colorScheme;
-    final hasNotes = PodcastPlaybackLogic.stripHtml(current.description).isNotEmpty;
+    final hasNotes =
+        PodcastPlaybackLogic.stripHtml(current.description).isNotEmpty;
     final guid = current.episodeGuid;
     final downloads = ref.watch(podcastDownloadsProvider);
-    final downloadStatus = guid == null ? EpisodeDownloadStatus.none : downloads.statusFor(guid);
-    final downloadLabel = guid == null
-        ? null
-        : PodcastDownloadLogic.episodeDownloadLabel(
-            status: downloadStatus,
-            progress: downloads.progress[guid],
-            bytes: downloads.records[guid]?.bytes ?? 0,
-          );
+    final downloadStatus =
+        guid == null ? EpisodeDownloadStatus.none : downloads.statusFor(guid);
+    final downloadLabel =
+        guid == null
+            ? null
+            : PodcastDownloadLogic.episodeDownloadLabel(
+              status: downloadStatus,
+              progress: downloads.progress[guid],
+              bytes: downloads.records[guid]?.bytes ?? 0,
+            );
     final sleepActive = ref.watch(sleepTimerProvider).isActive;
     final canDownload = guid != null && current.feedId != null;
-    final bookmarkCount = guid == null
-        ? 0
-        : EpisodeBookmarkLogic.forEpisode(
-            ref.watch(podcastBookmarksProvider).value ?? const [],
-            guid,
-          ).length;
+    final bookmarkCount =
+        guid == null
+            ? 0
+            : EpisodeBookmarkLogic.forEpisode(
+              ref.watch(podcastBookmarksProvider).value ?? const [],
+              guid,
+            ).length;
 
     Future<void> startDownload() async {
       if (!canDownload) return;
@@ -310,7 +334,9 @@ class _EpisodeChips extends ConsumerWidget {
         duration: current.duration,
         imageUrl: current.artworkUrl,
       );
-      unawaited(ref.read(podcastDownloadsProvider.notifier).download(feed, episode));
+      unawaited(
+        ref.read(podcastDownloadsProvider.notifier).download(feed, episode),
+      );
     }
 
     return Row(
@@ -320,27 +346,33 @@ class _EpisodeChips extends ConsumerWidget {
           IconButton(
             tooltip: '简介',
             icon: const Icon(Icons.notes_outlined),
-            onPressed: () => showPlaybackNotesSheet(
-              context: context,
-              title: current.title,
-              subtitle: current.subtitle,
-              artworkUrl: current.artworkUrl,
-              description: current.description,
-            ),
+            onPressed:
+                () => showPlaybackNotesSheet(
+                  context: context,
+                  title: current.title,
+                  subtitle: current.subtitle,
+                  artworkUrl: current.artworkUrl,
+                  description: current.description,
+                ),
           ),
         if (downloadStatus == EpisodeDownloadStatus.ready)
           const _StaticActionIcon(icon: Icons.download_done, label: '已下载')
-        else if (canDownload && downloadStatus == EpisodeDownloadStatus.downloading)
+        else if (canDownload &&
+            downloadStatus == EpisodeDownloadStatus.downloading)
           IconButton(
             // 进度留在 tooltip 里：图标行不再有 chip 标签，但「下载 45%」这类
             // 信息不该消失。
             tooltip: downloadLabel ?? '取消下载',
             icon: const Icon(Icons.cancel_outlined),
-            onPressed: () => unawaited(ref.read(podcastDownloadsProvider.notifier).cancel(guid)),
+            onPressed:
+                () => unawaited(
+                  ref.read(podcastDownloadsProvider.notifier).cancel(guid),
+                ),
           )
         else if (canDownload)
           IconButton(
-            tooltip: downloadStatus == EpisodeDownloadStatus.failed ? '重新下载' : '下载',
+            tooltip:
+                downloadStatus == EpisodeDownloadStatus.failed ? '重新下载' : '下载',
             icon: const Icon(Icons.download_outlined),
             onPressed: startDownload,
           ),
@@ -353,21 +385,24 @@ class _EpisodeChips extends ConsumerWidget {
           ),
           // 与电台页一致：定时开着时再点一下就是**关闭**（想改时长再点一次
           // 开面板）。只开面板会让上面那句 tooltip 说谎。
-          onPressed: sleepActive
-              ? () => ref.read(sleepTimerProvider.notifier).cancel()
-              : () => showSleepTimerSheet(context),
+          onPressed:
+              sleepActive
+                  ? () => ref.read(sleepTimerProvider.notifier).cancel()
+                  : () => showSleepTimerSheet(context),
         ),
         IconButton(
           tooltip: bookmarkCount > 0 ? '书签 · $bookmarkCount' : '书签',
-          icon: bookmarkCount > 0
-              ? Badge(
-                  label: Text('$bookmarkCount'),
-                  child: const Icon(Icons.bookmark_outline),
-                )
-              : const Icon(Icons.bookmark_outline),
-          onPressed: guid == null
-              ? null
-              : () => showEpisodeBookmarkSheet(
+          icon:
+              bookmarkCount > 0
+                  ? Badge(
+                    label: Text('$bookmarkCount'),
+                    child: const Icon(Icons.bookmark_outline),
+                  )
+                  : const Icon(Icons.bookmark_outline),
+          onPressed:
+              guid == null
+                  ? null
+                  : () => showEpisodeBookmarkSheet(
                     context: context,
                     episodeGuid: guid,
                     episodeTitle: current.title,
@@ -375,8 +410,13 @@ class _EpisodeChips extends ConsumerWidget {
                     podcastTitle: current.subtitle,
                     streamUrl: current.streamUrl,
                     artworkUrl: current.artworkUrl,
-                    currentPosition: () =>
-                        ref.read(audioHandlerProvider).value?.player.position,
+                    currentPosition:
+                        () =>
+                            ref
+                                .read(audioHandlerProvider)
+                                .value
+                                ?.player
+                                .position,
                   ),
         ),
       ],
@@ -403,7 +443,10 @@ class _StaticActionIcon extends StatelessWidget {
         child: SizedBox(
           width: 48,
           height: 48,
-          child: Icon(icon, color: Theme.of(context).colorScheme.onSurfaceVariant),
+          child: Icon(
+            icon,
+            color: Theme.of(context).colorScheme.onSurfaceVariant,
+          ),
         ),
       ),
     );
@@ -420,12 +463,15 @@ class _PodcastSeekBar extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final colorScheme = Theme.of(context).colorScheme;
-    final chapters = ref.watch(playingEpisodeChaptersProvider).value ?? const <PodcastChapter>[];
+    final chapters =
+        ref.watch(playingEpisodeChaptersProvider).value ??
+        const <PodcastChapter>[];
     return StreamBuilder<Duration>(
       stream: handler.player.positionStream,
       builder: (context, positionSnapshot) {
         final position = positionSnapshot.data ?? Duration.zero;
-        final duration = current.duration ?? handler.player.duration ?? Duration.zero;
+        final duration =
+            current.duration ?? handler.player.duration ?? Duration.zero;
         final maxMs = duration.inMilliseconds;
         final hasDuration = maxMs > 0;
         final max = hasDuration ? maxMs.toDouble() : 1.0;
@@ -435,7 +481,9 @@ class _PodcastSeekBar extends ConsumerWidget {
               data: SliderTheme.of(context).copyWith(
                 trackHeight: 3,
                 activeTrackColor: colorScheme.onSurface,
-                inactiveTrackColor: colorScheme.onSurface.withValues(alpha: 0.16),
+                inactiveTrackColor: colorScheme.onSurface.withValues(
+                  alpha: 0.16,
+                ),
                 thumbColor: colorScheme.onSurface,
                 overlayColor: colorScheme.onSurface.withValues(alpha: 0.12),
                 thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 6),
@@ -453,7 +501,10 @@ class _PodcastSeekBar extends ConsumerWidget {
                             painter: _ChapterMarksPainter(
                               fractions: [
                                 for (final chapter in chapters)
-                                  (chapter.start.inMilliseconds / maxMs).clamp(0.0, 1.0),
+                                  (chapter.start.inMilliseconds / maxMs).clamp(
+                                    0.0,
+                                    1.0,
+                                  ),
                               ],
                               color: colorScheme.primary,
                             ),
@@ -462,11 +513,17 @@ class _PodcastSeekBar extends ConsumerWidget {
                       ),
                     ),
                   Slider(
-                    value: hasDuration ? position.inMilliseconds.toDouble().clamp(0.0, max) : 0,
+                    value:
+                        hasDuration
+                            ? position.inMilliseconds.toDouble().clamp(0.0, max)
+                            : 0,
                     max: max,
-                    onChanged: hasDuration
-                        ? (value) => handler.seek(Duration(milliseconds: value.toInt()))
-                        : null,
+                    onChanged:
+                        hasDuration
+                            ? (value) => handler.seek(
+                              Duration(milliseconds: value.toInt()),
+                            )
+                            : null,
                   ),
                 ],
               ),
@@ -479,14 +536,14 @@ class _PodcastSeekBar extends ConsumerWidget {
                   Text(
                     _formatDuration(position),
                     style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                          color: colorScheme.onSurfaceVariant,
-                        ),
+                      color: colorScheme.onSurfaceVariant,
+                    ),
                   ),
                   Text(
                     hasDuration ? _formatDuration(duration) : '--:--',
                     style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                          color: colorScheme.onSurfaceVariant,
-                        ),
+                      color: colorScheme.onSurfaceVariant,
+                    ),
                   ),
                 ],
               ),
@@ -564,58 +621,65 @@ class _TransportRow extends ConsumerWidget {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
       children: [
-            IconButton(
-              tooltip: '倍速',
-              style: auxiliary,
-              iconSize: 30,
-              icon: Icon(Icons.speed, color: iconColor),
-              onPressed: () => showPodcastSpeedSheet(context, feedId: current.feedId),
+        IconButton(
+          tooltip: '倍速',
+          style: auxiliary,
+          iconSize: 30,
+          icon: Icon(Icons.speed, color: iconColor),
+          onPressed:
+              () => showPodcastSpeedSheet(context, feedId: current.feedId),
+        ),
+        IconButton(
+          tooltip: '后退 $skipSeconds 秒，长按改档',
+          style: auxiliary,
+          icon: Text(
+            PodcastPlaybackLogic.skipStepButtonLabel(
+              skipSeconds,
+              forward: false,
             ),
-            IconButton(
-              tooltip: '后退 $skipSeconds 秒，长按改档',
-              style: auxiliary,
-              icon: Text(
-                PodcastPlaybackLogic.skipStepButtonLabel(skipSeconds, forward: false),
-                style: stepStyle,
-              ),
-              onPressed: () => ref.read(playerControllerProvider).skipPodcast(-1),
-              onLongPress: () => ref.read(podcastSkipStepProvider.notifier).cycle(),
+            style: stepStyle,
+          ),
+          onPressed: () => ref.read(playerControllerProvider).skipPodcast(-1),
+          onLongPress: () => ref.read(podcastSkipStepProvider.notifier).cycle(),
+        ),
+        if (loading)
+          const SizedBox(
+            width: 84,
+            height: 84,
+            child: Padding(
+              padding: EdgeInsets.all(22),
+              child: CircularProgressIndicator(strokeWidth: 3),
             ),
-            if (loading)
-              const SizedBox(
-                width: 84,
-                height: 84,
-                child: Padding(
-                  padding: EdgeInsets.all(22),
-                  child: CircularProgressIndicator(strokeWidth: 3),
-                ),
-              )
-            else
-              IconButton(
-                tooltip: playing ? '暂停' : '播放',
-                padding: const EdgeInsets.all(14),
-                iconSize: 54,
-                icon: PlaybackStateIcon(playing: playing, color: iconColor),
-                onPressed: onToggle,
-              ),
-            IconButton(
-              tooltip: '前进 $skipSeconds 秒，长按改档',
-              style: auxiliary,
-              icon: Text(
-                PodcastPlaybackLogic.skipStepButtonLabel(skipSeconds, forward: true),
-                style: stepStyle,
-              ),
-              onPressed: () => ref.read(playerControllerProvider).skipPodcast(1),
-              onLongPress: () => ref.read(podcastSkipStepProvider.notifier).cycle(),
+          )
+        else
+          IconButton(
+            tooltip: playing ? '暂停' : '播放',
+            padding: const EdgeInsets.all(14),
+            iconSize: 54,
+            icon: PlaybackStateIcon(playing: playing, color: iconColor),
+            onPressed: onToggle,
+          ),
+        IconButton(
+          tooltip: '前进 $skipSeconds 秒，长按改档',
+          style: auxiliary,
+          icon: Text(
+            PodcastPlaybackLogic.skipStepButtonLabel(
+              skipSeconds,
+              forward: true,
             ),
-            IconButton(
-              tooltip: '播放列表',
-              style: auxiliary,
-              iconSize: 30,
-              icon: Icon(Icons.queue_music_rounded, color: iconColor),
-              onPressed: () => showNowPlayingQueueSheet(context),
-            ),
-          ],
-        );
+            style: stepStyle,
+          ),
+          onPressed: () => ref.read(playerControllerProvider).skipPodcast(1),
+          onLongPress: () => ref.read(podcastSkipStepProvider.notifier).cycle(),
+        ),
+        IconButton(
+          tooltip: '播放列表',
+          style: auxiliary,
+          iconSize: 30,
+          icon: Icon(Icons.queue_music_rounded, color: iconColor),
+          onPressed: () => showNowPlayingQueueSheet(context),
+        ),
+      ],
+    );
   }
 }

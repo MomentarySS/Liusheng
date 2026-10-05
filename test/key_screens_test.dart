@@ -98,8 +98,7 @@ class _SuccessfulStreamTester extends StreamUrlTester {
   Future<StreamTestResult> test(
     String rawUrl, {
     CancelToken? cancelToken,
-  }) async =>
-      const StreamTestResult(true, '连接正常 · audio/mpeg');
+  }) async => const StreamTestResult(true, '连接正常 · audio/mpeg');
 }
 
 class _FakeIndexClient extends PodcastIndexClient {
@@ -158,10 +157,7 @@ List<Override> _storageOverrides() {
 Widget _app(Widget home, {List<Override> extra = const []}) {
   return ProviderScope(
     overrides: [..._storageOverrides(), ...extra],
-    child: MaterialApp(
-      theme: LiushengTheme.light(),
-      home: home,
-    ),
+    child: MaterialApp(theme: LiushengTheme.light(), home: home),
   );
 }
 
@@ -172,8 +168,9 @@ void main() {
     SharedPreferences.setMockInitialValues({});
   });
 
-  testWidgets('StationProbeStatus shows cancel and listen-early copy',
-      (tester) async {
+  testWidgets('StationProbeStatus shows cancel and listen-early copy', (
+    tester,
+  ) async {
     var cancelled = false;
     await tester.pumpWidget(
       MaterialApp(
@@ -199,38 +196,41 @@ void main() {
   });
 
   testWidgets(
-      'unreachable station can be tested without changing its saved source',
-      (tester) async {
-    const station = RadioStation(
-      id: 'broken',
-      name: '测试电台',
-      streamUrl: 'https://example.com/radio',
-    );
-    await tester.pumpWidget(
-      _app(
-        const UnreachableStationsScreen(),
-        extra: [
-          unreachableStationsProvider.overrideWith((ref) => const [station]),
-          streamUrlTesterProvider
-              .overrideWith((ref) => _SuccessfulStreamTester()),
-        ],
-      ),
-    );
-    await tester.pump();
-    await tester.pump(const Duration(milliseconds: 100));
-    expect(find.text(station.streamUrl), findsOneWidget);
-    await tester.tap(find.byTooltip('检测此台'));
-    await tester.pump();
-    await tester.pump(const Duration(milliseconds: 100));
-    expect(find.text('连接正常 · audio/mpeg'), findsOneWidget);
-    expect(find.text(station.streamUrl), findsNothing);
-    final storage = AppStorage(await SharedPreferences.getInstance());
-    expect(await storage.getStationPatches(), isEmpty);
-  });
+    'unreachable station can be tested without changing its saved source',
+    (tester) async {
+      const station = RadioStation(
+        id: 'broken',
+        name: '测试电台',
+        streamUrl: 'https://example.com/radio',
+      );
+      await tester.pumpWidget(
+        _app(
+          const UnreachableStationsScreen(),
+          extra: [
+            unreachableStationsProvider.overrideWith((ref) => const [station]),
+            streamUrlTesterProvider.overrideWith(
+              (ref) => _SuccessfulStreamTester(),
+            ),
+          ],
+        ),
+      );
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 100));
+      expect(find.text(station.streamUrl), findsOneWidget);
+      await tester.tap(find.byTooltip('检测此台'));
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 100));
+      expect(find.text('连接正常 · audio/mpeg'), findsOneWidget);
+      expect(find.text(station.streamUrl), findsNothing);
+      final storage = AppStorage(await SharedPreferences.getInstance());
+      expect(await storage.getStationPatches(), isEmpty);
+    },
+  );
 
   testWidgets('catalog setup requires at least one pick', (tester) async {
-    await tester
-        .pumpWidget(_app(const StationCatalogSetupScreen(firstLaunch: true)));
+    await tester.pumpWidget(
+      _app(const StationCatalogSetupScreen(firstLaunch: true)),
+    );
     await tester.pumpAndSettle();
     expect(find.text('选择想听的电台'), findsOneWidget);
     await tester.tap(find.text('开始检测并进入'));
@@ -239,32 +239,38 @@ void main() {
   });
 
   testWidgets(
-      'data management shows backup actions and empty clipboard restore',
-      (tester) async {
-    tester.binding.defaultBinaryMessenger
-        .setMockMethodCallHandler(SystemChannels.platform, (call) async {
-      if (call.method == 'Clipboard.getData') {
-        return <String, dynamic>{'text': ''};
-      }
-      return null;
-    });
-    addTearDown(() {
-      tester.binding.defaultBinaryMessenger
-          .setMockMethodCallHandler(SystemChannels.platform, null);
-    });
-    await tester.pumpWidget(_app(const DataManagementScreen()));
-    await tester.pumpAndSettle();
-    expect(find.text('导出本机备份'), findsOneWidget);
-    expect(find.text('从剪贴板恢复'), findsOneWidget);
-    expect(find.text('从文件恢复'), findsOneWidget);
-    expect(find.text('选择文件'), findsOneWidget);
-    await tester.tap(find.widgetWithText(TextButton, '恢复'));
-    await tester.pumpAndSettle();
-    expect(find.text('剪贴板是空的'), findsOneWidget);
-  });
+    'data management shows backup actions and empty clipboard restore',
+    (tester) async {
+      tester.binding.defaultBinaryMessenger.setMockMethodCallHandler(
+        SystemChannels.platform,
+        (call) async {
+          if (call.method == 'Clipboard.getData') {
+            return <String, dynamic>{'text': ''};
+          }
+          return null;
+        },
+      );
+      addTearDown(() {
+        tester.binding.defaultBinaryMessenger.setMockMethodCallHandler(
+          SystemChannels.platform,
+          null,
+        );
+      });
+      await tester.pumpWidget(_app(const DataManagementScreen()));
+      await tester.pumpAndSettle();
+      expect(find.text('导出本机备份'), findsOneWidget);
+      expect(find.text('从剪贴板恢复'), findsOneWidget);
+      expect(find.text('从文件恢复'), findsOneWidget);
+      expect(find.text('选择文件'), findsOneWidget);
+      await tester.tap(find.widgetWithText(TextButton, '恢复'));
+      await tester.pumpAndSettle();
+      expect(find.text('剪贴板是空的'), findsOneWidget);
+    },
+  );
 
-  testWidgets('podcast discovery searches iTunes without API keys',
-      (tester) async {
+  testWidgets('podcast discovery searches iTunes without API keys', (
+    tester,
+  ) async {
     await tester.pumpWidget(
       _app(
         const PodcastDiscoveryScreen(),
@@ -383,8 +389,9 @@ void main() {
     expect(tester.widget<SwitchListTile>(tile).value, isFalse);
   });
 
-  testWidgets('settings appearance entry no longer advertises retired skins',
-      (tester) async {
+  testWidgets('settings appearance entry no longer advertises retired skins', (
+    tester,
+  ) async {
     await tester.pumpWidget(_app(const Scaffold(body: SettingsScreen())));
     await tester.pumpAndSettle();
 
@@ -396,9 +403,7 @@ void main() {
     await tester.pumpWidget(
       _app(
         const Scaffold(body: RadioScreen()),
-        extra: [
-          stationSearchProvider.overrideWith((ref) => 'zzzz-no-match'),
-        ],
+        extra: [stationSearchProvider.overrideWith((ref) => 'zzzz-no-match')],
       ),
     );
     await tester.pumpAndSettle();
@@ -427,11 +432,7 @@ void main() {
   });
 
   testWidgets('About screen renders tagline and brand slogan', (tester) async {
-    await tester.pumpWidget(
-      _app(
-        const Scaffold(body: AboutScreen()),
-      ),
-    );
+    await tester.pumpWidget(_app(const Scaffold(body: AboutScreen())));
     // Full subtitle line (tagline + version) is one Text widget.
     final subtitleLine =
         '${AppBrand.displayName} · ${AppBrand.tagline} v${AppBrand.version}';

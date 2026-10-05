@@ -15,11 +15,15 @@ abstract final class DeskSidebarWindowController {
   }) {
     final targets = <(Offset, double)>[
       (Offset(workArea.left, position.dy), (position.dx - workArea.left).abs()),
-      (Offset(workArea.right - size.width, position.dy),
-          (workArea.right - (position.dx + size.width)).abs()),
+      (
+        Offset(workArea.right - size.width, position.dy),
+        (workArea.right - (position.dx + size.width)).abs(),
+      ),
       (Offset(position.dx, workArea.top), (position.dy - workArea.top).abs()),
-      (Offset(position.dx, workArea.bottom - size.height),
-          (workArea.bottom - (position.dy + size.height)).abs()),
+      (
+        Offset(position.dx, workArea.bottom - size.height),
+        (workArea.bottom - (position.dy + size.height)).abs(),
+      ),
     ]..sort((a, b) => a.$2.compareTo(b.$2));
     return targets.first.$2 <= threshold ? targets.first.$1 : null;
   }
@@ -30,12 +34,7 @@ abstract final class DeskSidebarWindowController {
       final origin = display.visiblePosition;
       final size = display.visibleSize;
       if (origin == null || size == null) return null;
-      final work = Rect.fromLTWH(
-        origin.dx,
-        origin.dy,
-        size.width,
-        size.height,
-      );
+      final work = Rect.fromLTWH(origin.dx, origin.dy, size.width, size.height);
       return Offset(
         work.right - DeskCompactLogic.sidebarWidth,
         work.top + (work.height - DeskCompactLogic.sidebarHeight) / 2,
@@ -51,12 +50,7 @@ abstract final class DeskSidebarWindowController {
       final origin = display.visiblePosition;
       final size = display.visibleSize;
       if (origin == null || size == null) return position;
-      final work = Rect.fromLTWH(
-        origin.dx,
-        origin.dy,
-        size.width,
-        size.height,
-      );
+      final work = Rect.fromLTWH(origin.dx, origin.dy, size.width, size.height);
       final bounds = Rect.fromLTWH(
         position.dx,
         position.dy,
@@ -65,8 +59,12 @@ abstract final class DeskSidebarWindowController {
       );
       if (!bounds.overlaps(work)) return defaultPosition();
       return Offset(
-        position.dx.clamp(work.left, work.right - DeskCompactLogic.sidebarWidth).toDouble(),
-        position.dy.clamp(work.top, work.bottom - DeskCompactLogic.sidebarHeight).toDouble(),
+        position.dx
+            .clamp(work.left, work.right - DeskCompactLogic.sidebarWidth)
+            .toDouble(),
+        position.dy
+            .clamp(work.top, work.bottom - DeskCompactLogic.sidebarHeight)
+            .toDouble(),
       );
     } catch (_) {
       return position;

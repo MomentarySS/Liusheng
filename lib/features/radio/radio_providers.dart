@@ -22,10 +22,13 @@ import '../../core/station/station_region.dart';
 import '../../core/station/station_skip.dart';
 import '../podcast/podcast_providers.dart';
 
-final radioBrowserClientProvider = Provider<RadioBrowserClient>((ref) => RadioBrowserClient());
+final radioBrowserClientProvider = Provider<RadioBrowserClient>(
+  (ref) => RadioBrowserClient(),
+);
 
-final curatedStationsRepositoryProvider =
-    Provider<CuratedStationsRepository>((ref) => CuratedStationsRepository());
+final curatedStationsRepositoryProvider = Provider<CuratedStationsRepository>(
+  (ref) => CuratedStationsRepository(),
+);
 
 final stationRepositoryProvider = Provider<StationRepository>((ref) {
   return StationRepository(
@@ -37,13 +40,16 @@ final streamUrlTesterProvider = Provider<StreamUrlTester>(
   (ref) => StreamUrlTester.forLaunchProbe(),
 );
 
-final stationProbeProgressProvider =
-    StateProvider<StationProbeProgress>((ref) => const StationProbeProgress());
+final stationProbeProgressProvider = StateProvider<StationProbeProgress>(
+  (ref) => const StationProbeProgress(),
+);
 
 final radioBrowserDiscoveryProvider =
-    StateNotifierProvider<RadioBrowserDiscoveryNotifier, AsyncValue<bool>>((ref) {
-  return RadioBrowserDiscoveryNotifier(ref);
-});
+    StateNotifierProvider<RadioBrowserDiscoveryNotifier, AsyncValue<bool>>((
+      ref,
+    ) {
+      return RadioBrowserDiscoveryNotifier(ref);
+    });
 
 class RadioBrowserDiscoveryNotifier extends StateNotifier<AsyncValue<bool>> {
   RadioBrowserDiscoveryNotifier(this._ref) : super(const AsyncLoading()) {
@@ -66,12 +72,16 @@ class RadioBrowserDiscoveryNotifier extends StateNotifier<AsyncValue<bool>> {
 }
 
 final overseasStationsEnabledProvider =
-    StateNotifierProvider<OverseasStationsEnabledNotifier, AsyncValue<bool>>((ref) {
-  return OverseasStationsEnabledNotifier(ref);
-});
+    StateNotifierProvider<OverseasStationsEnabledNotifier, AsyncValue<bool>>((
+      ref,
+    ) {
+      return OverseasStationsEnabledNotifier(ref);
+    });
 
-final stationCatalogSelectionProvider =
-    StateNotifierProvider<StationCatalogSelectionNotifier, AsyncValue<StationCatalogSelection>>((ref) {
+final stationCatalogSelectionProvider = StateNotifierProvider<
+  StationCatalogSelectionNotifier,
+  AsyncValue<StationCatalogSelection>
+>((ref) {
   return StationCatalogSelectionNotifier(ref);
 });
 
@@ -117,12 +127,16 @@ class OverseasStationsEnabledNotifier extends StateNotifier<AsyncValue<bool>> {
   }
 }
 
-final catalogStationsProvider = StateProvider<List<RadioStation>>((ref) => const []);
+final catalogStationsProvider = StateProvider<List<RadioStation>>(
+  (ref) => const [],
+);
 
 final stationsProvider =
-    StateNotifierProvider<StationsNotifier, AsyncValue<List<RadioStation>>>((ref) {
-  return StationsNotifier(ref);
-});
+    StateNotifierProvider<StationsNotifier, AsyncValue<List<RadioStation>>>((
+      ref,
+    ) {
+      return StationsNotifier(ref);
+    });
 
 class StationsNotifier extends StateNotifier<AsyncValue<List<RadioStation>>> {
   StationsNotifier(this._ref) : super(const AsyncLoading()) {
@@ -148,7 +162,9 @@ class StationsNotifier extends StateNotifier<AsyncValue<List<RadioStation>>> {
     required int found,
   }) {
     if (!mounted) return;
-    _ref.read(stationProbeProgressProvider.notifier).state = StationProbeProgress(
+    _ref
+        .read(stationProbeProgressProvider.notifier)
+        .state = StationProbeProgress(
       done: done,
       total: total,
       probing: true,
@@ -166,8 +182,9 @@ class StationsNotifier extends StateNotifier<AsyncValue<List<RadioStation>>> {
     }
     await Future<void>.value();
     if (!mounted) return StationReloadResult.skipped;
-    _ref.read(stationProbeProgressProvider.notifier).state =
-        StationProbeProgress(probing: forceProbe);
+    _ref
+        .read(stationProbeProgressProvider.notifier)
+        .state = StationProbeProgress(probing: forceProbe);
     try {
       await _waitForCatalogInputs();
       final repository = _ref.read(stationRepositoryProvider);
@@ -182,26 +199,33 @@ class StationsNotifier extends StateNotifier<AsyncValue<List<RadioStation>>> {
             const StationProbeProgress();
         return StationReloadResult.skipped;
       }
-      final discoveryEnabled = _ref.read(radioBrowserDiscoveryProvider).value ?? true;
-      final catalogSelection = _ref.read(stationCatalogSelectionProvider).value ??
+      final discoveryEnabled =
+          _ref.read(radioBrowserDiscoveryProvider).value ?? true;
+      final catalogSelection =
+          _ref.read(stationCatalogSelectionProvider).value ??
           const StationCatalogSelection();
       final offline = await _ref.read(networkMonitorProvider).isOffline;
       final probeCompleted = await storage.getStationProbeCompleted();
       final cachedIds = (await storage.getReachableStationIds()).toSet();
 
-      final loaded = CatalogFetchLogic.useRadioBrowser(
-            offline: offline,
-            discoveryEnabled: discoveryEnabled,
-          )
-          ? await repository.loadAll(
-              fetchApi: () => client.fetchChinaCatalog(selection: catalogSelection),
-            )
-          : await repository.loadAll(fetchApi: () async => []);
+      final loaded =
+          CatalogFetchLogic.useRadioBrowser(
+                offline: offline,
+                discoveryEnabled: discoveryEnabled,
+              )
+              ? await repository.loadAll(
+                fetchApi:
+                    () => client.fetchChinaCatalog(selection: catalogSelection),
+              )
+              : await repository.loadAll(fetchApi: () async => []);
       final custom = _ref.read(customStationsProvider).value ?? [];
       final merged = StationRepository.prependCustom(custom, loaded);
       final patches = _ref.read(stationPatchesProvider).value ?? {};
       final patched = StationPatchLogic.applyAll(merged, patches);
-      final catalog = StationCatalogSelectionLogic.apply(patched, catalogSelection);
+      final catalog = StationCatalogSelectionLogic.apply(
+        patched,
+        catalogSelection,
+      );
       if (!mounted) return StationReloadResult.skipped;
       _ref.read(catalogStationsProvider.notifier).state = catalog;
 
@@ -243,10 +267,10 @@ class StationsNotifier extends StateNotifier<AsyncValue<List<RadioStation>>> {
         }
       }
       List<RadioStation> snapshot() => StationProbeLogic.visibleDuringProbe(
-            catalog: catalog,
-            previousIds: previousIds,
-            testedUrlOk: testedUrlOk,
-          );
+        catalog: catalog,
+        previousIds: previousIds,
+        testedUrlOk: testedUrlOk,
+      );
       if (!mounted) return StationReloadResult.skipped;
       final initialVisible = snapshot();
       var found = initialVisible.length;
@@ -264,19 +288,19 @@ class StationsNotifier extends StateNotifier<AsyncValue<List<RadioStation>>> {
           if (!mounted) return;
           final visible = snapshot();
           state = AsyncData(visible);
-          _publishProbeProgress(
-            done: done,
-            total: total,
-            found: found,
-          );
+          _publishProbeProgress(done: done, total: total, found: found);
         },
       );
       final cancelled = cancel.isCancelled;
       if (_probeCancel == cancel) _probeCancel = null;
       final kept = cancelled ? snapshot() : probed;
-      await storage.setReachableStationIds(StationProbeLogic.idsOf(kept).toList());
+      await storage.setReachableStationIds(
+        StationProbeLogic.idsOf(kept).toList(),
+      );
       await storage.setStationProbeCompleted(true);
-      if (!mounted) return StationReloadResult(probed: true, cancelled: cancelled);
+      if (!mounted) {
+        return StationReloadResult(probed: true, cancelled: cancelled);
+      }
       state = AsyncData(kept);
       _ref.read(stationProbeProgressProvider.notifier).state =
           const StationProbeProgress();
@@ -342,9 +366,11 @@ final unreachableStationsProvider = Provider<List<RadioStation>>((ref) {
 });
 
 final hiddenStationIdsProvider =
-    StateNotifierProvider<HiddenStationIdsNotifier, AsyncValue<Set<String>>>((ref) {
-  return HiddenStationIdsNotifier(ref);
-});
+    StateNotifierProvider<HiddenStationIdsNotifier, AsyncValue<Set<String>>>((
+      ref,
+    ) {
+      return HiddenStationIdsNotifier(ref);
+    });
 
 class HiddenStationIdsNotifier extends StateNotifier<AsyncValue<Set<String>>> {
   HiddenStationIdsNotifier(this._ref) : super(const AsyncLoading()) {
@@ -386,12 +412,15 @@ final hiddenStationsProvider = Provider<List<RadioStation>>((ref) {
   );
 });
 
-final stationPatchesProvider =
-    StateNotifierProvider<StationPatchesNotifier, AsyncValue<Map<String, StationPatch>>>((ref) {
+final stationPatchesProvider = StateNotifierProvider<
+  StationPatchesNotifier,
+  AsyncValue<Map<String, StationPatch>>
+>((ref) {
   return StationPatchesNotifier(ref);
 });
 
-class StationPatchesNotifier extends StateNotifier<AsyncValue<Map<String, StationPatch>>> {
+class StationPatchesNotifier
+    extends StateNotifier<AsyncValue<Map<String, StationPatch>>> {
   StationPatchesNotifier(this._ref) : super(const AsyncLoading()) {
     _load();
   }
@@ -448,13 +477,17 @@ class StationPatchesNotifier extends StateNotifier<AsyncValue<Map<String, Statio
   Future<void> _persist(Map<String, StationPatch> patches) async {
     state = AsyncData(patches);
     final storage = await _ref.read(appStorageProvider.future);
-    await storage.setStationPatches(patches.values.map((item) => item.toJson()).toList());
+    await storage.setStationPatches(
+      patches.values.map((item) => item.toJson()).toList(),
+    );
   }
 }
 
 final stationSearchProvider = StateProvider<String>((ref) => '');
 
-final stationCategoryProvider = StateProvider<String>((ref) => StationCategoryResolver.all);
+final stationCategoryProvider = StateProvider<String>(
+  (ref) => StationCategoryResolver.all,
+);
 
 /// Bitrate floor filter: null = no filter, otherwise only show stations >= this bitrate.
 final stationBitrateFloorProvider = StateProvider<int?>((ref) => null);
@@ -464,11 +497,14 @@ final stationFavoritesOnlyProvider = StateProvider<bool>((ref) => false);
 
 /// Recently searched queries, most recent first.
 final radioSearchHistoryProvider =
-    StateNotifierProvider<RadioSearchHistoryNotifier, AsyncValue<List<String>>>((ref) {
-  return RadioSearchHistoryNotifier(ref);
-});
+    StateNotifierProvider<RadioSearchHistoryNotifier, AsyncValue<List<String>>>(
+      (ref) {
+        return RadioSearchHistoryNotifier(ref);
+      },
+    );
 
-class RadioSearchHistoryNotifier extends StateNotifier<AsyncValue<List<String>>> {
+class RadioSearchHistoryNotifier
+    extends StateNotifier<AsyncValue<List<String>>> {
   RadioSearchHistoryNotifier(this._ref) : super(const AsyncLoading()) {
     _load();
   }
@@ -503,16 +539,21 @@ class RadioSearchHistoryNotifier extends StateNotifier<AsyncValue<List<String>>>
 }
 
 final customCategoriesProvider =
-    StateNotifierProvider<CustomCategoriesNotifier, AsyncValue<List<String>>>((ref) {
-  return CustomCategoriesNotifier(ref);
-});
+    StateNotifierProvider<CustomCategoriesNotifier, AsyncValue<List<String>>>((
+      ref,
+    ) {
+      return CustomCategoriesNotifier(ref);
+    });
 
-final customStationsProvider =
-    StateNotifierProvider<CustomStationsNotifier, AsyncValue<List<RadioStation>>>((ref) {
+final customStationsProvider = StateNotifierProvider<
+  CustomStationsNotifier,
+  AsyncValue<List<RadioStation>>
+>((ref) {
   return CustomStationsNotifier(ref);
 });
 
-class CustomStationsNotifier extends StateNotifier<AsyncValue<List<RadioStation>>> {
+class CustomStationsNotifier
+    extends StateNotifier<AsyncValue<List<RadioStation>>> {
   CustomStationsNotifier(this._ref) : super(const AsyncLoading()) {
     _load();
   }
@@ -536,7 +577,8 @@ class CustomStationsNotifier extends StateNotifier<AsyncValue<List<RadioStation>
     final trimmedUrl = streamUrl.trim();
     if (trimmedName.isEmpty) return '请输入电台名称';
     if (trimmedUrl.isEmpty) return '请输入流地址';
-    if (!trimmedUrl.startsWith('http://') && !trimmedUrl.startsWith('https://')) {
+    if (!trimmedUrl.startsWith('http://') &&
+        !trimmedUrl.startsWith('https://')) {
       return '流地址需以 http:// 或 https:// 开头';
     }
 
@@ -544,7 +586,8 @@ class CustomStationsNotifier extends StateNotifier<AsyncValue<List<RadioStation>
     var catalog = _ref.read(stationsProvider).value ?? [];
     if (catalog.isEmpty) {
       try {
-        catalog = await _ref.read(curatedStationsRepositoryProvider).loadStations();
+        catalog =
+            await _ref.read(curatedStationsRepositoryProvider).loadStations();
       } catch (_) {}
     }
     final existing = [
@@ -558,7 +601,11 @@ class CustomStationsNotifier extends StateNotifier<AsyncValue<List<RadioStation>
     );
     if (conflict != null) return conflict;
 
-    final tags = <String>{'自定义', category, ...extraTags.where((t) => t.trim().isNotEmpty)};
+    final tags = <String>{
+      '自定义',
+      category,
+      ...extraTags.where((t) => t.trim().isNotEmpty),
+    };
     final station = RadioStation(
       id: 'user-${DateTime.now().millisecondsSinceEpoch}',
       name: trimmedName,
@@ -578,14 +625,16 @@ class CustomStationsNotifier extends StateNotifier<AsyncValue<List<RadioStation>
   }
 
   Future<void> remove(String stationId) async {
-    final current = List<RadioStation>.from(state.value ?? [])..removeWhere((s) => s.id == stationId);
+    final current = List<RadioStation>.from(state.value ?? [])
+      ..removeWhere((s) => s.id == stationId);
     final storage = await _ref.read(appStorageProvider.future);
     await storage.setCustomStations(current.map((s) => s.toJson()).toList());
     state = AsyncData(current);
     unawaited(_ref.read(stationsProvider.notifier).reload());
 
-    final favoriteIds = List<String>.from(_ref.read(favoriteIdsProvider).value ?? [])
-      ..remove(stationId);
+    final favoriteIds = List<String>.from(
+      _ref.read(favoriteIdsProvider).value ?? [],
+    )..remove(stationId);
     await storage.setFavoriteIds(favoriteIds);
     _ref.read(favoriteIdsProvider.notifier).state = AsyncData(favoriteIds);
   }
@@ -602,7 +651,8 @@ class CustomStationsNotifier extends StateNotifier<AsyncValue<List<RadioStation>
     final trimmedUrl = streamUrl.trim();
     if (trimmedName.isEmpty) return '请输入电台名称';
     if (trimmedUrl.isEmpty) return '请输入流地址';
-    if (!trimmedUrl.startsWith('http://') && !trimmedUrl.startsWith('https://')) {
+    if (!trimmedUrl.startsWith('http://') &&
+        !trimmedUrl.startsWith('https://')) {
       return '流地址需以 http:// 或 https:// 开头';
     }
 
@@ -613,7 +663,8 @@ class CustomStationsNotifier extends StateNotifier<AsyncValue<List<RadioStation>
     var catalog = _ref.read(stationsProvider).value ?? [];
     if (catalog.isEmpty) {
       try {
-        catalog = await _ref.read(curatedStationsRepositoryProvider).loadStations();
+        catalog =
+            await _ref.read(curatedStationsRepositoryProvider).loadStations();
       } catch (_) {}
     }
     final existing = [
@@ -627,7 +678,11 @@ class CustomStationsNotifier extends StateNotifier<AsyncValue<List<RadioStation>
     );
     if (conflict != null) return conflict;
 
-    final tags = <String>{'自定义', category, ...extraTags.where((t) => t.trim().isNotEmpty)};
+    final tags = <String>{
+      '自定义',
+      category,
+      ...extraTags.where((t) => t.trim().isNotEmpty),
+    };
     current[index] = RadioStation(
       id: id,
       name: trimmedName,
@@ -648,11 +703,18 @@ class CustomStationsNotifier extends StateNotifier<AsyncValue<List<RadioStation>
     return null;
   }
 
-  Future<CustomStationsImportResult> importStations(List<RadioStation> incoming) async {
+  Future<CustomStationsImportResult> importStations(
+    List<RadioStation> incoming,
+  ) async {
     final current = List<RadioStation>.from(state.value ?? []);
-    final result = CustomStationsBackup.merge(existing: current, incoming: incoming);
+    final result = CustomStationsBackup.merge(
+      existing: current,
+      incoming: incoming,
+    );
     final storage = await _ref.read(appStorageProvider.future);
-    await storage.setCustomStations(result.stations.map((s) => s.toJson()).toList());
+    await storage.setCustomStations(
+      result.stations.map((s) => s.toJson()).toList(),
+    );
     state = AsyncData(result.stations);
     if (result.added > 0) {
       unawaited(_ref.read(stationsProvider.notifier).reload());
@@ -661,8 +723,10 @@ class CustomStationsNotifier extends StateNotifier<AsyncValue<List<RadioStation>
   }
 }
 
-final stationCategoryOverridesProvider =
-    StateNotifierProvider<CategoryOverridesNotifier, AsyncValue<Map<String, String>>>((ref) {
+final stationCategoryOverridesProvider = StateNotifierProvider<
+  CategoryOverridesNotifier,
+  AsyncValue<Map<String, String>>
+>((ref) {
   return CategoryOverridesNotifier(ref);
 });
 
@@ -706,7 +770,9 @@ final stationFilterCategoriesProvider = Provider<List<String>>((ref) {
   );
 });
 
-final filteredStationsProvider = Provider<AsyncValue<List<RadioStation>>>((ref) {
+final filteredStationsProvider = Provider<AsyncValue<List<RadioStation>>>((
+  ref,
+) {
   final stationsAsync = ref.watch(visibleStationsProvider);
   final query = ref.watch(stationSearchProvider).trim().toLowerCase();
   final category = ref.watch(stationCategoryProvider);
@@ -716,18 +782,24 @@ final filteredStationsProvider = Provider<AsyncValue<List<RadioStation>>>((ref) 
   final favoriteIds = ref.watch(favoriteIdsProvider).value ?? [];
 
   return stationsAsync.whenData((stations) {
-    final filtered = stations.where((station) {
-      final effective = effectiveStationCategory(station, overrides);
-      final matchesCategory =
-          category == StationCategoryResolver.all || effective == category;
-      final matchesQuery = query.isEmpty ||
-          station.name.toLowerCase().contains(query) ||
-          station.tags.any((tag) => tag.toLowerCase().contains(query));
-      final matchesBitrate =
-          bitrateFloor == null || (station.bitrate ?? 0) >= bitrateFloor;
-      final matchesFavorite = !favoritesOnly || favoriteIds.contains(station.id);
-      return matchesCategory && matchesQuery && matchesBitrate && matchesFavorite;
-    }).toList();
+    final filtered =
+        stations.where((station) {
+          final effective = effectiveStationCategory(station, overrides);
+          final matchesCategory =
+              category == StationCategoryResolver.all || effective == category;
+          final matchesQuery =
+              query.isEmpty ||
+              station.name.toLowerCase().contains(query) ||
+              station.tags.any((tag) => tag.toLowerCase().contains(query));
+          final matchesBitrate =
+              bitrateFloor == null || (station.bitrate ?? 0) >= bitrateFloor;
+          final matchesFavorite =
+              !favoritesOnly || favoriteIds.contains(station.id);
+          return matchesCategory &&
+              matchesQuery &&
+              matchesBitrate &&
+              matchesFavorite;
+        }).toList();
     return StationSkipLogic.favoritesFirst(
       stations: filtered,
       favoriteIds: favoriteIds,
@@ -752,7 +824,9 @@ class CustomCategoriesNotifier extends StateNotifier<AsyncValue<List<String>>> {
     final trimmed = name.trim();
     if (trimmed.isEmpty) return;
     if (StationCategoryResolver.lockedCategoryNames.contains(trimmed)) return;
-    if (StationCategoryResolver.defaultFilterCategories.contains(trimmed)) return;
+    if (StationCategoryResolver.defaultFilterCategories.contains(trimmed)) {
+      return;
+    }
 
     final current = List<String>.from(state.value ?? []);
     if (current.contains(trimmed)) return;
@@ -772,13 +846,16 @@ class CustomCategoriesNotifier extends StateNotifier<AsyncValue<List<String>>> {
       _ref.read(stationCategoryOverridesProvider).value ?? {},
     )..removeWhere((_, category) => category == name);
     await storage.setStationCategoryOverrides(overrides);
-    _ref.read(stationCategoryOverridesProvider.notifier).state = AsyncData(overrides);
+    _ref.read(stationCategoryOverridesProvider.notifier).state = AsyncData(
+      overrides,
+    );
 
     state = AsyncData(current);
   }
 }
 
-class CategoryOverridesNotifier extends StateNotifier<AsyncValue<Map<String, String>>> {
+class CategoryOverridesNotifier
+    extends StateNotifier<AsyncValue<Map<String, String>>> {
   CategoryOverridesNotifier(this._ref) : super(const AsyncLoading()) {
     _load();
   }
@@ -792,7 +869,9 @@ class CategoryOverridesNotifier extends StateNotifier<AsyncValue<Map<String, Str
 
   Future<bool> setOverride(RadioStation station, String category) async {
     if (StationCategoryResolver.isLocked(station)) return false;
-    if (StationCategoryResolver.lockedCategoryNames.contains(category)) return false;
+    if (StationCategoryResolver.lockedCategoryNames.contains(category)) {
+      return false;
+    }
 
     final storage = await _ref.read(appStorageProvider.future);
     final current = Map<String, String>.from(state.value ?? {});
@@ -820,8 +899,8 @@ class CategoryOverridesNotifier extends StateNotifier<AsyncValue<Map<String, Str
 
 final favoriteIdsProvider =
     StateNotifierProvider<FavoriteIdsNotifier, AsyncValue<List<String>>>((ref) {
-  return FavoriteIdsNotifier(ref);
-});
+      return FavoriteIdsNotifier(ref);
+    });
 
 class FavoriteIdsNotifier extends StateNotifier<AsyncValue<List<String>>> {
   FavoriteIdsNotifier(this._ref) : super(const AsyncLoading()) {
@@ -847,13 +926,14 @@ class FavoriteIdsNotifier extends StateNotifier<AsyncValue<List<String>>> {
     state = AsyncData(current);
   }
 
-  bool isFavorite(String stationId) => state.value?.contains(stationId) ?? false;
+  bool isFavorite(String stationId) =>
+      state.value?.contains(stationId) ?? false;
 }
 
 final recentIdsProvider =
     StateNotifierProvider<RecentIdsNotifier, AsyncValue<List<String>>>((ref) {
-  return RecentIdsNotifier(ref);
-});
+      return RecentIdsNotifier(ref);
+    });
 
 class RecentIdsNotifier extends StateNotifier<AsyncValue<List<String>>> {
   RecentIdsNotifier(this._ref) : super(const AsyncLoading()) {
@@ -886,7 +966,9 @@ class RecentIdsNotifier extends StateNotifier<AsyncValue<List<String>>> {
   }
 }
 
-final favoriteStationsProvider = Provider<AsyncValue<List<RadioStation>>>((ref) {
+final favoriteStationsProvider = Provider<AsyncValue<List<RadioStation>>>((
+  ref,
+) {
   final stationsAsync = ref.watch(visibleStationsProvider);
   final favoriteIdsAsync = ref.watch(favoriteIdsProvider);
   if (stationsAsync.isLoading || favoriteIdsAsync.isLoading) {
@@ -915,13 +997,15 @@ class StationSkipController {
     if (current == null || current.kind != PlaybackKind.radio) return;
     var filteredAsync = _ref.read(filteredStationsProvider);
     var visibleAsync = _ref.read(visibleStationsProvider);
-    for (var i = 0;
-        i < StationSkipLogic.catalogWaitTries &&
-            StationSkipLogic.catalogStillLoading(
-              filteredLoading: filteredAsync.isLoading,
-              visibleLoading: visibleAsync.isLoading,
-            );
-        i++) {
+    for (
+      var i = 0;
+      i < StationSkipLogic.catalogWaitTries &&
+          StationSkipLogic.catalogStillLoading(
+            filteredLoading: filteredAsync.isLoading,
+            visibleLoading: visibleAsync.isLoading,
+          );
+      i++
+    ) {
       await Future<void>.delayed(StationSkipLogic.catalogWaitStep);
       filteredAsync = _ref.read(filteredStationsProvider);
       visibleAsync = _ref.read(visibleStationsProvider);
@@ -939,18 +1023,27 @@ class StationSkipController {
     if (next.source == StationSource.api) {
       unawaited(_ref.read(radioBrowserClientProvider).reportClick(next.id));
     }
-    await _ref.read(playerControllerProvider).play(PlaybackItem.fromStation(next));
+    await _ref
+        .read(playerControllerProvider)
+        .play(PlaybackItem.fromStation(next));
   }
 }
 
 /// 把收藏 / 最近 / 可见台 / 继续收听 / 已下载同步给 Android Auto 浏览树。
 final autoBrowseSyncProvider = Provider<void>((ref) {
-  ref.listen<AsyncValue<RadioAudioHandler>>(audioHandlerProvider, (previous, next) {
+  ref.listen<AsyncValue<RadioAudioHandler>>(audioHandlerProvider, (
+    previous,
+    next,
+  ) {
     next.whenData((handler) {
-      handler.onSkipNeighbor = (delta) => ref.read(stationSkipProvider).skip(delta);
-      handler.onPlayBrowseItem = (item) => ref.read(playerControllerProvider).play(item);
-      handler.onPlayFailed = (item, message) =>
-          ref.read(stationsProvider.notifier).hideIfUnplayable(item, message);
+      handler.onSkipNeighbor =
+          (delta) => ref.read(stationSkipProvider).skip(delta);
+      handler.onPlayBrowseItem =
+          (item) => ref.read(playerControllerProvider).play(item);
+      handler.onPlayFailed =
+          (item, message) => ref
+              .read(stationsProvider.notifier)
+              .hideIfUnplayable(item, message);
     });
   });
   void publish() {
@@ -963,7 +1056,8 @@ final autoBrowseSyncProvider = Provider<void>((ref) {
         favorites: ref.read(favoriteStationsProvider).value ?? const [],
         recents: ref.read(recentStationsProvider).value ?? const [],
         stations: ref.read(visibleStationsProvider).value ?? const [],
-        continueListening: ref.read(resumeListeningProvider).value?.toPlaybackItem(),
+        continueListening:
+            ref.read(resumeListeningProvider).value?.toPlaybackItem(),
         downloads: AutoBrowseLogic.downloadPlaybackItems(
           records: ref.read(podcastDownloadsProvider).recordsNewestFirst,
           feedTitleFor: (feedId) => titles[feedId] ?? '',
@@ -1004,7 +1098,10 @@ final playingStationProvider = Provider<RadioStation?>((ref) {
   return null;
 });
 
-final stationSkipQueueProvider = Provider.family<List<RadioStation>, String>((ref, String stationId) {
+final stationSkipQueueProvider = Provider.family<List<RadioStation>, String>((
+  ref,
+  String stationId,
+) {
   return StationSkipLogic.queue(
     currentId: stationId,
     filtered: ref.watch(filteredStationsProvider).value ?? [],

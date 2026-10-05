@@ -99,7 +99,8 @@ class _RadioScreenState extends ConsumerState<RadioScreen> {
     final favoritesOnly = ref.watch(stationFavoritesOnlyProvider);
     final offline = ref.watch(isOfflineProvider).value ?? false;
     final probeProgress = ref.watch(stationProbeProgressProvider);
-    final hasFilter = query.isNotEmpty ||
+    final hasFilter =
+        query.isNotEmpty ||
         category != StationCategoryResolver.all ||
         bitrateFloor != null ||
         favoritesOnly;
@@ -124,20 +125,26 @@ class _RadioScreenState extends ConsumerState<RadioScreen> {
                     Tooltip(
                       message: '显示全部',
                       child: IconButton(
-                        icon: Icon(Icons.favorite,
-                            color: Theme.of(context).colorScheme.primary,),
-                        onPressed: () => ref
-                            .read(stationFavoritesOnlyProvider.notifier)
-                            .state = false,
+                        icon: Icon(
+                          Icons.favorite,
+                          color: Theme.of(context).colorScheme.primary,
+                        ),
+                        onPressed:
+                            () =>
+                                ref
+                                    .read(stationFavoritesOnlyProvider.notifier)
+                                    .state = false,
                       ),
                     )
                   else if (query.isEmpty)
                     IconButton(
                       tooltip: '只看收藏',
                       icon: const Icon(Icons.favorite_border),
-                      onPressed: () => ref
-                          .read(stationFavoritesOnlyProvider.notifier)
-                          .state = true,
+                      onPressed:
+                          () =>
+                              ref
+                                  .read(stationFavoritesOnlyProvider.notifier)
+                                  .state = true,
                     ),
                   if (query.isNotEmpty)
                     IconButton(
@@ -175,19 +182,22 @@ class _RadioScreenState extends ConsumerState<RadioScreen> {
         _RadioFilterTabStrip(
           labels: categories,
           selected: category,
-          onSelected: (value) =>
-              ref.read(stationCategoryProvider.notifier).state = value,
+          onSelected:
+              (value) =>
+                  ref.read(stationCategoryProvider.notifier).state = value,
         ),
 
         // --- Bitrate filter ---
         _RadioFilterTabStrip(
           labels: [for (final filter in _bitrateFilters) filter.label],
-          selected: _bitrateFilters
-              .firstWhere((filter) => bitrateFloor == filter.floor)
-              .label,
+          selected:
+              _bitrateFilters
+                  .firstWhere((filter) => bitrateFloor == filter.floor)
+                  .label,
           onSelected: (label) {
-            final filter =
-                _bitrateFilters.firstWhere((item) => item.label == label);
+            final filter = _bitrateFilters.firstWhere(
+              (item) => item.label == label,
+            );
             ref.read(stationBitrateFloorProvider.notifier).state = filter.floor;
           },
         ),
@@ -205,51 +215,60 @@ class _RadioScreenState extends ConsumerState<RadioScreen> {
               if (stations.isEmpty) {
                 final catalogCount =
                     ref.read(stationsProvider).value?.length ?? 0;
-                final overseasHidden = catalogCount > 0 &&
+                final overseasHidden =
+                    catalogCount > 0 &&
                     !(ref.read(overseasStationsEnabledProvider).value ?? false);
                 final copy = context.liushengSkin.copy;
                 return AppEmptyState(
-                  icon: offline && !hasFilter
-                      ? Icons.wifi_off
-                      : Icons.radio_outlined,
-                  message: hasFilter
-                      ? '没有找到匹配的电台'
-                      : overseasHidden
+                  icon:
+                      offline && !hasFilter
+                          ? Icons.wifi_off
+                          : Icons.radio_outlined,
+                  message:
+                      hasFilter
+                          ? '没有找到匹配的电台'
+                          : overseasHidden
                           ? '当前列表没有境内电台'
                           : offline
-                              ? NetworkStatusLogic.listMessage
-                              : copy.emptyStations,
-                  detail: hasFilter
-                      ? '试试其他分类，或清除搜索'
-                      : overseasHidden
+                          ? NetworkStatusLogic.listMessage
+                          : copy.emptyStations,
+                  detail:
+                      hasFilter
+                          ? '试试其他分类，或清除搜索'
+                          : overseasHidden
                           ? '港澳台电台默认隐藏，可在设置「电台管理」中打开「显示境外电台」'
                           : offline
-                              ? NetworkStatusLogic.listDetail
-                              : copy.emptyStationsDetail,
+                          ? NetworkStatusLogic.listDetail
+                          : copy.emptyStationsDetail,
                   actionLabel: hasFilter ? '显示全部' : '重新检测',
-                  onAction: hasFilter
-                      ? _clearFilters
-                      : () => ref
-                          .read(stationsProvider.notifier)
-                          .reload(forceProbe: true),
+                  onAction:
+                      hasFilter
+                          ? _clearFilters
+                          : () => ref
+                              .read(stationsProvider.notifier)
+                              .reload(forceProbe: true),
                 );
               }
               final list = ListView.separated(
                 padding: const EdgeInsets.only(
-                    bottom: LiushengTheme.listBottomPadding,),
+                  bottom: LiushengTheme.listBottomPadding,
+                ),
                 itemCount: stations.length,
                 separatorBuilder: (_, __) => const Divider(height: 1),
-                itemBuilder: (context, index) =>
-                    StationListTile(station: stations[index]),
+                itemBuilder:
+                    (context, index) =>
+                        StationListTile(station: stations[index]),
               );
-              final body = probeProgress.probing
-                  ? list
-                  : RefreshIndicator(
-                      onRefresh: () => ref
-                          .read(stationsProvider.notifier)
-                          .reload(forceProbe: true),
-                      child: list,
-                    );
+              final body =
+                  probeProgress.probing
+                      ? list
+                      : RefreshIndicator(
+                        onRefresh:
+                            () => ref
+                                .read(stationsProvider.notifier)
+                                .reload(forceProbe: true),
+                        child: list,
+                      );
               if (!probeProgress.probing) return body;
               return Column(
                 children: [
@@ -262,19 +281,25 @@ class _RadioScreenState extends ConsumerState<RadioScreen> {
                 ],
               );
             },
-            loading: () => StationProbeStatus(
-              progress: probeProgress,
-              onCancel: probeProgress.probing ? cancelProbe : null,
-            ),
-            error: (error, _) => AppEmptyState(
-              icon: offline ? Icons.wifi_off : Icons.error_outline,
-              message: NetworkStatusLogic.loadFailureMessage('电台列表加载失败',
-                  offline: offline,),
-              detail:
-                  NetworkStatusLogic.loadFailureDetail(error, offline: offline),
-              actionLabel: '重试',
-              onAction: () => ref.read(stationsProvider.notifier).reload(),
-            ),
+            loading:
+                () => StationProbeStatus(
+                  progress: probeProgress,
+                  onCancel: probeProgress.probing ? cancelProbe : null,
+                ),
+            error:
+                (error, _) => AppEmptyState(
+                  icon: offline ? Icons.wifi_off : Icons.error_outline,
+                  message: NetworkStatusLogic.loadFailureMessage(
+                    '电台列表加载失败',
+                    offline: offline,
+                  ),
+                  detail: NetworkStatusLogic.loadFailureDetail(
+                    error,
+                    offline: offline,
+                  ),
+                  actionLabel: '重试',
+                  onAction: () => ref.read(stationsProvider.notifier).reload(),
+                ),
           ),
         ),
       ],
@@ -296,10 +321,9 @@ class _SearchHistoryDropdown extends ConsumerWidget {
     if (history.isEmpty) {
       return Container(
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-        color: Theme.of(context)
-            .colorScheme
-            .surfaceContainerHighest
-            .withValues(alpha: 0.5),
+        color: Theme.of(
+          context,
+        ).colorScheme.surfaceContainerHighest.withValues(alpha: 0.5),
         child: Row(
           children: [
             Icon(
@@ -311,8 +335,8 @@ class _SearchHistoryDropdown extends ConsumerWidget {
             Text(
               '暂无搜索历史',
               style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                    color: Theme.of(context).colorScheme.onSurfaceVariant,
-                  ),
+                color: Theme.of(context).colorScheme.onSurfaceVariant,
+              ),
             ),
           ],
         ),
@@ -321,10 +345,9 @@ class _SearchHistoryDropdown extends ConsumerWidget {
 
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-      color: Theme.of(context)
-          .colorScheme
-          .surfaceContainerHighest
-          .withValues(alpha: 0.5),
+      color: Theme.of(
+        context,
+      ).colorScheme.surfaceContainerHighest.withValues(alpha: 0.5),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -334,16 +357,16 @@ class _SearchHistoryDropdown extends ConsumerWidget {
               Text(
                 '搜索历史',
                 style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                      color: Theme.of(context).colorScheme.onSurfaceVariant,
-                    ),
+                  color: Theme.of(context).colorScheme.onSurfaceVariant,
+                ),
               ),
               GestureDetector(
                 onTap: onClear,
                 child: Text(
                   '清除',
                   style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                        color: Theme.of(context).colorScheme.primary,
-                      ),
+                    color: Theme.of(context).colorScheme.primary,
+                  ),
                 ),
               ),
             ],
@@ -358,8 +381,11 @@ class _SearchHistoryDropdown extends ConsumerWidget {
                     const Icon(Icons.history, size: 16),
                     const SizedBox(width: 8),
                     Expanded(
-                        child: Text(q,
-                            style: Theme.of(context).textTheme.bodyMedium,),),
+                      child: Text(
+                        q,
+                        style: Theme.of(context).textTheme.bodyMedium,
+                      ),
+                    ),
                   ],
                 ),
               ),
@@ -414,23 +440,25 @@ class _RadioFilterTabStrip extends StatelessWidget {
                           children: [
                             Expanded(
                               child: Padding(
-                                padding:
-                                    const EdgeInsets.symmetric(horizontal: 12),
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 12,
+                                ),
                                 child: Center(
                                   child: Text(
                                     label,
                                     maxLines: 1,
-                                    style: Theme.of(context)
-                                        .textTheme
-                                        .labelLarge
-                                        ?.copyWith(
-                                          color: selected == label
+                                    style: Theme.of(
+                                      context,
+                                    ).textTheme.labelLarge?.copyWith(
+                                      color:
+                                          selected == label
                                               ? colors.primary
                                               : colors.onSurfaceVariant,
-                                          fontWeight: selected == label
+                                      fontWeight:
+                                          selected == label
                                               ? FontWeight.w600
                                               : null,
-                                        ),
+                                    ),
                                   ),
                                 ),
                               ),
@@ -439,9 +467,10 @@ class _RadioFilterTabStrip extends StatelessWidget {
                               duration: const Duration(milliseconds: 160),
                               curve: Curves.easeOut,
                               height: 2,
-                              color: selected == label
-                                  ? colors.primary
-                                  : Colors.transparent,
+                              color:
+                                  selected == label
+                                      ? colors.primary
+                                      : Colors.transparent,
                             ),
                           ],
                         ),

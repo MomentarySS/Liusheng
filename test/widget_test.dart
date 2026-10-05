@@ -56,10 +56,18 @@ void main() {
 
   test('duplicateReason matches name case-insensitively and exact URL', () {
     const existing = [
-      RadioStation(id: 'cnr-1', name: '中国之声', streamUrl: 'https://a.example/zgzs.m3u8'),
+      RadioStation(
+        id: 'cnr-1',
+        name: '中国之声',
+        streamUrl: 'https://a.example/zgzs.m3u8',
+      ),
     ];
     expect(
-      RadioStation.duplicateReason(name: '中国之声', streamUrl: 'https://other', existing: existing),
+      RadioStation.duplicateReason(
+        name: '中国之声',
+        streamUrl: 'https://other',
+        existing: existing,
+      ),
       '已存在同名电台',
     );
     expect(
@@ -71,7 +79,11 @@ void main() {
       '该流地址已添加',
     );
     expect(
-      RadioStation.duplicateReason(name: '新台', streamUrl: 'https://other', existing: existing),
+      RadioStation.duplicateReason(
+        name: '新台',
+        streamUrl: 'https://other',
+        existing: existing,
+      ),
       isNull,
     );
   });
@@ -95,29 +107,36 @@ void main() {
     expect(stationSourceLabel(curated), isNull);
   });
 
-  test('StationRepository mergeByName keeps curated and skips same-name API', () {
-    const curated = [
-      RadioStation(id: 'cnr-1', name: '中国之声', streamUrl: 'https://local/zgzs'),
-    ];
-    const api = [
-      RadioStation(
-        id: 'uuid-1',
-        name: '中国之声',
-        streamUrl: 'https://api/zgzs',
-        source: StationSource.api,
-      ),
-      RadioStation(
-        id: 'uuid-2',
-        name: '某市音乐台',
-        streamUrl: 'https://api/music',
-        source: StationSource.api,
-      ),
-    ];
-    final merged = StationRepository.mergeByName(curated, api);
-    expect(merged, hasLength(2));
-    expect(merged.first.id, 'cnr-1');
-    expect(merged.last.name, '某市音乐台');
-  });
+  test(
+    'StationRepository mergeByName keeps curated and skips same-name API',
+    () {
+      const curated = [
+        RadioStation(
+          id: 'cnr-1',
+          name: '中国之声',
+          streamUrl: 'https://local/zgzs',
+        ),
+      ];
+      const api = [
+        RadioStation(
+          id: 'uuid-1',
+          name: '中国之声',
+          streamUrl: 'https://api/zgzs',
+          source: StationSource.api,
+        ),
+        RadioStation(
+          id: 'uuid-2',
+          name: '某市音乐台',
+          streamUrl: 'https://api/music',
+          source: StationSource.api,
+        ),
+      ];
+      final merged = StationRepository.mergeByName(curated, api);
+      expect(merged, hasLength(2));
+      expect(merged.first.id, 'cnr-1');
+      expect(merged.last.name, '某市音乐台');
+    },
+  );
 
   test('StationRepository prependCustom puts user stations first', () {
     const custom = [
@@ -157,37 +176,40 @@ void main() {
     expect(StationCategoryResolver.isLocked(music), isFalse);
   });
 
-  test('RadioStation.fromRadioBrowser tags TW/HK/MO for the overseas switch', () {
-    final taipei = RadioStation.fromRadioBrowser({
-      'stationuuid': 'tw-1',
-      'name': 'ICRT',
-      'url': 'https://example.com/icrt',
-      'countrycode': 'TW',
-      'tags': 'news',
-    });
-    expect(taipei.source, StationSource.api);
-    expect(taipei.tags, contains('台湾'));
-    expect(StationRegion.isOverseas(taipei), isTrue);
+  test(
+    'RadioStation.fromRadioBrowser tags TW/HK/MO for the overseas switch',
+    () {
+      final taipei = RadioStation.fromRadioBrowser({
+        'stationuuid': 'tw-1',
+        'name': 'ICRT',
+        'url': 'https://example.com/icrt',
+        'countrycode': 'TW',
+        'tags': 'news',
+      });
+      expect(taipei.source, StationSource.api);
+      expect(taipei.tags, contains('台湾'));
+      expect(StationRegion.isOverseas(taipei), isTrue);
 
-    final rthk = RadioStation.fromRadioBrowser({
-      'stationuuid': 'hk-1',
-      'name': 'Radio 1',
-      'url_resolved': 'https://example.com/rthk',
-      'countrycode': 'HK',
-    });
-    expect(rthk.tags, contains('香港'));
-    expect(StationRegion.isOverseas(rthk), isTrue);
+      final rthk = RadioStation.fromRadioBrowser({
+        'stationuuid': 'hk-1',
+        'name': 'Radio 1',
+        'url_resolved': 'https://example.com/rthk',
+        'countrycode': 'HK',
+      });
+      expect(rthk.tags, contains('香港'));
+      expect(StationRegion.isOverseas(rthk), isTrue);
 
-    final mainland = RadioStation.fromRadioBrowser({
-      'stationuuid': 'cn-1',
-      'name': '广东新闻广播',
-      'url': 'https://example.com/gd',
-      'countrycode': 'CN',
-      'tags': 'news',
-    });
-    expect(mainland.tags.contains('台湾'), isFalse);
-    expect(StationRegion.isOverseas(mainland), isFalse);
-  });
+      final mainland = RadioStation.fromRadioBrowser({
+        'stationuuid': 'cn-1',
+        'name': '广东新闻广播',
+        'url': 'https://example.com/gd',
+        'countrycode': 'CN',
+        'tags': 'news',
+      });
+      expect(mainland.tags.contains('台湾'), isFalse);
+      expect(StationRegion.isOverseas(mainland), isFalse);
+    },
+  );
 
   test('RadioBrowserClient.parseServerHosts strips scheme', () {
     final hosts = RadioBrowserClient.parseServerHosts([
@@ -198,100 +220,139 @@ void main() {
     expect(hosts, ['de1.api.radio-browser.info', 'fi1.api.radio-browser.info']);
   });
 
-  test('StreamContentLogic rejects JSON and HTML 200s and requires HLS entries', () {
-    expect(
-      StreamContentLogic.evaluate(
-        url: 'http://live.xmcdn.com/live/1071/64.m3u8',
-        statusCode: 200,
-        contentType: 'application/json;charset=UTF-8',
-        preview: '{"msg":"电台流获取失败，请稍后再试","ret":2011}',
-      ).ok,
-      isFalse,
-    );
-    expect(
-      StreamContentLogic.evaluate(
-        url: 'https://example.com/live.m3u8',
-        statusCode: 200,
-        preview: '{"msg":"fail"}',
-      ).message,
-      contains('JSON'),
-    );
-    expect(
-      StreamContentLogic.evaluate(
-        url: 'https://example.com/live.m3u8',
-        statusCode: 200,
-        contentType: 'text/html',
-        preview: '<html><head></head><body>404</body></html>',
-      ).ok,
-      isFalse,
-    );
-    expect(
-      StreamContentLogic.evaluate(
-        url: 'https://ngcdn001.cnr.cn/live/zgzs/index.m3u8',
-        statusCode: 200,
-        contentType: 'application/vnd.apple.mpegurl',
-        preview: '#EXTM3U\n#EXT-X-TARGETDURATION:10\n15683034.ts\n',
-      ).ok,
-      isTrue,
-    );
-    expect(
-      StreamContentLogic.evaluate(
-        url: 'https://example.com/live.m3u8',
-        statusCode: 200,
-        preview: '#EXTM3U\n#EXT-X-ENDLIST\n',
-      ).ok,
-      isFalse,
-    );
-    expect(
-      StreamContentLogic.evaluate(
-        url: 'https://lhttp.qingting.fm/live/386/64k.mp3',
-        statusCode: 200,
-        contentType: 'audio/mpeg',
-        preview: '\xff\xfb\x90\x00',
-      ).ok,
-      isTrue,
-    );
-    expect(StreamContentLogic.looksLikeHls('https://a.example/x.m3u8?foo=1'), isTrue);
-    expect(StreamContentLogic.looksLikeHls('https://a.example/x.mp3'), isFalse);
-  });
+  test(
+    'StreamContentLogic rejects JSON and HTML 200s and requires HLS entries',
+    () {
+      expect(
+        StreamContentLogic.evaluate(
+          url: 'http://live.xmcdn.com/live/1071/64.m3u8',
+          statusCode: 200,
+          contentType: 'application/json;charset=UTF-8',
+          preview: '{"msg":"电台流获取失败，请稍后再试","ret":2011}',
+        ).ok,
+        isFalse,
+      );
+      expect(
+        StreamContentLogic.evaluate(
+          url: 'https://example.com/live.m3u8',
+          statusCode: 200,
+          preview: '{"msg":"fail"}',
+        ).message,
+        contains('JSON'),
+      );
+      expect(
+        StreamContentLogic.evaluate(
+          url: 'https://example.com/live.m3u8',
+          statusCode: 200,
+          contentType: 'text/html',
+          preview: '<html><head></head><body>404</body></html>',
+        ).ok,
+        isFalse,
+      );
+      expect(
+        StreamContentLogic.evaluate(
+          url: 'https://ngcdn001.cnr.cn/live/zgzs/index.m3u8',
+          statusCode: 200,
+          contentType: 'application/vnd.apple.mpegurl',
+          preview: '#EXTM3U\n#EXT-X-TARGETDURATION:10\n15683034.ts\n',
+        ).ok,
+        isTrue,
+      );
+      expect(
+        StreamContentLogic.evaluate(
+          url: 'https://example.com/live.m3u8',
+          statusCode: 200,
+          preview: '#EXTM3U\n#EXT-X-ENDLIST\n',
+        ).ok,
+        isFalse,
+      );
+      expect(
+        StreamContentLogic.evaluate(
+          url: 'https://lhttp.qingting.fm/live/386/64k.mp3',
+          statusCode: 200,
+          contentType: 'audio/mpeg',
+          preview: '\xff\xfb\x90\x00',
+        ).ok,
+        isTrue,
+      );
+      expect(
+        StreamContentLogic.looksLikeHls('https://a.example/x.m3u8?foo=1'),
+        isTrue,
+      );
+      expect(
+        StreamContentLogic.looksLikeHls('https://a.example/x.mp3'),
+        isFalse,
+      );
+    },
+  );
 
-  test('StreamContentLogic.readPreview stops at max bytes and survives cancel', () async {
-    final stream = Stream<List<int>>.fromIterable([
-      List<int>.filled(1000, 65),
-      List<int>.filled(2000, 66),
-    ]);
-    final text = await StreamContentLogic.readPreview(stream, maxBytes: 2048);
-    expect(text.length, 2048);
-    expect(text.startsWith('A'), isTrue);
+  test(
+    'StreamContentLogic.readPreview stops at max bytes and survives cancel',
+    () async {
+      final stream = Stream<List<int>>.fromIterable([
+        List<int>.filled(1000, 65),
+        List<int>.filled(2000, 66),
+      ]);
+      final text = await StreamContentLogic.readPreview(stream, maxBytes: 2048);
+      expect(text.length, 2048);
+      expect(text.startsWith('A'), isTrue);
 
-    final broken = Stream<List<int>>.error(Exception('aborted'));
-    expect(await StreamContentLogic.readPreview(broken), '');
-  });
+      final broken = Stream<List<int>>.error(Exception('aborted'));
+      expect(await StreamContentLogic.readPreview(broken), '');
+    },
+  );
 
   test('StreamUrlTester.validateFormat rejects empty and non-http', () {
     expect(StreamUrlTester.validateFormat('')?.ok, isFalse);
     expect(StreamUrlTester.validateFormat('ftp://x')?.ok, isFalse);
-    expect(StreamUrlTester.validateFormat('https://example.com/live.m3u8'), isNull);
+    expect(
+      StreamUrlTester.validateFormat('https://example.com/live.m3u8'),
+      isNull,
+    );
   });
 
   test('StreamUrlTester uniqueStreamUrls keeps first occurrence', () {
     const stations = [
-      RadioStation(id: 'a', name: '甲', streamUrl: 'https://a.example/live.m3u8'),
-      RadioStation(id: 'b', name: '甲', streamUrl: 'https://b.example/live.m3u8'),
-      RadioStation(id: 'c', name: '甲备用', streamUrl: 'https://a.example/live.m3u8'),
+      RadioStation(
+        id: 'a',
+        name: '甲',
+        streamUrl: 'https://a.example/live.m3u8',
+      ),
+      RadioStation(
+        id: 'b',
+        name: '甲',
+        streamUrl: 'https://b.example/live.m3u8',
+      ),
+      RadioStation(
+        id: 'c',
+        name: '甲备用',
+        streamUrl: 'https://a.example/live.m3u8',
+      ),
       RadioStation(id: 'd', name: '甲', streamUrl: '  '),
     ];
-    expect(
-      StreamUrlTester.uniqueStreamUrls(stations),
-      ['https://a.example/live.m3u8', 'https://b.example/live.m3u8'],
-    );
+    expect(StreamUrlTester.uniqueStreamUrls(stations), [
+      'https://a.example/live.m3u8',
+      'https://b.example/live.m3u8',
+    ]);
   });
 
   test('StreamUrlTester keepByUrlResult hides failed streams', () {
     const stations = [
-      RadioStation(id: 'ok', name: '可用', streamUrl: 'https://ok.example/a.m3u8'),
-      RadioStation(id: 'dead', name: '失效', streamUrl: 'https://dead.example/a.m3u8'),
-      RadioStation(id: 'dup', name: '同址', streamUrl: 'https://ok.example/a.m3u8'),
+      RadioStation(
+        id: 'ok',
+        name: '可用',
+        streamUrl: 'https://ok.example/a.m3u8',
+      ),
+      RadioStation(
+        id: 'dead',
+        name: '失效',
+        streamUrl: 'https://dead.example/a.m3u8',
+      ),
+      RadioStation(
+        id: 'dup',
+        name: '同址',
+        streamUrl: 'https://ok.example/a.m3u8',
+      ),
     ];
     final kept = StreamUrlTester.keepByUrlResult(stations, {
       'https://ok.example/a.m3u8': true,
@@ -300,22 +361,32 @@ void main() {
     expect(kept.map((s) => s.id).toList(), ['ok', 'dup']);
   });
 
-  test('StreamUrlTester keepReachable skips work when already cancelled', () async {
-    final tester = StreamUrlTester(dio: Dio());
-    final cancel = CancelToken()..cancel('stop');
-    final kept = await tester.keepReachable(
-      const [
-        RadioStation(id: 'a', name: 'A', streamUrl: 'https://example.com/a.m3u8'),
-      ],
-      cancel: cancel,
-    );
-    expect(kept, isEmpty);
-  });
+  test(
+    'StreamUrlTester keepReachable skips work when already cancelled',
+    () async {
+      final tester = StreamUrlTester(dio: Dio());
+      final cancel = CancelToken()..cancel('stop');
+      final kept = await tester.keepReachable(const [
+        RadioStation(
+          id: 'a',
+          name: 'A',
+          streamUrl: 'https://example.com/a.m3u8',
+        ),
+        // ignore: require_trailing_commas
+      ], cancel: cancel);
+      expect(kept, isEmpty);
+    },
+  );
 
   test('StationProbeProgress distinguishes catalog refresh from probe', () {
     const idle = StationProbeProgress();
     const catalog = StationProbeProgress();
-    const probe = StationProbeProgress(done: 3, total: 10, probing: true, found: 2);
+    const probe = StationProbeProgress(
+      done: 3,
+      total: 10,
+      probing: true,
+      found: 2,
+    );
     expect(idle.probing, isFalse);
     expect(catalog.probing, isFalse);
     expect(catalog.fraction, isNull);
@@ -387,7 +458,12 @@ void main() {
 
     expect(PlaybackItem.tryFromJson(null), isNull);
     expect(
-      PlaybackItem.tryFromJson({'id': 'a', 'title': '甲', 'streamUrl': 'ftp://x', 'kind': 'radio'}),
+      PlaybackItem.tryFromJson({
+        'id': 'a',
+        'title': '甲',
+        'streamUrl': 'ftp://x',
+        'kind': 'radio',
+      }),
       isNull,
     );
     expect(PlaybackItem.clampVolume(1.4), 1.0);
@@ -410,7 +486,8 @@ void main() {
     const rthk = RadioStation(
       id: 'ext-084',
       name: '香港电台第一台',
-      streamUrl: 'https://rthkaudio1-lh.akamaihd.net/i/radio1_1@355864/master.m3u8',
+      streamUrl:
+          'https://rthkaudio1-lh.akamaihd.net/i/radio1_1@355864/master.m3u8',
       tags: ['地方台', '香港'],
     );
     const taipei = RadioStation(
@@ -439,41 +516,57 @@ void main() {
     expect(StationRegion.isOverseas(taipei), isTrue);
     expect(StationRegion.isOverseas(asiafm), isTrue);
     expect(
-      StationRegion.isOverseasMeta(
-        name: 'RTHK Radio 6 央廣香港之聲',
-        tags: ['香港'],
-      ),
+      StationRegion.isOverseasMeta(name: 'RTHK Radio 6 央廣香港之聲', tags: ['香港']),
       isTrue,
     );
 
-    final hidden = StationRegion.visibleCatalog(
-      [rthk, mainland, taipei, cnrHongKong],
-      showOverseas: false,
-    );
+    final hidden = StationRegion.visibleCatalog([
+      rthk,
+      mainland,
+      taipei,
+      cnrHongKong,
+      // ignore: require_trailing_commas
+    ], showOverseas: false);
     expect(hidden.map((s) => s.id).toList(), ['cnr-1', 'cnr-7']);
 
-    final shown = StationRegion.visibleCatalog(
-      [rthk, mainland, taipei, cnrHongKong],
-      showOverseas: true,
-    );
-    expect(shown.map((s) => s.id).toList(), ['cnr-1', 'cnr-7', 'ext-084', 'rt-032']);
+    final shown = StationRegion.visibleCatalog([
+      rthk,
+      mainland,
+      taipei,
+      cnrHongKong,
+      // ignore: require_trailing_commas
+    ], showOverseas: true);
+    expect(shown.map((s) => s.id).toList(), [
+      'cnr-1',
+      'cnr-7',
+      'ext-084',
+      'rt-032',
+    ]);
   });
 
   test('IcyNowPlayingLogic cleans StreamTitle and skips HLS headers', () {
     expect(
-      IcyNowPlayingLogic.supportsIcyRequest('https://ngcdn001.cnr.cn/live/zgzs/index.m3u8'),
+      IcyNowPlayingLogic.supportsIcyRequest(
+        'https://ngcdn001.cnr.cn/live/zgzs/index.m3u8',
+      ),
       isFalse,
     );
     expect(
-      IcyNowPlayingLogic.playbackHeaders('https://ngcdn001.cnr.cn/live/zgzs/index.m3u8'),
+      IcyNowPlayingLogic.playbackHeaders(
+        'https://ngcdn001.cnr.cn/live/zgzs/index.m3u8',
+      ),
       {'Referer': 'https://www.cnr.cn/'},
     );
     expect(
-      IcyNowPlayingLogic.supportsIcyRequest('http://lhttp.qingting.fm/live/276/64k.mp3'),
+      IcyNowPlayingLogic.supportsIcyRequest(
+        'http://lhttp.qingting.fm/live/276/64k.mp3',
+      ),
       isTrue,
     );
     expect(
-      IcyNowPlayingLogic.playbackHeaders('http://lhttp.qingting.fm/live/276/64k.mp3'),
+      IcyNowPlayingLogic.playbackHeaders(
+        'http://lhttp.qingting.fm/live/276/64k.mp3',
+      ),
       {'Icy-MetaData': '1'},
     );
 
@@ -485,10 +578,7 @@ void main() {
       '夜空中最亮的星',
     );
     expect(
-      IcyNowPlayingLogic.displayTitle(
-        streamTitle: '中国之声',
-        stationName: '中国之声',
-      ),
+      IcyNowPlayingLogic.displayTitle(streamTitle: '中国之声', stationName: '中国之声'),
       isNull,
     );
     expect(
@@ -559,7 +649,10 @@ void main() {
     expect(NetworkStatusLogic.isOffline([]), isTrue);
     expect(NetworkStatusLogic.isOffline([ConnectivityResult.none]), isTrue);
     expect(NetworkStatusLogic.isOffline([ConnectivityResult.wifi]), isFalse);
-    expect(NetworkStatusLogic.isOffline([ConnectivityResult.ethernet]), isFalse);
+    expect(
+      NetworkStatusLogic.isOffline([ConnectivityResult.ethernet]),
+      isFalse,
+    );
     expect(
       NetworkStatusLogic.loadFailureMessage('电台列表加载失败', offline: true),
       NetworkStatusLogic.listMessage,
@@ -573,7 +666,10 @@ void main() {
       '电台列表加载失败',
     );
     expect(
-      NetworkStatusLogic.loadFailureDetail(Exception('timeout'), offline: false),
+      NetworkStatusLogic.loadFailureDetail(
+        Exception('timeout'),
+        offline: false,
+      ),
       'Exception: timeout',
     );
     final badRequest = DioException(
@@ -588,44 +684,64 @@ void main() {
       NetworkStatusLogic.loadFailureDetail(badRequest, offline: false),
       contains('HTTP 400'),
     );
-    expect(NetworkStatusLogic.fromDio(badRequest), isNot(contains('DioException')));
+    expect(
+      NetworkStatusLogic.fromDio(badRequest),
+      isNot(contains('DioException')),
+    );
   });
 
-  test('NetworkStatusLogic allows WiFi-only download on wifi/ethernet, not mobile', () {
-    expect(NetworkStatusLogic.allowsWifiOnlyDownload([]), isFalse);
-    expect(
-      NetworkStatusLogic.allowsWifiOnlyDownload([ConnectivityResult.none]),
-      isFalse,
-    );
-    expect(
-      NetworkStatusLogic.allowsWifiOnlyDownload([ConnectivityResult.wifi]),
-      isTrue,
-    );
-    expect(
-      NetworkStatusLogic.allowsWifiOnlyDownload([ConnectivityResult.ethernet]),
-      isTrue,
-    );
-    expect(
-      NetworkStatusLogic.allowsWifiOnlyDownload([ConnectivityResult.mobile]),
-      isFalse,
-    );
-    expect(
-      NetworkStatusLogic.allowsWifiOnlyDownload([
-        ConnectivityResult.wifi,
-        ConnectivityResult.mobile,
-      ]),
-      isTrue,
-    );
-    expect(
-      NetworkStatusLogic.allowsWifiOnlyDownload([ConnectivityResult.vpn]),
-      isTrue,
-    );
-  });
+  test(
+    'NetworkStatusLogic allows WiFi-only download on wifi/ethernet, not mobile',
+    () {
+      expect(NetworkStatusLogic.allowsWifiOnlyDownload([]), isFalse);
+      expect(
+        NetworkStatusLogic.allowsWifiOnlyDownload([ConnectivityResult.none]),
+        isFalse,
+      );
+      expect(
+        NetworkStatusLogic.allowsWifiOnlyDownload([ConnectivityResult.wifi]),
+        isTrue,
+      );
+      expect(
+        NetworkStatusLogic.allowsWifiOnlyDownload([
+          ConnectivityResult.ethernet,
+        ]),
+        isTrue,
+      );
+      expect(
+        NetworkStatusLogic.allowsWifiOnlyDownload([ConnectivityResult.mobile]),
+        isFalse,
+      );
+      expect(
+        NetworkStatusLogic.allowsWifiOnlyDownload([
+          ConnectivityResult.wifi,
+          ConnectivityResult.mobile,
+        ]),
+        isTrue,
+      );
+      expect(
+        NetworkStatusLogic.allowsWifiOnlyDownload([ConnectivityResult.vpn]),
+        isTrue,
+      );
+    },
+  );
 
   test('StationSkipLogic wraps within filtered queue', () {
-    const a = RadioStation(id: 'a', name: 'A', streamUrl: 'https://a.example/a.m3u8');
-    const b = RadioStation(id: 'b', name: 'B', streamUrl: 'https://b.example/b.m3u8');
-    const c = RadioStation(id: 'c', name: 'C', streamUrl: 'https://c.example/c.m3u8');
+    const a = RadioStation(
+      id: 'a',
+      name: 'A',
+      streamUrl: 'https://a.example/a.m3u8',
+    );
+    const b = RadioStation(
+      id: 'b',
+      name: 'B',
+      streamUrl: 'https://b.example/b.m3u8',
+    );
+    const c = RadioStation(
+      id: 'c',
+      name: 'C',
+      streamUrl: 'https://c.example/c.m3u8',
+    );
     final filtered = [a, b];
     final visible = [a, b, c];
     final queue = StationSkipLogic.queue(
@@ -691,7 +807,10 @@ void main() {
     expect(StationDetailLogic.canOpenHomepage(station), isTrue);
     expect(StationDetailLogic.canEditCategory(station), isTrue);
     expect(StationDetailLogic.canShareStream(station), isTrue);
-    expect(StationDetailLogic.shareText(station), '发现台\nhttps://example.com/live.mp3');
+    expect(
+      StationDetailLogic.shareText(station),
+      '发现台\nhttps://example.com/live.mp3',
+    );
     expect(StationDetailLogic.usesCustomEditor(station), isFalse);
   });
 
@@ -727,7 +846,10 @@ void main() {
       ).map((item) => item.id),
       ['cnr-1'],
     );
-    expect(StationPatchLogic.isPatched('cnr-1', {patch!.stationId: patch}), isTrue);
+    expect(
+      StationPatchLogic.isPatched('cnr-1', {patch!.stationId: patch}),
+      isTrue,
+    );
   });
 
   test('PlaylistImportLogic parses M3U and PLS and skips HLS', () {
@@ -740,7 +862,9 @@ void main() {
       isTrue,
     );
     expect(
-      PlaylistImportLogic.looksLikePlaylistUrl('https://example.com/list.pls?x=1'),
+      PlaylistImportLogic.looksLikePlaylistUrl(
+        'https://example.com/list.pls?x=1',
+      ),
       isTrue,
     );
 
@@ -805,7 +929,10 @@ Length1=-1
   </body>
 </opml>
 ''';
-    expect(PodcastOpml.decode(nested)?.single.feedUrl, 'https://example.com/news.xml');
+    expect(
+      PodcastOpml.decode(nested)?.single.feedUrl,
+      'https://example.com/news.xml',
+    );
 
     var nextId = 0;
     final merged = PodcastOpml.merge(
@@ -842,9 +969,21 @@ Length1=-1
   });
 
   test('RadioBrowserClient.mergeById keeps first occurrence', () {
-    const first = RadioStation(id: '1', name: '甲', streamUrl: 'https://a.example/a.m3u8');
-    const dup = RadioStation(id: '1', name: '乙', streamUrl: 'https://a.example/a2.m3u8');
-    const other = RadioStation(id: '2', name: '甲', streamUrl: 'https://b.example/b.m3u8');
+    const first = RadioStation(
+      id: '1',
+      name: '甲',
+      streamUrl: 'https://a.example/a.m3u8',
+    );
+    const dup = RadioStation(
+      id: '1',
+      name: '乙',
+      streamUrl: 'https://a.example/a2.m3u8',
+    );
+    const other = RadioStation(
+      id: '2',
+      name: '甲',
+      streamUrl: 'https://b.example/b.m3u8',
+    );
     expect(
       RadioBrowserClient.mergeById([first, dup, other]).map((s) => s.name),
       ['甲', '甲'],
@@ -855,10 +994,7 @@ Length1=-1
     expect(SleepTimerLogic.presetMinutes, [5, 10, 15, 20, 25, 30, 45, 60]);
     expect(SleepTimerLogic.clampCustomMinutes(0), 1);
     expect(SleepTimerLogic.clampCustomMinutes(800), 720);
-    expect(
-      SleepTimerLogic.durationFromCustom(hours: 0, minutes: 0),
-      isNull,
-    );
+    expect(SleepTimerLogic.durationFromCustom(hours: 0, minutes: 0), isNull);
     expect(
       SleepTimerLogic.durationFromCustom(hours: 0, minutes: 30),
       const Duration(minutes: 30),
@@ -867,10 +1003,7 @@ Length1=-1
       SleepTimerLogic.durationFromCustom(hours: 1, minutes: 30),
       const Duration(minutes: 90),
     );
-    expect(
-      SleepTimerLogic.durationFromCustom(hours: 13, minutes: 0),
-      isNull,
-    );
+    expect(SleepTimerLogic.durationFromCustom(hours: 13, minutes: 0), isNull);
     expect(
       SleepTimerLogic.durationFromCustom(hours: 12, minutes: 1),
       const Duration(minutes: 720),
@@ -878,26 +1011,40 @@ Length1=-1
   });
 
   test('SleepTimerLogic formats remaining time', () {
-    expect(SleepTimerLogic.formatRemaining(const Duration(seconds: 9)), '00:09');
+    expect(
+      SleepTimerLogic.formatRemaining(const Duration(seconds: 9)),
+      '00:09',
+    );
     expect(
       SleepTimerLogic.formatRemaining(const Duration(minutes: 5, seconds: 9)),
       '05:09',
     );
     expect(
-      SleepTimerLogic.formatRemaining(const Duration(hours: 1, minutes: 2, seconds: 3)),
+      SleepTimerLogic.formatRemaining(
+        const Duration(hours: 1, minutes: 2, seconds: 3),
+      ),
       '1:02:03',
     );
-    expect(SleepTimerLogic.formatRemaining(-const Duration(seconds: 3)), '00:00');
+    expect(
+      SleepTimerLogic.formatRemaining(-const Duration(seconds: 3)),
+      '00:00',
+    );
   });
 
   test('SleepTimerLogic remainingAt does not go negative', () {
     final endsAt = DateTime(2026, 8, 15, 21, 0);
     expect(
-      SleepTimerLogic.remainingAt(endsAt: endsAt, now: DateTime(2026, 8, 15, 20, 59, 1)),
+      SleepTimerLogic.remainingAt(
+        endsAt: endsAt,
+        now: DateTime(2026, 8, 15, 20, 59, 1),
+      ),
       const Duration(seconds: 59),
     );
     expect(
-      SleepTimerLogic.remainingAt(endsAt: endsAt, now: DateTime(2026, 8, 15, 21, 1)),
+      SleepTimerLogic.remainingAt(
+        endsAt: endsAt,
+        now: DateTime(2026, 8, 15, 21, 1),
+      ),
       Duration.zero,
     );
   });

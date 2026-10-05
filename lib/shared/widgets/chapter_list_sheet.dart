@@ -28,7 +28,10 @@ Future<void> showChapterListSheet({
             children: [
               Padding(
                 padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
-                child: Text('章节', style: Theme.of(sheetContext).textTheme.titleLarge),
+                child: Text(
+                  '章节',
+                  style: Theme.of(sheetContext).textTheme.titleLarge,
+                ),
               ),
               Flexible(
                 child: ListView.builder(
@@ -36,7 +39,8 @@ Future<void> showChapterListSheet({
                   itemCount: visible.length,
                   itemBuilder: (context, index) {
                     final chapter = visible[index];
-                    final selected = identical(chapter, current) ||
+                    final selected =
+                        identical(chapter, current) ||
                         (current != null &&
                             chapter.start == current.start &&
                             chapter.title == current.title);

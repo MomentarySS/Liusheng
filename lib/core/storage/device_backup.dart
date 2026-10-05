@@ -22,17 +22,14 @@ class DevicePrefValue {
   const DevicePrefValue.boolValue(this.value) : kind = DevicePrefKind.boolValue;
   const DevicePrefValue.intValue(this.value) : kind = DevicePrefKind.intValue;
   const DevicePrefValue.doubleValue(this.value)
-      : kind = DevicePrefKind.doubleValue;
+    : kind = DevicePrefKind.doubleValue;
   const DevicePrefValue.stringList(this.value)
-      : kind = DevicePrefKind.stringList;
+    : kind = DevicePrefKind.stringList;
 
   final DevicePrefKind kind;
   final Object value;
 
-  Map<String, dynamic> toJson() => {
-        't': kind.name,
-        'v': value,
-      };
+  Map<String, dynamic> toJson() => {'t': kind.name, 'v': value};
 
   static DevicePrefValue? fromJson(Object? raw) {
     if (raw is! Map) return null;
@@ -43,14 +40,13 @@ class DevicePrefValue {
       'string' when value is String => DevicePrefValue.string(value),
       'boolValue' when value is bool => DevicePrefValue.boolValue(value),
       'intValue' when value is int => DevicePrefValue.intValue(value),
-      'doubleValue' when value is num =>
-        DevicePrefValue.doubleValue(value.toDouble()),
-      'stringList' when value is List => DevicePrefValue.stringList(
-          [
-            for (final item in value)
-              if (item is String) item,
-          ],
-        ),
+      'doubleValue' when value is num => DevicePrefValue.doubleValue(
+        value.toDouble(),
+      ),
+      'stringList' when value is List => DevicePrefValue.stringList([
+        for (final item in value)
+          if (item is String) item,
+      ]),
       _ => null,
     };
   }
@@ -97,9 +93,9 @@ abstract final class DeviceBackupLogic {
       final int v => DevicePrefValue.intValue(v),
       final double v => DevicePrefValue.doubleValue(v),
       final List<dynamic> v => DevicePrefValue.stringList([
-          for (final item in v)
-            if (item is String) item,
-        ]),
+        for (final item in v)
+          if (item is String) item,
+      ]),
       _ => null,
     };
   }
@@ -152,9 +148,10 @@ abstract final class DeviceBackupLogic {
         return const DeviceBackupDecode.fail('备份内容不完整');
       }
       final podcastStateRaw = map['podcastState'];
-      final podcastState = podcastStateRaw is Map
-          ? Map<String, dynamic>.from(podcastStateRaw)
-          : const <String, dynamic>{};
+      final podcastState =
+          podcastStateRaw is Map
+              ? Map<String, dynamic>.from(podcastStateRaw)
+              : const <String, dynamic>{};
       final prefs = <String, DevicePrefValue>{};
       for (final entry in prefsRaw.entries) {
         final key = entry.key.toString();
@@ -167,7 +164,7 @@ abstract final class DeviceBackupLogic {
       }
       final exportedAt =
           DateTime.tryParse(map['exportedAt']?.toString() ?? '') ??
-              DateTime.fromMillisecondsSinceEpoch(0, isUtc: true);
+          DateTime.fromMillisecondsSinceEpoch(0, isUtc: true);
       return DeviceBackupDecode.ok(
         DeviceBackup(
           exportedAt: exportedAt,

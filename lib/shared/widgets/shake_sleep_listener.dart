@@ -52,9 +52,9 @@ class _ShakeSleepListenerState extends ConsumerState<ShakeSleepListener> {
         if (extra == null) return;
         _lastExtendedAt = now;
         if (!mounted) return;
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('已延长睡眠 ${extra.inMinutes} 分钟')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('已延长睡眠 ${extra.inMinutes} 分钟')));
       });
     } catch (_) {
       _subscription = null;

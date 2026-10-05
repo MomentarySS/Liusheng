@@ -36,9 +36,8 @@ class CuratedStationsRepository {
 
 /// 合并精选列表与 API 数据，按 id/uuid 去重。
 class StationRepository {
-  StationRepository({
-    required CuratedStationsRepository curatedRepository,
-  }) : _curatedRepository = curatedRepository;
+  StationRepository({required CuratedStationsRepository curatedRepository})
+    : _curatedRepository = curatedRepository;
 
   final CuratedStationsRepository _curatedRepository;
 

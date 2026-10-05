@@ -25,10 +25,11 @@ class StationProbeStatus extends StatelessWidget {
     final fraction = progress.fraction;
     final probing = progress.probing;
     final title = probing ? copy.probing : copy.updatingCatalog;
-    final detail = probing
-        ? '${StationProbeLogic.progressLabel(done: progress.done, total: progress.total)}'
-            ' · ${StationProbeLogic.listenEarlyHint(found: progress.found)}'
-        : '重新拉取精选和发现目录';
+    final detail =
+        probing
+            ? '${StationProbeLogic.progressLabel(done: progress.done, total: progress.total)}'
+                ' · ${StationProbeLogic.listenEarlyHint(found: progress.found)}'
+            : '重新拉取精选和发现目录';
 
     if (compact) {
       return Material(
@@ -45,7 +46,9 @@ class StationProbeStatus extends StatelessWidget {
                     const SizedBox(height: 2),
                     Text(
                       detail,
-                      style: textTheme.bodySmall?.copyWith(color: colorScheme.onSurfaceVariant),
+                      style: textTheme.bodySmall?.copyWith(
+                        color: colorScheme.onSurfaceVariant,
+                      ),
                     ),
                     const SizedBox(height: 8),
                     LinearProgressIndicator(value: fraction),
@@ -86,7 +89,9 @@ class StationProbeStatus extends StatelessWidget {
               Text(
                 detail,
                 textAlign: TextAlign.center,
-                style: textTheme.bodySmall?.copyWith(color: colorScheme.onSurfaceVariant),
+                style: textTheme.bodySmall?.copyWith(
+                  color: colorScheme.onSurfaceVariant,
+                ),
               ),
               const SizedBox(height: 16),
               LinearProgressIndicator(value: fraction),

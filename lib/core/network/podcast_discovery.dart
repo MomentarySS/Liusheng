@@ -67,7 +67,8 @@ abstract final class ItunesPodcastLogic {
       if (!_isHttp(feedUrl) || !seen.add(feedUrl)) continue;
       final explicit = _isExplicit(map);
       if (hideExplicit && explicit) continue;
-      final title = (map['collectionName'] as String?)?.trim() ??
+      final title =
+          (map['collectionName'] as String?)?.trim() ??
           (map['trackName'] as String?)?.trim() ??
           feedUrl;
       hits.add(
@@ -75,8 +76,12 @@ abstract final class ItunesPodcastLogic {
           title: title.isEmpty ? feedUrl : title,
           feedUrl: feedUrl,
           author: (map['artistName'] as String?)?.trim() ?? '',
-          artworkUrl: _optionalUrl(map['artworkUrl600'] ?? map['artworkUrl100']),
-          homepage: _optionalUrl(map['collectionViewUrl'] ?? map['trackViewUrl']),
+          artworkUrl: _optionalUrl(
+            map['artworkUrl600'] ?? map['artworkUrl100'],
+          ),
+          homepage: _optionalUrl(
+            map['collectionViewUrl'] ?? map['trackViewUrl'],
+          ),
           explicit: explicit,
           genre: (map['primaryGenreName'] as String?)?.trim() ?? '',
         ),
@@ -154,7 +159,8 @@ abstract final class XyzrankCatalogLogic {
           feedUrl: rss,
           author: (map['authorsText'] as String?)?.trim() ?? '',
           artworkUrl: _optionalUrl(map['logoURL']),
-          homepage: _linkOf(map['links'], 'xyz') ?? _linkOf(map['links'], 'website'),
+          homepage:
+              _linkOf(map['links'], 'xyz') ?? _linkOf(map['links'], 'website'),
           genre: (map['primaryGenreName'] as String?)?.trim() ?? '',
         ),
       );

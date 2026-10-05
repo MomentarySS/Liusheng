@@ -16,7 +16,8 @@ class CastController {
   var _initialized = false;
   var _initFailed = false;
 
-  bool get available => CastSessionLogic.offered && _initialized && !_initFailed;
+  bool get available =>
+      CastSessionLogic.offered && _initialized && !_initFailed;
 
   Future<bool> ensureInitialized() async {
     if (!CastSessionLogic.offered) return false;
@@ -49,7 +50,12 @@ class CastController {
       return GoogleCastSessionManager.instance.connectionState ==
           GoogleCastConnectState.connected;
     } catch (error, stackTrace) {
-      AppLog.e('CastController', 'connectionState getter failed', error: error, stackTrace: stackTrace);
+      AppLog.e(
+        'CastController',
+        'connectionState getter failed',
+        error: error,
+        stackTrace: stackTrace,
+      );
       return false;
     }
   }
@@ -84,9 +90,10 @@ class CastController {
     await GoogleCastRemoteMediaClient.instance.loadMedia(
       GoogleCastMediaInformationAndroid(
         contentId: item.id,
-        streamType: CastSessionLogic.isLive(item.kind)
-            ? CastMediaStreamType.live
-            : CastMediaStreamType.buffered,
+        streamType:
+            CastSessionLogic.isLive(item.kind)
+                ? CastMediaStreamType.live
+                : CastMediaStreamType.buffered,
         contentUrl: contentUri,
         contentType: CastSessionLogic.contentType(item.streamUrl),
         metadata: GoogleCastMusicMediaMetadata(

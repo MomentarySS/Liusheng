@@ -24,6 +24,7 @@ Format follows [Keep a Changelog](https://keepachangelog.com/zh-CN/), and the pr
 
 ### Fixed
 
+- 导入备份时区分「拿到的根本不是文件」和「文件坏了」。实测 QQ 传 `.json` 时给对方的不是文件本身，而是一张 `<html>…<iframe src="/_PA_…">` 预览页（真文件在会话绑定的 iframe 后面，脱离 QQ 取不到）——50KB 的备份收到只剩 210 字节的 HTML，以前这会落进 `decode` 的兜底，报「备份无法解析」，判对了但用户完全看不出是传输环节坏了。现在内容以 `<` 开头时直接说「这不是流声备份文件（内容是网页，多半是传输时没拿到真文件）」；其余解析失败也不再只吐固定文案，而是带上原始异常
 - **Windows 浮条 / 侧栏首次切换时显示错页**：设置子页、Now Playing、底部弹窗都是 `Navigator.push` 到 `HomeShell` **之上**的路由，而切桌面窗口形态只改窗口尺寸、不动导航栈（`DeskWindowModeNotifier.setMode` 只写存储 + 调 `DeskWindow.apply`）。于是在「设置 → 播放与收听 → 桌面窗口形态 → 浮条」这类路径上，浮窗会被压扁成 456×100 的设置页，**要点一次返回才变回迷你条**。现在进入浮条 / 侧栏时会把导航栈退回根路由，与渲染这两个壳的是同一次 build，不存在「壳换了但栈没清」的中间态
 - `DESIGN.md` 内部 6 处与实现不一致的表述已按代码现值定稿（迷你条播放键触控 48、Now Playing 渐变淡出 62%、渐变 wash 36%、封面光晕 blur 28 / 下偏 12 / 28%），版本标注更新为 2.2.3，并记录两处 scale 外的合法例外；同时补记 2.2.3 改动的两处 token（浅色 `primary` 改 vibrant、typography scale 落到 `ThemeData.textTheme`），此前那句「2.1.1–2.2.2 未改动这些 token」在本版已不再成立
 

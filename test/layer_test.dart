@@ -1013,6 +1013,37 @@ void main() {
     expect(DeviceBackupLogic.decode('').error, contains('空'));
   });
 
+  test('DeviceBackupLogic tells a transfer-mangled file from a broken one', () {
+    // 真实案例（2026-10-05）：手机导出 50KB 备份，经 QQ 传到电脑只剩 210 字节，
+    // 而且不是被截断的 JSON —— 是 QQ 自己的 iframe 预览页。
+    const qqPreviewPage =
+        '<html><head></head><body rightMargin=0 topMargin=0 leftMargin=0 '
+        'scroll=no><iframe id=f frameBorder=0 width=100% height=100% '
+        'scrolling=auto src="/_PA_13e5ebac05e9499bc127e86f699174ca?T=2">'
+        '</iframe></body></html>';
+
+    final fromHtml = DeviceBackupLogic.decode(qqPreviewPage);
+    expect(fromHtml.isOk, isFalse);
+    // 关键：不能再落回「备份无法解析」那句死路，用户要能一眼看出是传输坏了
+    expect(fromHtml.error, isNot(contains('备份无法解析')));
+    expect(fromHtml.error, contains('网页'));
+    expect(fromHtml.error, contains('不是流声备份文件'));
+
+    // 前后带空白也要认出来（decode 入口本来就 trim）
+    expect(
+      DeviceBackupLogic.decode('\n\n  $qqPreviewPage  \n').error,
+      contains('网页'),
+    );
+
+    // 真·坏掉的 JSON：仍然失败，但必须带出原因，不能只有一句固定文案
+    final broken = DeviceBackupLogic.decode(
+      '{"format":"liusheng.device-backup",',
+    );
+    expect(broken.isOk, isFalse);
+    expect(broken.error, contains('备份无法解析'));
+    expect(broken.error!.length, greaterThan('备份无法解析：'.length));
+  });
+
   test('PodcastEpisodeState merges progress and listened guids', () {
     final current = const PodcastEpisodeState(
       progress: {

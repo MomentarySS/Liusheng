@@ -128,6 +128,15 @@ abstract final class DeviceBackupLogic {
     if (trimmed.isEmpty) {
       return const DeviceBackupDecode.fail('剪贴板是空的');
     }
+    // 传输环节最容易坏的不是 JSON 本身，而是**拿到的根本不是文件**。
+    // 实测：QQ 传 .json 时给对方的是一张
+    // `<html>...<iframe src="/_PA_...">` 的预览页（真文件在那个会话绑定的
+    // iframe 后面，脱离 QQ 就取不到），50KB 的备份收到时只剩 210 字节的
+    // HTML。以前这会落进下面的 catch，报「备份无法解析」——判对了，但用户
+    // 完全看不出是传输坏了，只能靠"文件才 1KB"这种外部线索反推。
+    if (trimmed.startsWith('<')) {
+      return const DeviceBackupDecode.fail('这不是流声备份文件（内容是网页，多半是传输时没拿到真文件）');
+    }
     try {
       final decoded = jsonDecode(trimmed);
       if (decoded is! Map) {
@@ -173,8 +182,10 @@ abstract final class DeviceBackupLogic {
           podcastState: podcastState,
         ),
       );
-    } catch (_) {
-      return const DeviceBackupDecode.fail('备份无法解析');
+    } catch (error) {
+      // 带上原始异常。别再让这里只吐一句「备份无法解析」——那句话本身
+      // 就是个死路：它不告诉你是哪一行炸的、为什么炸，下一次只能重新猜。
+      return DeviceBackupDecode.fail('备份无法解析：$error');
     }
   }
 

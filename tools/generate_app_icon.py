@@ -5,7 +5,7 @@ from __future__ import annotations
 from pathlib import Path
 
 import numpy as np
-from PIL import Image, ImageDraw
+from PIL import Image, ImageChops, ImageDraw
 
 ROOT = Path(__file__).resolve().parents[1]
 BRANDING = ROOT / "assets" / "branding"
@@ -189,9 +189,27 @@ def _render_art(size: int, *, background: bool) -> Image.Image:
     return image.resize((size, size), Image.Resampling.LANCZOS)
 
 
-def render(*, size: int, background: bool) -> Image.Image:
+def _round_alpha(size: int) -> Image.Image:
+    """Circular alpha for the legacy round launcher icon.
+
+    AndroidManifest declares android:roundIcon, but the adaptive XML that would
+    otherwise answer that reference lives in mipmap-anydpi-v26 and only serves
+    API 26+. With minSdk 23 the reference has no matching configuration on
+    API 23-25, so every density bucket needs a real round PNG.
+    """
+    mask = Image.new("L", (size, size), 0)
+    ImageDraw.Draw(mask).ellipse((0, 0, size - 1, size - 1), fill=255)
+    return mask
+
+
+def render(*, size: int, background: bool, round_icon: bool = False) -> Image.Image:
     if background:
-        return _render_art(size, background=True)
+        art = _render_art(size, background=True)
+        if round_icon:
+            art.putalpha(
+                ImageChops.multiply(art.getchannel("A"), _round_alpha(size))
+            )
+        return art
 
     # Keep the adaptive foreground inside Android's mask-safe area.
     inner_size = max(int(size * 0.72), 2)
@@ -224,6 +242,9 @@ def main() -> None:
         dest = res / folder
         dest.mkdir(parents=True, exist_ok=True)
         render(size=px, background=True).save(dest / "ic_launcher.png", "PNG")
+        render(size=px, background=True, round_icon=True).save(
+            dest / "ic_launcher_round.png", "PNG"
+        )
     for folder, px in ANDROID_FOREGROUND.items():
         dest = res / folder
         dest.mkdir(parents=True, exist_ok=True)

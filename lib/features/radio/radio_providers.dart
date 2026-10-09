@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../core/category/station_category_resolver.dart';
 import '../../core/models/radio_station.dart';
+import '../../core/utils/log.dart';
 import '../../core/audio/auto_browse.dart';
 import '../../core/audio/playback_logic.dart';
 import '../../core/audio/radio_audio_handler.dart';
@@ -563,7 +564,21 @@ class CustomStationsNotifier
   Future<void> _load() async {
     final storage = await _ref.read(appStorageProvider.future);
     final raw = await storage.getCustomStations();
-    state = AsyncData(raw.map(RadioStation.fromJson).toList());
+    // 逐条容错：存档里有一条类型对不上的记录，整页自定义电台就该加载不出来。
+    final stations = <RadioStation>[];
+    for (final item in raw) {
+      try {
+        stations.add(RadioStation.fromJson(item));
+      } catch (error, stackTrace) {
+        AppLog.e(
+          'Radio',
+          'skip malformed custom station',
+          error: error,
+          stackTrace: stackTrace,
+        );
+      }
+    }
+    state = AsyncData(stations);
   }
 
   Future<String?> add({

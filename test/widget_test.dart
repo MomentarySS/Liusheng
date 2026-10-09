@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -785,6 +787,67 @@ void main() {
     expect(merged.skipped, 1);
     expect(merged.stations.map((s) => s.name), ['自制台', '新台']);
     expect(CustomStationsBackup.decode('not-json'), isNull);
+  });
+
+  group('一条坏记录不该毁掉整份备份', () {
+    // 根因：`RadioStation.fromJson` 曾用硬转型 `json['id'] as String?`。
+    // 备份是人手写/手改的，`"id": 123` 这类数字值很常见 → 抛 TypeError →
+    // 冒泡到 decode 的 catch → 整份列表丢失，用户只看到「没有可导入的电台
+    // JSON」，既不知道导进来几个，也看不出是第几条坏了。
+    test('字段类型不对时，其余记录照常导入并报出坏条数', () {
+      final raw = jsonEncode([
+        {'id': 'ok-1', 'name': '正常台', 'url': 'https://example.com/a.m3u8'},
+        // 数字 id：旧实现整份炸掉
+        {'id': 123, 'name': '数字 id 台', 'url': 'https://example.com/b.m3u8'},
+        {'id': 'ok-2', 'name': '另一个正常台', 'url': 'https://example.com/c.m3u8'},
+      ]);
+
+      var malformed = -1;
+      final decoded = CustomStationsBackup.decode(
+        raw,
+        onMalformed: (count) => malformed = count,
+      );
+
+      expect(decoded, isNotNull);
+      expect(decoded!.map((s) => s.name), [
+        '正常台',
+        '数字 id 台',
+        '另一个正常台',
+      ], reason: '数字 id 不该让整条记录被丢弃');
+      // 这条现在能被读成字符串了，所以不计入 malformed。
+      expect(malformed, 0);
+
+      final merged = CustomStationsBackup.merge(
+        existing: const [],
+        incoming: decoded,
+        malformed: malformed,
+      );
+      expect(merged.added, 3);
+      expect(merged.malformed, malformed);
+    });
+
+    test('真正解析不了的记录只丢它自己', () {
+      // fromJson 现在对类型不再抛，但 copyWith 之后的链路仍可能出问题；
+      // 逐条 try 的意义就在这里：坏条目隔离，其余照常导入。
+      final raw = jsonEncode([
+        {'id': 'ok-1', 'name': '正常台', 'url': 'https://example.com/a.m3u8'},
+        // 缺 url 且没有任何可回退的地址 → 应被「地址为空」这条规则滤掉，
+        // 而不是连累上面那条。
+        {'id': 'no-url', 'name': '没地址台'},
+      ]);
+
+      final decoded = CustomStationsBackup.decode(raw);
+      expect(decoded, isNotNull);
+      expect(decoded!.map((s) => s.name), ['正常台']);
+    });
+
+    test('全坏时仍返回 null（不该硬塞一个空列表）', () {
+      // 整份都是拿不出地址的记录 —— 与原来一样判为「没有可导入的内容」。
+      final raw = jsonEncode([
+        {'id': 'no-url', 'name': '没地址台'},
+      ]);
+      expect(CustomStationsBackup.decode(raw), isNull);
+    });
   });
 
   test('StationDetailLogic lists bitrate and homepage', () {

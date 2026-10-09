@@ -248,7 +248,11 @@ class _CustomStationsScreenState extends ConsumerState<CustomStationsScreen> {
 
   Future<void> _importStations() async {
     final data = await Clipboard.getData(Clipboard.kTextPlain);
-    final parsed = CustomStationsBackup.decode(data?.text ?? '');
+    var malformed = 0;
+    final parsed = CustomStationsBackup.decode(
+      data?.text ?? '',
+      onMalformed: (count) => malformed = count,
+    );
     if (parsed == null) {
       if (!mounted) return;
       ScaffoldMessenger.of(
@@ -262,7 +266,12 @@ class _CustomStationsScreenState extends ConsumerState<CustomStationsScreen> {
     if (!mounted) return;
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Text('导入完成：新增 ${result.added} 个，跳过 ${result.skipped} 个'),
+        content: Text(
+          '导入完成：新增 ${result.added} 个，跳过 ${result.skipped} 个'
+          // 有坏条目要说出来。原先它们会连带把整份备份判成「文件坏了」，
+          // 用户既看不到导进来几个、也不知道是哪几条出的问题。
+          '${malformed > 0 ? '，$malformed 条格式不对已略过' : ''}',
+        ),
       ),
     );
   }

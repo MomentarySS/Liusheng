@@ -2,24 +2,26 @@
 class RadioStation {
   factory RadioStation.fromJson(Map<String, dynamic> json) {
     return RadioStation(
-      id: json['id'] as String? ?? json['stationuuid'] as String? ?? '',
-      name: json['name'] as String? ?? '未知电台',
+      // 一律走 _strOf：这些字段在 Radio Browser 响应和用户手改的备份里都可能是
+      // 数字（如 `"id": 123`），硬转型 `as String?` 会抛 TypeError，把**整份**
+      // 列表炸掉——一条坏记录害掉全部。
+      id: _strOf(json['id']) ?? _strOf(json['stationuuid']) ?? '',
+      name: _strOf(json['name']) ?? '未知电台',
       streamUrl:
-          json['url'] as String? ??
-          json['url_resolved'] as String? ??
-          json['urlResolved'] as String? ??
+          _strOf(json['url']) ??
+          _strOf(json['url_resolved']) ??
+          _strOf(json['urlResolved']) ??
           '',
-      favicon: json['favicon'] as String?,
+      favicon: _strOf(json['favicon']),
       tags: _parseTags(json['tags']),
       category:
-          json['category'] as String? ??
-          _inferCategory(_parseTags(json['tags'])),
+          _strOf(json['category']) ?? _inferCategory(_parseTags(json['tags'])),
       bitrate:
           json['bitrate'] is int
               ? json['bitrate'] as int
               : int.tryParse('${json['bitrate']}'),
-      codec: json['codec'] as String?,
-      homepage: json['homepage'] as String?,
+      codec: _strOf(json['codec']),
+      homepage: _strOf(json['homepage']),
       source: parseSource(json['source'], tags: _parseTags(json['tags'])),
       votes:
           json['votes'] is int
@@ -38,21 +40,21 @@ class RadioStation {
       json['countrycode']?.toString(),
     );
     return RadioStation(
-      id: json['stationuuid'] as String? ?? '',
-      name: json['name'] as String? ?? '未知电台',
+      id: _strOf(json['stationuuid']) ?? '',
+      name: _strOf(json['name']) ?? '未知电台',
       streamUrl:
-          (json['url_resolved'] as String?)?.isNotEmpty == true
-              ? json['url_resolved'] as String
-              : json['url'] as String? ?? '',
-      favicon: json['favicon'] as String?,
+          (_strOf(json['url_resolved'])?.isNotEmpty ?? false)
+              ? _strOf(json['url_resolved'])!
+              : _strOf(json['url']) ?? '',
+      favicon: _strOf(json['favicon']),
       tags: tags,
       category: _inferCategory(tags),
       bitrate:
           json['bitrate'] is int
               ? json['bitrate'] as int
               : int.tryParse('${json['bitrate']}'),
-      codec: json['codec'] as String?,
-      homepage: json['homepage'] as String?,
+      codec: _strOf(json['codec']),
+      homepage: _strOf(json['homepage']),
       source: StationSource.api,
       votes:
           json['votes'] is int
@@ -132,6 +134,16 @@ class RadioStation {
       votes: votes ?? this.votes,
       lastCheckOk: lastCheckOk ?? this.lastCheckOk,
     );
+  }
+
+  /// 把任意 JSON 值读成字符串，读不出来就 null（不抛）。
+  ///
+  /// 用来替掉 `json['x'] as String?`：备份文件是人手写的，`"id": 123` 这类
+  /// 数字值很常见，硬转型会抛 TypeError 并炸掉整次导入。
+  static String? _strOf(dynamic raw) {
+    if (raw == null) return null;
+    if (raw is String) return raw;
+    return raw.toString();
   }
 
   static List<String> _parseTags(dynamic raw) {

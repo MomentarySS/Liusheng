@@ -654,6 +654,12 @@ class PodcastDownloadsNotifier extends StateNotifier<PodcastDownloadState> {
         state.statusFor(episode.guid) == EpisodeDownloadStatus.ready) {
       return;
     }
+    // 判重与占位之间**不能跨 await**：下面两次 await（WiFi 判定、读 store）会
+    // 让出事件循环，其间「自动下载最新一集」（autoDownloadLatestSyncProvider
+    // 在 feed 缓存刷新时就跑）可能带着同一集进来，两边都判过「没在下载」，
+    // 于是各自下一份到同一个临时文件上。
+    if (_inflightFeedByGuid.containsKey(episode.guid)) return;
+    _inflightFeedByGuid[episode.guid] = feed.id;
     final wifiOnly = await resolveDownloadWifiOnly(
       _ref.read(downloadWifiOnlyProvider),
       storage: _ref.read(appStorageProvider.future),
@@ -661,12 +667,15 @@ class PodcastDownloadsNotifier extends StateNotifier<PodcastDownloadState> {
     if (wifiOnly) {
       final allowed =
           await _ref.read(networkMonitorProvider).allowsWifiOnlyDownload;
-      if (!allowed) return;
+      // 占位已经占了，这里要还回去，否则这一集再也下不了。
+      if (!allowed) {
+        _inflightFeedByGuid.remove(episode.guid);
+        return;
+      }
     }
     final progress = Map<String, double>.from(state.progress)
       ..[episode.guid] = 0;
     final failed = Set<String>.from(state.failed)..remove(episode.guid);
-    _inflightFeedByGuid[episode.guid] = feed.id;
     state = state.copyWith(progress: progress, failed: failed);
     // Dio 按块回调进度，一次下载可能上千次。节流后只在进度变化 1%
     // 或间隔 300ms 时更新状态，避免整页单集列表跟着重排。

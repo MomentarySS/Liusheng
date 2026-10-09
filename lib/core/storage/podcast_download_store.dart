@@ -26,7 +26,12 @@ class PodcastDownloadStore {
   final AppStorage _storage;
   final Directory _root;
   final Dio _dio;
-  final Map<String, CancelToken> _cancels = {};
+  // 一个 guid 可能同时挂着多个 token（「自动下载最新一集」与手动下载撞上时，
+  // 两条路径各自开一次）。取消时要把这一集全部停掉，所以按 guid 存集合；
+  // 只存一个的话，后启动的那次会顶掉先启动的，先启动的从此再也取消不掉。
+  final Map<String, Set<CancelToken>> _cancels = {};
+
+  static int _partSeq = 0;
 
   static Future<PodcastDownloadStore> create(AppStorage storage) async {
     final support = await getApplicationSupportDirectory();
@@ -75,9 +80,11 @@ class PodcastDownloadStore {
       audioUrl: episode.audioUrl,
     );
     final target = File(_pathFor(fileName));
-    final part = File('${target.path}.part');
+    // 临时文件必须带唯一后缀：`.part` 若只由 guid 决定，同一集的两次并发
+    // 下载会写同一个文件，两个 Dio 的字节流交错写，落地的是损坏音频。
+    final part = File('${target.path}.${_nextPartSeq()}.part');
     final token = CancelToken();
-    _cancels[episode.guid] = token;
+    (_cancels[episode.guid] ??= {}).add(token);
     try {
       await _dio.download(
         episode.audioUrl,
@@ -118,12 +125,20 @@ class PodcastDownloadStore {
       );
       rethrow;
     } finally {
-      _cancels.remove(episode.guid);
+      // 只摘掉本次这一个 token。原先是整条 remove，于是并发的另一条也被抹掉。
+      _cancels[episode.guid]?.remove(token);
     }
   }
 
+  /// 同一个 guid 上是否已有下载在跑（判重用，不跨 await 调用）。
+  bool isDownloading(String guid) => _cancels[guid]?.isNotEmpty ?? false;
+
   void cancel(String guid) {
-    _cancels[guid]?.cancel('cancelled');
+    final tokens = _cancels[guid];
+    if (tokens == null) return;
+    for (final token in tokens.toList()) {
+      token.cancel('cancelled');
+    }
   }
 
   Future<void> delete(String guid) async {
@@ -157,8 +172,10 @@ class PodcastDownloadStore {
   }
 
   Future<void> clearAll() async {
-    for (final token in _cancels.values) {
-      token.cancel('cleared');
+    for (final tokens in _cancels.values) {
+      for (final token in tokens.toList()) {
+        token.cancel('cleared');
+      }
     }
     _cancels.clear();
     if (await _root.exists()) {
@@ -193,6 +210,12 @@ class PodcastDownloadStore {
 
   String _pathFor(String fileName) =>
       '${_root.path}${Platform.pathSeparator}$fileName';
+
+  static String _nextPartSeq() {
+    _partSeq += 1;
+    return DateTime.now().microsecondsSinceEpoch.toRadixString(36) +
+        _partSeq.toRadixString(36);
+  }
 
   Future<void> _persist(Map<String, PodcastDownloadRecord> records) {
     return _storage.setPodcastDownloads(

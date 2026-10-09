@@ -1,3 +1,5 @@
+import 'dart:async';
+import 'dart:convert';
 import 'dart:io';
 import 'dart:typed_data';
 
@@ -180,6 +182,8 @@ void main() {
   setUp(() {
     SharedPreferences.setMockInitialValues({});
   });
+
+  _downloadConcurrencyGuards();
 
   test('iTunes 拿到非 JSON 正文时给出能照做的错，而不是类型错误', () async {
     // 裸连（不开代理）实测就是这个形态：请求被网络拦下，返回 HTML/空内容。
@@ -650,6 +654,167 @@ void main() {
       }
     });
   });
+}
+
+/// 同一集并发下载的守卫（对应 2026-10-09 审查第 1 条）。
+///
+/// 事故形态：开了「自动下载最新一集」的同时手点下载同一集，两条路径都判过
+/// 「没在下载」，于是各开一个 Dio 写**同一个 `.part`**，两个字节流交错落地，
+/// 得到一份损坏音频；而 cancel token 被后者顶掉，先启动的那次再也取消不掉。
+void _downloadConcurrencyGuards() {
+  group('同一集的并发下载', () {
+    late Directory root;
+    late AppStorage storage;
+
+    PodcastEpisode episode({String guid = 'ep-1'}) => PodcastEpisode(
+      guid: guid,
+      title: '并发夹具',
+      audioUrl: 'https://example.com/$guid.mp3',
+      publishedAt: DateTime.utc(2026, 1, 1),
+    );
+
+    setUp(() async {
+      SharedPreferences.setMockInitialValues({});
+      root = Directory.systemTemp.createTempSync('dl_store_conc');
+      storage = AppStorage(await SharedPreferences.getInstance());
+    });
+
+    tearDown(() {
+      if (root.existsSync()) root.deleteSync(recursive: true);
+    });
+
+    test('两次并发下载的临时文件路径必须互不相同', () async {
+      // 观察点是**飞行期间磁盘上真实存在的 `.part` 文件** —— dio 在写字节前
+      // 先 `createSync` 出这个文件（dio_for_native.dart:94），于是两条并发
+      // 下载各自占一个路径；损坏就发生在两个流往同一路径交错写的时候。
+      // （不能用 adapter 观察：`savePath` 直接进 `File()`，不进
+      // `RequestOptions`；也不能子类化 Dio 拦截 `download`，它在 mixin 上。）
+      final dio = Dio();
+      final adapter = _FixtureAudioAdapter(hang: true);
+      dio.httpClientAdapter = adapter;
+      addTearDown(adapter.dispose);
+      final storeWithDio = PodcastDownloadStore(storage, root, dio: dio);
+
+      final first = storeWithDio.download(feed: _feed, episode: episode());
+      final second = storeWithDio.download(feed: _feed, episode: episode());
+      // 等两个请求都建好各自的临时文件。
+      await Future<void>.delayed(const Duration(milliseconds: 100));
+
+      final parts =
+          root
+              .listSync()
+              .map((e) => e.path)
+              .where((p) => p.endsWith('.part'))
+              .toList();
+      expect(parts, hasLength(2), reason: '两个并发下载应各占一个临时文件');
+      expect(parts[0], isNot(parts[1]), reason: '同一集的两次下载写进了同一个临时文件 → 落地音频会损坏');
+
+      storeWithDio.cancel('ep-1');
+      await Future.wait([
+        first.then<void>((_) {}, onError: (Object _) {}),
+        second.then<void>((_) {}, onError: (Object _) {}),
+      ]);
+    });
+
+    test('先启动的那次下载仍可被取消（cancel token 不被顶掉）', () async {
+      // 记录到就永不 resolve —— 两个请求都停在飞状态，直到被 cancel。
+      final dio = Dio();
+      final adapter = _FixtureAudioAdapter(hang: true);
+      dio.httpClientAdapter = adapter;
+      addTearDown(adapter.dispose);
+      final storeWithDio = PodcastDownloadStore(storage, root, dio: dio);
+
+      final first = storeWithDio.download(feed: _feed, episode: episode());
+      final second = storeWithDio.download(feed: _feed, episode: episode());
+      await Future<void>.delayed(const Duration(milliseconds: 50));
+      final parts =
+          root.listSync().where((e) => e.path.endsWith('.part')).toList();
+      expect(parts, hasLength(2));
+
+      storeWithDio.cancel('ep-1');
+
+      // 两个都该以 DioException 收场（cancel 触发），且**都不该**还占着位置。
+      final results = await Future.wait([
+        first.then<Object?>((_) => 'ok', onError: (Object e) => e),
+        second.then<Object?>((_) => 'ok', onError: (Object e) => e),
+      ]);
+      for (final r in results) {
+        expect(r, isA<DioException>(), reason: 'cancel 没有作用到下载上');
+      }
+      expect(
+        storeWithDio.isDownloading('ep-1'),
+        isFalse,
+        reason: '两次下载都结束后，占位必须已经释放',
+      );
+    });
+
+    test('下载全部结束后占位会被释放（不会永久卡住这一集）', () async {
+      final dio = Dio();
+      dio.httpClientAdapter = _FixtureAudioAdapter(hang: false);
+      final storeWithDio = PodcastDownloadStore(storage, root, dio: dio);
+      await storeWithDio.download(feed: _feed, episode: episode());
+      expect(
+        storeWithDio.isDownloading('ep-1'),
+        isFalse,
+        reason: '下载结束后占位必须已经摘掉，否则这一集再也下不了',
+      );
+    });
+  });
+}
+
+/// 返回一段**永不闭合**的响应流的假 adapter：dio 会先 `createSync` 建出
+/// `.part` 文件、再去消费流（dio 5.11 `dio_for_native.dart:94`），于是请求停在
+/// 「文件已建、流未完」的状态 —— 正好是两次并发下载各自占一个临时文件的窗口。
+///
+/// 挂起期间开的 controller 记在 [_open] 里，测试结束时统一 close（否则测试
+/// 框架报 sink 泄漏）。
+class _FixtureAudioAdapter implements HttpClientAdapter {
+  _FixtureAudioAdapter({required this.hang});
+
+  final bool hang;
+  final List<StreamController<Uint8List>> _open = [];
+
+  @visibleForTesting
+  void dispose() {
+    for (final controller in _open) {
+      if (!controller.isClosed) controller.close();
+    }
+    _open.clear();
+  }
+
+  @override
+  Future<ResponseBody> fetch(
+    RequestOptions options,
+    Stream<Uint8List>? requestStream,
+    Future<void>? cancelFuture,
+  ) async {
+    if (!hang) {
+      final bytes = Uint8List.fromList(utf8.encode('fixture-audio'));
+      return ResponseBody.fromBytes(
+        bytes,
+        200,
+        headers: {
+          Headers.contentLengthHeader: [bytes.length.toString()],
+          Headers.contentTypeHeader: ['application/octet-stream'],
+        },
+      );
+    }
+
+    // 空 controller、在 close() 前永不产出：dio 建好 .part 后卡在读流上。
+    final controller = StreamController<Uint8List>();
+    _open.add(controller);
+    return ResponseBody(
+      controller.stream,
+      200,
+      headers: {
+        Headers.contentLengthHeader: ['1024'],
+        Headers.contentTypeHeader: ['application/octet-stream'],
+      },
+    );
+  }
+
+  @override
+  void close({bool force = false}) {}
 }
 
 /// 电台页「月亮图标开着时直接取消」这条基准还在不在。

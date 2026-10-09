@@ -19,7 +19,7 @@ void main() {
     test('浅色用 vibrant、深色保留 tonalSpot', () {
       // tonalSpot 会把种子 #1565C0 压成 #405F90，浅色品牌蓝不可见。
       expect(DynamicThemeLogic.lightVariant, DynamicSchemeVariant.vibrant);
-      // 深色必须留在 tonalSpot：vibrant 的 onPrimary 是深绿。
+      // 深色必须留在 tonalSpot：深色 primary 本就是清晰的浅蓝，换 vibrant 无收益。
       expect(DynamicThemeLogic.darkVariant, DynamicSchemeVariant.tonalSpot);
       expect(
         DynamicThemeLogic.variantFor(Brightness.light),
@@ -50,10 +50,11 @@ void main() {
       expect(hex(scheme.primary), '#A9C7FF');
     });
 
-    test('深色播放键图标不会变绿（onPrimary 回归防护）', () {
+    test('深色 onPrimary 保持 tonalSpot 取值 #08305F（回归防护）', () {
       final scheme = DynamicThemeLogic.fallback(brightness: Brightness.dark);
-      // DESIGN.md 规定主播放键用 primary + onPrimary。深色下若跟着换 vibrant，
-      // onPrimary 会从深蓝 #08305F 变成深绿 #003D03，播放键图标就变绿了。
+      // DESIGN.md 规定主播放键用 primary + onPrimary。深色保留 tonalSpot 时
+      // onPrimary 是深蓝 #08305F；vibrant 的深色 onPrimary 是 #003063（同为深蓝，
+      // 早期"变绿"说法不成立），但整套深色角色会跟着变，这里钉住当前取值。
       expect(hex(scheme.onPrimary), '#08305F');
       final hue = HSVColor.fromColor(scheme.onPrimary).hue;
       expect(hue, greaterThan(190));

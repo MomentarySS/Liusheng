@@ -18,7 +18,7 @@ Format follows [Keep a Changelog](https://keepachangelog.com/zh-CN/), and the pr
 
 - 迷你条去掉自身那层投影：系统级阴影在 `DeskWindow.apply` 里本来就对浮条关掉了（`setHasShadow(mode == sidebar)`），剩下的是 Flutter 自己补的第二道影（`shadow 0.22 / blur 22 / 下偏 8`），浮在桌面上会拖出一圈脏边。现在浮条本体只有 `surface` + 圆角
 - Windows 侧栏标题栏三个按钮换成圆角变体，与迷你条同一套字形（`picture_in_picture_alt_rounded` / `open_in_full_rounded` / `close_rounded`）。此前用的是 `open_in_full` / `close` 这套经典老字形，与迷你条已在用的 `close_rounded` / `skip_*_rounded` 明显不同代
-- 浅色主题主色改用 Material 3 的 `DynamicSchemeVariant.vibrant`：`primary` 从去饱和的 `#405F90` 变为接近品牌种子的 `#005DB7`，品牌蓝在浅色界面上重新可见。**深色保留默认 `tonalSpot`**——`vibrant` 会把深色 `onPrimary` 从深蓝 `#08305F` 变成深绿 `#003D03`，主播放键的图标会变绿
+- 浅色主题主色改用 Material 3 的 `DynamicSchemeVariant.vibrant`：`primary` 从去饱和的 `#405F90` 变为接近品牌种子的 `#005DB7`，品牌蓝在浅色界面上重新可见。**深色保留默认 `tonalSpot`**（勘误 2026-10-09：当初记录的"vibrant 会把深色 `onPrimary` 从深蓝 `#08305F` 变成深绿 `#003D03`"不成立——实算为深蓝 `#003063`，决策不变，理由修正为深色 `primary` 本就是清晰的浅蓝、换过去无收益）
 - `ThemeData` 补上此前完全缺失的 `textTheme`，把 `DESIGN.md` 的 10 档排版 scale 显式写全（字号 / 字重 / 行高比）。此前字号全靠各页手写与 Material 默认值，设计文档定的 scale 没有任何强制力
 - 设置「外观」等页面上的 `vibrant` 与排版 token 现由 `test/design_tokens_test.dart` 锁定，token 被无意改动会立刻失败
 

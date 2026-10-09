@@ -68,15 +68,17 @@
 | 深色角色 | tonalSpot | vibrant |
 | --- | --- | --- |
 | `primary` | `#A9C7FF` | `#A9C7FF` ← 唯一相同 |
-| **`onPrimary`** | **`#08305F` 深蓝** | **`#003D03` 深绿** ⚠️ |
+| `onPrimary` | `#08305F` 深蓝 | `#003063` 深蓝 |
 | `primaryContainer` | `#274777` | `#00468C` |
 | `secondary` | `#C2C7D0` | `#BFC4EB` |
 | `surfaceContainerHigh` | `#282A2F` | `#282A33` |
 | `outline` | `#8E9099` | `#8B919F` |
 
-`DESIGN.md` 规定主播放键用 `primary` + `onPrimary`，所以深色下跟着换 `vibrant` 会让**播放键图标变成深绿**。
+**⚠️ 二次勘误（2026-10-09）。** 上表 vibrant 列的 `onPrimary` 原记为 "`#003D03` 深绿 ⚠️"——**这不成立**。用当前 Flutter 对种子 `#1565C0` 实算并采样色卡第 3 行色块，vibrant 深色 `onPrimary` 是 `#003063`（深蓝，色卡图注里那句 "flips to #003D03 (green)" 也是同一处误记）。当初实测的 `#003D03` 应为旧版 Flutter 产物或誊写错误；"深色保留 tonalSpot" 的决策不变，理由修正为：深色 `primary` 本就是清晰的浅蓝，换 `vibrant` 无收益且连带改动整套深色角色。
 
-**采用方案 B：仅浅色 `vibrant`，深色保留 `tonalSpot`。** 理由：这条改法的动机是"浅色品牌蓝不可见"，而深色 `primary` 本来就是清晰的浅蓝、不存在该问题；保留 `tonalSpot` 改动最小、深色观感零风险。`theme.dart` 里拆成 `lightVariant` / `darkVariant` 两个常量并加了 `variantFor()`，另有一条测试钉住深色 `onPrimary` 不变绿。
+`DESIGN.md` 规定主播放键用 `primary` + `onPrimary`；`onPrimary` 保持深蓝即可保证播放键图标可读。
+
+**采用方案 B：仅浅色 `vibrant`，深色保留 `tonalSpot`。** 理由：这条改法的动机是"浅色品牌蓝不可见"，而深色 `primary` 本来就是清晰的浅蓝、不存在该问题；保留 `tonalSpot` 改动最小、深色观感零风险。`theme.dart` 里拆成 `lightVariant` / `darkVariant` 两个常量并加了 `variantFor()`，另有一条测试钉住深色 `onPrimary` 的当前取值。
 
 浅色侧的实际收益：`primary` `#405F90` → `#005DB7`（最接近种子 `#1565C0`），`secondary` / `surfaceContainerHigh` / `outline` 同步偏蓝。`primaryContainer` / `surface` / `error` 不变。
 
@@ -94,7 +96,7 @@
 - `flutter analyze` → No issues found
 - `flutter test` → **191 项全过**（基线 180 + `design_tokens_test.dart` 新增 11）。既有 180 项无一被破坏，说明字号真正落地后没有布局溢出
 - 新增 `test/design_tokens_test.dart` 锁定种子、生成色、变体策略、浅色色相、深色 `onPrimary`、排版 scale、形状与断点，防止 token 被无意改动
-- 色卡 `docs/color-scheme-cards.png` 为人工目视证据：第 1 行是实际采用的浅色 `vibrant`，第 2 行是实际采用的深色 `tonalSpot`，第 3 行是被否决的深色 `vibrant`（`onPrimary` 明显发绿），第 4 行是改动前的浅色 `tonalSpot` 供对照
+- 色卡 `docs/color-scheme-cards.png` 为人工目视证据：第 1 行是实际采用的浅色 `vibrant`，第 2 行是实际采用的深色 `tonalSpot`，第 3 行是被否决的深色 `vibrant`（**图注文案有误**——它写 `onPrimary flips to #003D03 (green)`，实际色块与标签是 `#003063` 深蓝，见上方二次勘误；图片无生成脚本入库，以文本层勘误为准），第 4 行是改动前的浅色 `tonalSpot` 供对照
 
 > 渲染色卡时踩过的坑：先试过渲染完整界面，结果测试默认字体是 Ahem（方块）导致布局爆炸（"overflowed by 800957 pixels"），图片只有左上角一小块有效。**纯色块才是 widget 测试截图的可靠载体**——没有字体宽度依赖，也就不会溢出。若日后还要出图，优先铺色块而不是排界面。
 
@@ -228,6 +230,7 @@ Android 已有 `workmanager` 后台检查，Windows 此前完全没有触发源�
 | 2026-10-05 | 偏差 B 完成：`theme.dart` 补 `ThemeData.textTheme`，10 个角色显式写全；新增 `test/design_tokens_test.dart`（8 项）。三道门全绿：format 幂等、analyze No issues found、test 188 项全过 |
 | 2026-10-05 | 偏差 A 实测并定案：浅色 `primary` `#405F90` → `#005DB7`（`vibrant`）。**同时推翻了初版"深色不受影响"的结论**——深色下 `onPrimary` 会变深绿，播放键图标会变绿，故采用方案 B（仅浅色 `vibrant`，深色保留 `tonalSpot`），并加测试钉住 |
 | 2026-10-05 | A 落地后复跑三道门：format 幂等、analyze No issues found、test **191 项全过**。色卡存档 `docs/color-scheme-cards.png`（旧图已替换，旧图把被否决的深色 `vibrant` 标成 "AFTER"，会误导） |
+| 2026-10-09 | OCR 审查勘误：深色 vibrant 的 `onPrimary` 实为 `#003063`（深蓝），非 `#003D03`（绿）——用当前 Flutter 实算 + 色卡第 3 行色块采样双证；色卡图注同源误记，图片无脚本不入库，以文本层为准。同步修掉 `theme.dart` / `DESIGN.md` / `CHANGELOG` 相关表述与失效引用 `variant-color-cards.png`；"深色保留 tonalSpot" 决策不变，理由改为"无收益" |
 | 2026-10-05 | **P2 播客订阅分组完成**：新增 `core/podcast/feed_groups.dart`（127 行纯逻辑）、`features/podcast/feed_group_providers.dart`（127 行）、`features/podcast/feed_group_ui.dart`（364 行）、`test/feed_groups_test.dart`（250 行）。既有文件的实测增量（`git diff --stat`）：`podcast_screen.dart` 65 行、`theme.dart` 75 行、`app_storage.dart` 24 行、`podcast_providers.dart` 5 行——两个巨型文件都只被"调用"而没有被塞进实现。分组存独立 key，`subscribed_podcast_feeds` 与 `feed_cache` 零改动。三道门：format 幂等、analyze No issues found、test **210 项全过**（新增 19 项）。测试抓出 `filter` 的 `isEmpty` / `allGroups` 判据 bug，会让筛选行任何一次点击都坏掉 |
 | 2026-10-05 | **P3 Windows 新一集通知完成**：新增 `core/platform/new_episode_poller.dart`（31 行）与 `test/new_episode_poller_test.dart`（126 行）；既有文件实测增量 `new_episode_checker.dart` 63 行、`playback_screen.dart` 18 行、`main.dart` 12 行。**动手前先查清 `local_notifications.dart` 早已初始化 Windows**——所以这是补触发源而非加通知支持。三道门：format 幂等、analyze No issues found、test **220 项全过**（新增 10 项） |
 | 2026-10-05 | 四条线收口为 4 个 commit（`7ff7829` 视觉 / `47b9a89` P2 / `3de2ecf` P3 / `1437136` 文档），相对 `main` 合计 21 文件 +1878/−40，**未 push** |

@@ -55,9 +55,10 @@ abstract final class DynamicThemeLogic {
 
   /// 深色保留 Material 默认的 `tonalSpot`，**不要**跟着换成 `vibrant`。
   ///
-  /// 实测（`docs/variant-color-cards.png`）：`vibrant` 在深色下 `primary` 确实仍是
-  /// `#A9C7FF`，但 `onPrimary` 会从深蓝 `#08305F` 变成深绿 `#003D03`。`DESIGN.md`
-  /// 规定主播放键用 `primary` + `onPrimary`，照搬会让深色播放键的图标变绿。
+  /// 实测（`docs/color-scheme-cards.png`）：`vibrant` 在深色下 `primary` 仍是
+  /// `#A9C7FF`，`onPrimary` 是深蓝 `#003063`——颜色本身没问题（早期记录的
+  /// "深绿 #003D03" 不成立），但换过去没有收益：深色 `primary` 本来就是清晰的
+  /// 浅蓝，不存在浅色那种"品牌蓝不可见"，保留 `tonalSpot` 改动最小。
   static const darkVariant = DynamicSchemeVariant.tonalSpot;
 
   static DynamicSchemeVariant variantFor(Brightness brightness) =>

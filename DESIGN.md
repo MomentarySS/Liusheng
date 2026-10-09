@@ -131,7 +131,7 @@ components:
 
 # Design System: 流声
 
-对应产品版本 **2.2.3**。本节组件规格自 2.1.0 建立，2.1.1–2.2.2 未改动这些 token（2.2.1 移除了三套氛围皮肤，2.2.2 对齐设置页文案）；**2.2.3 改了其中两处**：浅色 `primary` 由 `tonalSpot` 改用 `DynamicSchemeVariant.vibrant`（`#405F90` → `#005DB7`，深色保留 `tonalSpot`——`vibrant` 会把深色 `onPrimary` 从深蓝变成深绿，主播放键图标会变绿），以及把本节 typography 的 10 档 scale 真正写进 `ThemeData.textTheme`（此前只存在于本节，代码未落地）。相对 2.0.2：mini player 标题行右侧新增播客精确剩余时间（`剩余 mm:ss` / `剩余 h:mm:ss`，等宽数字）；Android 桌面 widget 改为 Material You 动态色（API 31+，尊重 App 内「壁纸 / 系统配色」开关）+ 深色系统配色变体 + M3 矢量图标；新增 Android「待听」桌面 widget（4×2 cell：1 行「待听」标题 + 4 行单集标题/节目名）；新增关于页品牌口号；除上述 2.2.3 两处改动外，其余设计 token 与组件库与 2.0.2 一致。
+对应产品版本 **2.2.3**。本节组件规格自 2.1.0 建立，2.1.1–2.2.2 未改动这些 token（2.2.1 移除了三套氛围皮肤，2.2.2 对齐设置页文案）；**2.2.3 改了其中两处**：浅色 `primary` 由 `tonalSpot` 改用 `DynamicSchemeVariant.vibrant`（`#405F90` → `#005DB7`，深色保留 `tonalSpot`——深色 `primary` 本就是清晰的浅蓝，换 `vibrant` 没有收益且会连带改动整套深色角色），以及把本节 typography 的 10 档 scale 真正写进 `ThemeData.textTheme`（此前只存在于本节，代码未落地）。相对 2.0.2：mini player 标题行右侧新增播客精确剩余时间（`剩余 mm:ss` / `剩余 h:mm:ss`，等宽数字）；Android 桌面 widget 改为 Material You 动态色（API 31+，尊重 App 内「壁纸 / 系统配色」开关）+ 深色系统配色变体 + M3 矢量图标；新增 Android「待听」桌面 widget（4×2 cell：1 行「待听」标题 + 4 行单集标题/节目名）；新增关于页品牌口号；除上述 2.2.3 两处改动外，其余设计 token 与组件库与 2.0.2 一致。
 
 底部导航「收藏」已改为「收听」三段式 tab（收藏 / 最近 / 统计）；播放器控制行改为 `spaceEvenly`（电台：睡眠 / 上一台 / 播放 / 下一台 / 列表）；睡眠定时预设为 5–60 分钟，含 30 秒淡出与小睡 10 分钟后续播，并记住上次；播客倍速含 0.5× / 0.6×，可跳过片头片尾，± 秒数 10/15/30/60，有章节时按章跳；桌面迷你窗仅 Windows；收听统计页展示总时长、电台 vs 播客占比、最常收听 Top 5（热力图已于 1.4.8 移除）；外观切换带 200ms AnimatedTheme 过渡；Chromecast 投屏默认关闭，仅 Android 外观页可手动开启；播客主页与收听 tab 均可「继续收听」，空订阅主按钮与「发现节目」进入发现页（iTunes + 中文热榜）；单集可标已听/收藏并用芯片筛选；有章节时封面下显示章名、进度条打点；订阅列表项改为长按菜单，单集 tile 右侧可直接打开 Show Notes；设置页「源」改名为「电台管理」；Now Playing 顶部无「电台/播客」标题；桌面迷你窗修复无边框窗口下首次点击穿透问题。Android 电台/单集可水平滑动；手机迷你条封面标题区可左右滑切台或跳秒。
 
@@ -162,7 +162,7 @@ components:
 
 **浅色用 `vibrant`，深色保留 `tonalSpot`。** 默认变体把种子 `#1565C0` 压成低 chroma 的 `#405F90`，品牌蓝在浅色界面上基本看不见；`vibrant` 生成的浅色 `primary` 是 `#005DB7`，最接近种子。
 
-**深色不要跟着换 `vibrant`。** 实测（`docs/variant-color-cards.png`）：`vibrant` 在深色下 `primary` 确实仍是 `#A9C7FF`，但 **`onPrimary` 会从深蓝 `#08305F` 变成深绿 `#003D03`**——本系统的主播放键正是 `primary` + `onPrimary`，照搬会让深色播放键的图标变绿。深色保留 `tonalSpot` 就没有这个问题，且深色 `primary` 本来就是清晰的浅蓝，不存在"品牌蓝不可见"。
+**深色不要跟着换 `vibrant`。** 实测（`docs/color-scheme-cards.png`）：`vibrant` 在深色下 `primary` 仍是 `#A9C7FF`，`onPrimary` 是深蓝 `#003063`——颜色本身可用（此前记录的"变成深绿 #003D03"不成立，为旧版 Flutter 下的误记），但换过去没有收益：深色 `primary` 本来就是清晰的浅蓝，不存在"品牌蓝不可见"，且会连带改动整套深色角色。深色保留 `tonalSpot` 改动最小、观感零风险。
 
 **不可选 `expressive`（变绿 `#3A6931`）或 `fruitSalad`（变青 `#006876`）**，那会把品牌色相换掉。品牌种子与「系统强调色」两条路径共用同一个 variant，避免品牌色鲜明而系统色发灰的分裂感。
 

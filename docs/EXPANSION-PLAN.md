@@ -4,7 +4,7 @@
 
 本文件在 `docs/` 根目录，**不受 `.gitignore` 排除**。注意 `docs/design/*-plan.md` 一类通配规则会把计划文档排除在仓库外，写在这里才可追溯。
 
-对应产品版本：2.2.3
+对应产品版本：2.2.4
 
 ---
 
@@ -211,7 +211,7 @@ Android 已有 `workmanager` 后台检查，Windows 此前完全没有触发源�
 
 ## 四、GitHub Release 分发
 
-- tag 跟随版本号（`v2.2.3`），产物为 `liusheng-2.2.3.apk`、`liusheng-windows-2.2.3.zip`、`liusheng-windows-2.2.3.exe`
+- tag 跟随版本号（`v2.2.4`），产物为 `liusheng-2.2.4.apk`、`liusheng-windows-2.2.4.zip`、`liusheng-windows-2.2.4.exe`
 - `scripts/pack.ps1` 只负责产出到 `dist/`，**不负责上传**；发布是独立步骤
 - 升版本需同步（2026-10-05 实测补全，原清单漏了 5 个文件）：`pubspec.yaml`、`lib/core/brand.dart`（`AppBrand.version` 与三个 userAgent）、`scripts/pack.ps1`、`scripts/liusheng-windows.iss`（`AppVersion` 与 `OutputBaseFilename`）、`README.md`、`CHANGELOG.md`、`ROADMAP.md`、`PRODUCT.md`、`PRIVACY.md`（仓库文档里的 User-Agent 字面量）、`DESIGN.md`（frontmatter 与「对应产品版本」标注）、`docs/EXPANSION-PLAN.md`（本行）
 - **只有 `lib/core/brand.dart` ↔ `pubspec.yaml` 有自动门**（`test/layer_test.dart` 的 `AppBrand version matches pubspec and user agents`）。其余文档字面量全部无测试覆盖，只能靠上面这份清单人工核。`test/layer_test.dart` 里断言的 `PrivacyCopy` 是应用内隐私文案，与仓库的 `PRIVACY.md` 是两处，后者不受该测试保护
@@ -235,3 +235,4 @@ Android 已有 `workmanager` 后台检查，Windows 此前完全没有触发源�
 | 2026-10-05 | **P3 Windows 新一集通知完成**：新增 `core/platform/new_episode_poller.dart`（31 行）与 `test/new_episode_poller_test.dart`（126 行）；既有文件实测增量 `new_episode_checker.dart` 63 行、`playback_screen.dart` 18 行、`main.dart` 12 行。**动手前先查清 `local_notifications.dart` 早已初始化 Windows**——所以这是补触发源而非加通知支持。三道门：format 幂等、analyze No issues found、test **220 项全过**（新增 10 项） |
 | 2026-10-05 | 四条线收口为 4 个 commit（`7ff7829` 视觉 / `47b9a89` P2 / `3de2ecf` P3 / `1437136` 文档），相对 `main` 合计 21 文件 +1878/−40，**未 push** |
 | 2026-10-05 | **发版 2.2.3+44**：全仓版本字面量同步（`pubspec.yaml` / `brand.dart` / `pack.ps1` / `liusheng-windows.iss` + 6 份 md）。发现两处历史遗留的不一致并修掉：① `DESIGN.md` 那句「2.1.1–2.2.2 未改动这些 token」在本版已不成立（2.2.3 改了浅色 `primary` 与 typography scale），已补记例外；② 第四节「升版本需同步」清单漏列 5 个文件（`pack.ps1`、`PRIVACY.md`、`PRODUCT.md`、`ROADMAP.md`、`DESIGN.md`），已补全并标注这些字面量无测试覆盖 |
+| 2026-10-10 | **发版 2.2.4+45**：纯修复版，11 个文件版本字面量按 2.2.3 那次补全后的清单同步，无新增漏项。两条修复来自一次整仓审查（`ocr` 因 Token Plan 限流跑不动，改派 verifier 子代理按生产代码范围审查，子代理自报 PARTIAL——`windows/runner/*.cpp` 与 `shared/widgets` 高风险块未覆盖）。三条与测试相关的改动：`download()` 的 `.part` 加唯一后缀、`_cancels` 改存集合、`download()` 入口占位前移到第一个 `await` 之前（治的是「判重与置位之间跨 await」，正是子代理指出的 `podcast_providers.dart:653→670` 窗口）。另一条是 `RadioStation.fromJson` 的硬转型，与 2.2.3 那次「兜底吞异常」同类、但路径独立，所以当时没被覆盖到 |

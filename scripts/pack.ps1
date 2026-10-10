@@ -31,7 +31,7 @@ Install-LiushengGradleMirror -RepoRoot $root
 Install-LiushengAndroidRepoCfg
 Write-Host "Mirrors: pub=$env:PUB_HOSTED_URL sdk=$env:SDK_TEST_BASE_URL"
 
-$version = "2.2.3"
+$version = "2.2.4"
 if (Test-Path "pubspec.yaml") {
     $match = Select-String -Path "pubspec.yaml" -Pattern "^version:\s*([^\+]+)" | Select-Object -First 1
     if ($match) { $version = $match.Matches[0].Groups[1].Value.Trim() }

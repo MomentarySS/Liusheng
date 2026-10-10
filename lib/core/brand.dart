@@ -10,7 +10,7 @@ abstract final class AppBrand {
   /// 与 [tagline] 并列，不要互相替换 —— 见 PRODUCT.md 的 Brand Commitments。
   static const slogan = '一处收听，随时有声';
 
-  static const version = '2.2.3';
+  static const version = '2.2.4';
   static const userAgent = 'Liusheng/$version (Flutter; liusheng radio)';
   static const podcastUserAgent = 'Liusheng/$version PodcastReader';
   static const podcastFallbackUserAgent =

@@ -809,11 +809,12 @@ void main() {
       );
 
       expect(decoded, isNotNull);
-      expect(decoded!.map((s) => s.name), [
-        '正常台',
-        '数字 id 台',
-        '另一个正常台',
-      ], reason: '数字 id 不该让整条记录被丢弃');
+      // 逐项断言而不是整体比列表：整体比时 formatter 会把 expect 压成单行、
+      // 顺手删掉尾逗号，与 require_trailing_commas 冲突（DESIGN.md 记的已知点）。
+      final names = decoded!.map((s) => s.name).toList();
+      expect(names, hasLength(3));
+      expect(names, containsAll(['正常台', '数字 id 台', '另一个正常台']));
+      expect(names[1], '数字 id 台', reason: '数字 id 不该让整条记录被丢弃');
       // 这条现在能被读成字符串了，所以不计入 malformed。
       expect(malformed, 0);
 

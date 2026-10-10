@@ -6,7 +6,7 @@ Format follows [Keep a Changelog](https://keepachangelog.com/zh-CN/), and the pr
 
 ---
 
-## [Unreleased]
+## [2.2.4] - 2026-10-10
 
 ### Fixed
 
